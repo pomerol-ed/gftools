@@ -5,7 +5,7 @@
 #include <iostream>
 #include<Eigen/Core>
 #include<Eigen/StdVector>
-#include "EigenIterator.h"
+//#include "EigenIterator.h"
 
 #define REALTYPE_DOUBLE
 

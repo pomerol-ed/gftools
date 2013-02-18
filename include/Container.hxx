@@ -1,11 +1,10 @@
 #ifndef ___GFTOOLS_CONTAINER_HPP___
 #define ___GFTOOLS_CONTAINER_HPP___
 
-#include "Container.h"
+#include "Container.hpp"
 #include <fstream>
 
 namespace GFTools {
-
 
 //
 // Container, N!=1

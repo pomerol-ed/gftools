@@ -1,7 +1,9 @@
 #ifndef ___GFTOOLS_GRID_H___
 #define ___GFTOOLS_GRID_H___
 
-#include "Common.h"
+#include "Defaults.hpp"
+#include "Tools.hpp"
+#include "Logger.h"
 
 namespace GFTools { 
 

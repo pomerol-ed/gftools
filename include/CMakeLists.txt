@@ -1,13 +1,17 @@
 include_directories (.)
 
 set (base_src
-    Common.h
-    Grid.h Grid.hpp 
-    Container.h Container.hpp
-    GridObject.h GridObject.hpp
+    Defaults.hpp
+    Tools.hpp
+    Grid.hpp 
+    MatsubaraGrid.hpp 
+    RealGrid.hpp 
+    KMesh.hpp 
+    Container.hpp Container.hxx
+    GridObject.hpp GridObject.hxx
     )
 
-add_library(gftoolslib OBJECT ${base_src})
+add_library(libgftools OBJECT ${base_src})
 
-install(DIRECTORY . DESTINATION include/fk
-          FILES_MATCHING PATTERN "*.h *.hpp")
+install(DIRECTORY . DESTINATION include/gftools
+          FILES_MATCHING PATTERN "*.hpp *.hxx")

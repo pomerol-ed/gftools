@@ -2,10 +2,8 @@
 #ifndef ___GFTOOLS_CONTAINER_H___
 #define ___GFTOOLS_CONTAINER_H___
 
-#include "Common.h"
-#include "Logger.h"
-#include "Grid.h"
-
+#include "Defaults.hpp"
+#include "Tools.hpp"
 #include <type_traits>
 
 namespace GFTools { 

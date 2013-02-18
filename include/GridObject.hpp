@@ -1,11 +1,11 @@
 #pragma once
-#ifndef ___GFTOOLS_GRID_OBJECT_H___
-#define ___GFTOOLS_GRID_OBJECT_H___
+#ifndef ___GFTOOLS_GRID_OBJECT_HPP___
+#define ___GFTOOLS_GRID_OBJECT_HPP___
 
-#include "Common.h"
-#include "Logger.h"
-#include "Grid.h"
-#include "Container.h"
+#include "Defaults.hpp"
+#include "Tools.hpp"
+//#include "Grid.h"
+#include "Container.hpp"
 
 namespace GFTools {
 
@@ -184,5 +184,5 @@ public:
 } // end of namespace GFTools
 #endif // endif::ifndef ___GFTOOLS_GRID_OBJECT_H___
 
-#include "GridObject.hpp"
+#include "GridObject.hxx"
 

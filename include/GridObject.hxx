@@ -1,7 +1,7 @@
-#ifndef ___GFTOOLS_GRIDOBJECT_HPP___
-#define ___GFTOOLS_GRIDOBJECT_HPP___
+#ifndef ___GFTOOLS_GRIDOBJECT_HXX___
+#define ___GFTOOLS_GRIDOBJECT_HXX___
 
-#include "GridObject.h"
+#include "GridObject.hpp"
 #include <iomanip>
 
 namespace GFTools {
