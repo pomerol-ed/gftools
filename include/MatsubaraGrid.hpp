@@ -1,5 +1,5 @@
-#ifndef ___FK_GRID_HPP___
-#define ___FK_GRID_HPP___
+#ifndef ___GFTOOLS_MATSUBARA_GRID_HPP___
+#define ___GFTOOLS_MATSUBARA_GRID_HPP___
 
 #include "Grid.hpp"
 #include <numeric>
@@ -177,4 +177,4 @@ inline auto MatsubaraGrid<F>::getValue(Obj &in, MatsubaraGrid::point x) const ->
 }
 
 } // end of namespace GFTools
-#endif
+#endif // endif # ifndef __GFTOOLS_MATSUBARAGRID_HPP_

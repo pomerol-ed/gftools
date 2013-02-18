@@ -1,5 +1,5 @@
-#ifndef ___FK_GRID_H___
-#define ___FK_GRID_H___
+#ifndef ___GFTOOLS_GRID_H___
+#define ___GFTOOLS_GRID_H___
 
 #include "Common.h"
 
@@ -285,9 +285,6 @@ const char* Grid<ValueType,Derived>::exWrongIndex::what() const throw(){
      return "Index out of bounds";
 };
 
-
-
 } // end :: namespace GFTools
-#include "Grid.hpp"
 
-#endif // endin :: ifndef ___FK_GRID_H___
+#endif // endin :: ifndef ___GFTOOLS_GRID_H___

@@ -1,5 +1,5 @@
-#ifndef ___FK_GRID_HPP___
-#define ___FK_GRID_HPP___
+#ifndef ___GFTOOLS_REALGRID_HPP___
+#define ___GFTOOLS_REALGRID_HPP___
 
 #include "Grid.hpp"
 #include <numeric>
@@ -95,4 +95,4 @@ inline auto RealGrid::getValue(Obj &in, RealGrid::point x) const ->decltype(in[0
 }
 
 } // end of namespace GFTools
-#endif
+#endif // endif :: #ifndef ___GFTOOLS_REALGRID_HPP___

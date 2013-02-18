@@ -1,5 +1,5 @@
-#ifndef ___FK_GRID_HPP___
-#define ___FK_GRID_HPP___
+#ifndef ___GFTOOLS_KMESH_HPP___
+#define ___GFTOOLS_KMESH_HPP___
 
 #include "Grid.hpp"
 #include <numeric>
@@ -177,4 +177,4 @@ inline size_t KMeshPatch::getIndex(KMesh::point x) const
 }
 
 } // end of namespace GFTools
-#endif
+#endif // endif :: ifndef ___GFTOOLS_KMESH_HPP___

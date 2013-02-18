@@ -1,476 +1,141 @@
-#ifndef ___FK_CONTAINER_HPP___
-#define ___FK_CONTAINER_HPP___
+#pragma once
+#ifndef ___GFTOOLS_CONTAINER_H___
+#define ___GFTOOLS_CONTAINER_H___
 
-#include "Container.h"
-#include <fstream>
+#include "Common.h"
+#include "Logger.h"
+#include "Grid.h"
 
-namespace GFTools {
+#include <type_traits>
 
+namespace GFTools { 
 
-//
-// Container, N!=1
-//
-
+/** This class is a N-dimensional container to store the data of
+ * the ValueType type. */
 template <size_t N, typename ValueType>
-template <size_t M>
-inline Container<N,ValueType>::Container ( const std::array<size_t, M> &in):
-    _vals(std::vector<Container<N-1,ValueType> >(std::get<M-N>(in), Container<N-1,ValueType>(in)))
-{
-}
-
-template <size_t N, typename ValueType>
-inline auto Container<N,ValueType>::operator[](size_t i)->decltype(_vals[0])
-{
-    if (i>=_vals.size()) throw exWrongIndex();
-    return _vals[i];
-}
-
-template <size_t N, typename ValueType> 
-std::ostream& operator<<(std::ostream& lhs, const Container<N,ValueType> &in)
-{
-    lhs << "[";
-    std::ostream_iterator<Container<N-1,ValueType> > out_it (lhs,", ");
-    std::copy(&in._vals.data()[0],&in._vals.data()[in._vals.size()], out_it);
-    lhs << "]";
-    return lhs;
-}
-
-template <size_t N, typename ValueType> 
-typename Container<N,ValueType>::iterator Container<N,ValueType>::begin()
-{
-    return _vals.begin();
-}
-
-template <size_t N, typename ValueType> 
-typename Container<N,ValueType>::iterator Container<N,ValueType>::end()
-{
-    return _vals.end();
-}
-
-template <size_t N, typename ValueType> 
-template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline Container <N,ValueType> Container<N,ValueType>::conj()
-{
-    Container <N,ValueType> out(*this);
-    for (iterator it1 = this->begin(); it1!=this->end(); it1++) {  
-        *it1=it1->conj();
-    }
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-inline ValueType Container<N,ValueType>::sum()
-{
-    ValueType out=0.0;
-    out = std::accumulate(_vals.begin(), _vals.end(), out, [](ValueType x, Container<N-1,ValueType> &in){return x+in.sum();});
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline MatrixType<ValueType> Container<N,ValueType>::getAsMatrix() const
-{
-    size_t rows = _vals.size();
-    size_t cols = _vals[0].getSize();
-    MatrixType<ValueType> out(rows, cols);
-    for (size_t i=0; i<rows; ++i) { 
-        const ValueType *d = _vals[i]._vals.data();
-        Eigen::Map<const VectorType<ValueType>> v(d, cols);
-        out.row(i) = v;
-        }
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline Container<N,ValueType>::Container(const MatrixType<ValueType> &rhs)
-{
-    std::array<size_t, 2> shape = {{ static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }};
-    *this = Container<2,ValueType>(shape);
-    for (size_t i=0; i<shape[0]; ++i) { 
-            std::copy(rhs.row(i).data(), rhs.row(i).data()+shape[1],_vals[i]._vals.data());
-        }
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(MatrixType<ValueType> &&rhs)
-{
-    assert(rhs.rows() == _vals.size() && rhs.cols() == _vals[0].getSize());
-    for (size_t i=0; i<rhs.rows(); ++i) { 
-            std::copy(rhs.row(i).data(), rhs.row(i).data()+rhs.cols(),_vals[i]._vals.data());
-        }
-    return *this;
-}
+class Container {
+static_assert(N>1, "N=1 has a specialized variant");
+    friend class Container<N+1,ValueType>;
+protected:
+    /** The data is stored as a recursive vector<vector ... > > structure. */
+    std::vector<Container<N-1, ValueType> >  _vals;
+public:
+    typedef typename std::vector<Container<N-1, ValueType>>::iterator iterator;
+    typedef typename std::vector<Container<N-1, ValueType>>::const_iterator const_iterator;
+    /** Constructor from the std::array of size_t. */
+    template <size_t M> Container ( const std::array<size_t, M> &in);
+    /** Copy constructor. */
+    Container(const Container<N,ValueType> &rhs):_vals(rhs._vals){};
+    /** Move constructor. */
+    Container(Container<N,ValueType> &&rhs){std::swap(_vals, rhs._vals);};
+    /** Returns the value at point i. */
+    auto operator[](size_t i)->decltype(_vals[0]);
+    auto operator[](size_t i) const ->decltype(_vals[0]) const;
+    /** Begin iterator. */
+    typename Container<N,ValueType>::iterator begin();
+    /** End iterator. */
+    typename Container<N,ValueType>::iterator end();
+    /** Returns the size of the _vals. */
+    size_t getSize() const { return _vals.size(); };
+    /** Algebraic operators. */
+    Container<N,ValueType>& operator=(Container<N,ValueType> &&rhs);
+    Container<N,ValueType>& operator=(const Container<N,ValueType> &rhs);
+    Container<N,ValueType>& operator=(const ValueType &rhs);
+    template <typename RhsArg> Container<N,ValueType>& operator+=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<N,ValueType> operator+(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<N,ValueType>& operator*=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<N,ValueType> operator*(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<N,ValueType>& operator/=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<N,ValueType> operator/(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<N,ValueType>& operator-=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<N,ValueType> operator-(const RhsArg &rhs) const; 
+    Container<N,ValueType>& operator+=(const Container<N,ValueType> &rhs); 
+    Container<N,ValueType>& operator*=(const Container<N,ValueType> &rhs); 
+    Container<N,ValueType>& operator/=(const Container<N,ValueType> &rhs); 
+    friend inline Container<N,ValueType> operator* (const ValueType & lhs, const Container<N,ValueType> & rhs) {return rhs*lhs;};
+    friend inline Container<N,ValueType> operator+ (const ValueType & lhs, const Container<N,ValueType> & rhs) {return rhs+lhs;};
+    friend inline Container<N,ValueType> operator- (const ValueType & lhs, const Container<N,ValueType> & rhs) {return rhs*(-1.0)+lhs;};
+    friend inline Container<N,ValueType> operator/ (const ValueType & lhs, const Container<N,ValueType> & rhs) {Container<N,ValueType> out(rhs); out=lhs; return out/rhs;};
 
 
-//
-// Container, N=1
-//
+    template<typename N2 = typename std::enable_if<N==2, bool>> MatrixType<ValueType> getAsMatrix() const;
+    template<typename N2 = typename std::enable_if<N==2, bool>> Container<N,ValueType> (const MatrixType<ValueType> &rhs);
+    template<typename N2 = typename std::enable_if<N==2, bool>> Container<N,ValueType>& operator=(MatrixType<ValueType> &&rhs);
+ 
+    /** Conjugate. */
+    template <typename U = ValueType, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type=0> 
+        Container<N, ValueType> conj();
+    /** Recursively iterates and sums all values in the container. */
+    ValueType sum();
+    /** Make the object streamable. */
+    template <size_t M, typename ValType> friend std::ostream& operator<<(std::ostream& lhs, const Container<M,ValType> &in);
 
+    class exWrongIndex : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
+};
+
+/* A specialization for the 1d Container. */
 template <typename ValueType>
-template <size_t M>
-inline Container<1,ValueType>::Container ( const std::array<size_t, M> &in):_vals(std::vector<ValueType>(std::get<M-1>(in)))
-{
-//    DEBUG("Constructing from size_t.");
-}
+class Container<1,ValueType> {
+    friend class Container<2,ValueType>;
+protected:
+    std::vector<ValueType>  _vals;
+public:
+    typedef typename std::vector<ValueType>::iterator iterator;
+    typedef typename std::vector<ValueType>::const_iterator const_iterator;
+    //Container(){};
+    /** Copy constructor. */
+    Container(const Container<1,ValueType> &rhs):_vals(rhs._vals){};
+    /** Move constructor. */
+    Container(Container<1,ValueType> &&rhs){std::swap(_vals, rhs._vals);};
+    /** Constructor from the std::array of size_t. The last value is used. */
+    template <size_t M> Container ( const std::array<size_t, M> &in);
+    /** Constructor from a number of points */;
+    Container ( size_t size);
+    /** Returns the value at index i. */
+    ValueType& operator[](size_t i);
+    /** Begin iterator. */
+    typename Container<1,ValueType>::iterator begin();
+    /** End iterator. */
+    typename Container<1,ValueType>::iterator end();
 
-template <typename ValueType>
-inline Container<1,ValueType>::Container ( size_t size ):_vals(std::vector<ValueType>(size))
-{
-//    DEBUG("Constructing from size_t.");
-}
+    /** Returns the size of the _vals. */
+    size_t getSize() const { return _vals.size(); };
+    /** Algebraic operators. */
+    Container<1,ValueType>& operator=(Container<1,ValueType> &&rhs);
+    Container<1,ValueType>& operator=(const Container<1,ValueType> &rhs);
+    Container<1,ValueType>& operator=(const ValueType &rhs);
+    template <typename RhsArg> Container<1,ValueType>& operator+=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<1,ValueType> operator+(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<1,ValueType>& operator*=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<1,ValueType> operator*(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<1,ValueType>& operator/=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<1,ValueType> operator/(const RhsArg &rhs) const; 
+    template <typename RhsArg> Container<1,ValueType>& operator-=(const RhsArg &rhs); 
+    template <typename RhsArg> Container<1,ValueType> operator-(const RhsArg &rhs) const; 
+    Container<1,ValueType>& operator+=(const Container<1,ValueType> &rhs); 
+    Container<1,ValueType>& operator*=(const Container<1,ValueType> &rhs); 
+    Container<1,ValueType>& operator/=(const Container<1,ValueType> &rhs); 
+    friend inline Container<1,ValueType> operator* (const ValueType & lhs, const Container<1,ValueType> & rhs) {return rhs*lhs;};
+    friend inline Container<1,ValueType> operator+ (const ValueType & lhs, const Container<1,ValueType> & rhs) {return rhs+lhs;};
+    friend inline Container<1,ValueType> operator- (const ValueType & lhs, const Container<1,ValueType> & rhs) {return rhs*(-1.0)+lhs;};
+    friend inline Container<1,ValueType> operator/ (const ValueType & lhs, const Container<1,ValueType> & rhs) {Container<1,ValueType> out(rhs); out=lhs; return out/rhs;};
 
-template <typename ValueType>
-inline ValueType& Container<1,ValueType>::operator[] (size_t i)
-{
-    return _vals[i];
-}
+    /** Conjugate. */
+    template <typename U = ValueType, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type=0>
+        Container<1,ValueType> conj();
+    /** Returns the sum of all values in the container. */
+    ValueType sum();
+    /** Saves the data to a plain text file */
+    void savetxt(const std::string& fname);
+    /** Make the object streamable. */
+    template <typename ValType> friend std::ostream& operator<<(std::ostream& lhs, const Container<1,ValType> &in);
+    /** Return a diagonal matrix, corresponding to the object */
+    MatrixType<ValueType> getAsDiagonalMatrix() const;
+    /** Return a vector, corresponding to the object. */
+    VectorType<ValueType> getAsVector() const;
+};
 
-template <typename ValueType> 
-std::ostream& operator<<(std::ostream& lhs, const Container<1,ValueType> &in)
-{
-    lhs << "[";
-    std::ostream_iterator<ValueType> out_it (lhs,", ");
-    std::copy(in._vals.begin(),in._vals.end(), out_it);
-    lhs << "]";
-    return lhs;
-}
-
-template <typename ValueType> 
-typename Container<1,ValueType>::iterator Container<1,ValueType>::begin()
-{
-    return _vals.begin();
-}
-
-template <typename ValueType> 
-typename Container<1,ValueType>::iterator Container<1,ValueType>::end()
-{
-    return _vals.end();
-}
-
-
-template <typename ValueType> 
-template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline Container <1,ValueType> Container<1,ValueType>::conj()
-{
-    Container <1,ValueType> out(*this);
-    for_each(out._vals.begin(), out._vals.end(), [&](ComplexType &x){x=std::conj(x);});
-    return out;
-}
-
-template <typename ValueType> 
-inline ValueType Container<1,ValueType>::sum()
-{
-    ValueType out=0.0;
-    out = std::accumulate(_vals.begin(), _vals.end(), out, std::plus<ValueType>());
-    return out;
-}
-
-template <typename ValueType> 
-void Container<1,ValueType>::savetxt(const std::string& fname)
-{
-    std::ofstream out;
-    out.open(fname.c_str());
-    for (auto x : _vals)
-        {
-            out << std::scientific << __num_format<decltype(x)>(x) << std::endl;
-        }
-
-    out.close();
-}
-
-template <typename ValueType> 
-inline MatrixType<ValueType> Container<1,ValueType>::getAsDiagonalMatrix() const
-{
-    size_t size1 = _vals.size();
-    Eigen::DiagonalMatrix<ValueType, Eigen::Dynamic> out(size1);
-    const ValueType *d = _vals.data();
-    Eigen::Map<const VectorType<ValueType>> v(d, size1);
-    out.diagonal() = v;
-    return out;
-}
-
-template <typename ValueType> 
-inline VectorType<ValueType> Container<1,ValueType>::getAsVector() const
-{
-    size_t size1 = _vals.size();
-    VectorType<ValueType> out(size1);
-    const ValueType *d = _vals.data();
-    Eigen::Map<const VectorType<ValueType>> v(d, size1);
-    out = v;
-    return out;
-}
-
-
-//
-// Algebraic operators
-//
-
-// Operator=
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(const Container<N,ValueType> &rhs)
-{
-    _vals = rhs._vals; 
-    return (*this);
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator=(const Container<1,ValueType> &rhs)
-{
-    _vals = rhs._vals; 
-    return (*this);
-}
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(Container<N,ValueType> &&rhs)
-{
-    _vals.swap(rhs._vals); 
-    return (*this);
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator=(Container<1,ValueType> &&rhs)
-{
-    _vals.swap(rhs._vals); 
-    return (*this);
-}
-
-
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(const ValueType &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x=rhs;});
-    return (*this);
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator=(const ValueType &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](ValueType &x){x=rhs;});
-    return (*this);
-}
-
-
-
-// Operator+=
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator+=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x+=rhs;});
-    return *this;
-}
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator+=(const Container<N,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    //std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), [](Container<N-1,ValueType>&x, const Container<N-1,ValueType>&y){x+=y;} );
-  //  std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), [](Container<N-1,ValueType>&x, const Container<N-1,ValueType>&y){x+=y;} );
-    //std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), std::plus<Container<N-1,ValueType> >());
-    for (int i=0; i<_vals.size(); ++i) _vals[i]+=rhs._vals[i];
-    return *this;
-}
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType>& Container<1,ValueType>::operator+=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](ValueType &x){x+=rhs;});
-    return *this;
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator+=(const Container<1,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), std::plus<ValueType>());
-    return *this;
-}
-
-//Operator +
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator+(const RhsArg &rhs) const
-{
-    Container<N,ValueType> out(*this);
-    out+=rhs;
-    return out;
-}
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType> Container<1,ValueType>::operator+(const RhsArg &rhs) const
-{
-    Container<1,ValueType> out(*this);
-    out+=rhs;
-    return out;
-}
-
-//
-// Operator*=
-//
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator*=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x*=rhs;});
-    return *this;
-}
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator*=(const Container<N,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    for (int i=0; i<_vals.size(); ++i) _vals[i]*=rhs._vals[i];
-    return *this;
-}
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType>& Container<1,ValueType>::operator*=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](ValueType &x){x*=rhs;});
-    return *this;
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator*=(const Container<1,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), std::multiplies<ValueType>());
-    return *this;
-}
-
-
-//
-// Operator*
-//
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType> Container<1,ValueType>::operator*(const RhsArg &rhs) const
-{
-    Container<1,ValueType> out(*this);
-    out*=rhs;
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator*(const RhsArg &rhs) const
-{
-    Container<N,ValueType> out(*this);
-    out*=rhs;
-    return out;
-}
-
-//
-// Operator-=
-//
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType>& Container<1,ValueType>::operator-=(const RhsArg &rhs)
-{
-    (*this)+=rhs*ValueType(-1);
-    return *this;
-}
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator-=(const RhsArg &rhs)
-{
-    (*this)+=rhs*ValueType(-1);
-    return *this;
-}
-
-//
-// Operator-
-//
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator-(const RhsArg &rhs) const
-{
-    Container<N,ValueType> out(*this);
-    out-=rhs;
-    return out;
-}
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType> Container<1,ValueType>::operator-(const RhsArg &rhs) const
-{
-    Container<1,ValueType> out(*this);
-    out-=rhs;
-    return out;
-}
-
-//
-// Operator/=
-//
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator/=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x/=rhs;});
-    return *this;
-}
-
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator/=(const Container<N,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    for (int i=0; i<_vals.size(); ++i) _vals[i]/=rhs._vals[i];
-    return *this;
-}
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType>& Container<1,ValueType>::operator/=(const RhsArg &rhs)
-{
-    std::for_each(_vals.begin(), _vals.end(), [&](ValueType &x){x/=rhs;});
-    return *this;
-}
-
-template <typename ValueType> 
-inline Container<1,ValueType>& Container<1,ValueType>::operator/=(const Container<1,ValueType> &rhs)
-{
-    assert(this->_vals.size() == rhs._vals.size());
-    std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), std::divides<ValueType>());
-    return *this;
-}
-
-//
-// Operator /
-//
-
-template <typename ValueType> 
-template <typename RhsArg>
-inline Container<1,ValueType> Container<1,ValueType>::operator/(const RhsArg &rhs) const
-{
-    Container<1,ValueType> out(*this);
-    out/=rhs;
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator/(const RhsArg &rhs) const
-{
-    Container<N,ValueType> out(*this);
-    out/=rhs;
-    return out;
-}
-
-
-
-
-} // end of namespace GFTools
+}; // end of namespace GFTools
 #endif
+
+#include "Container.hxx"
