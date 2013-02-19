@@ -13,4 +13,6 @@ Example :
     - GridObject<ComplexType,MatsubaraGrid<1>,KMesh> - Green's function in imaginary frequencies and reciprocal 1d space.
     - GridObject<ComplexType,RealGrid> - Retarded or Advanced Green's function, etc...
 
+Look for examples in "example/" directory for detailed information.
+
 The code is provided as a header-only library with a set of examples. Requires C++11 and >=Eigen3.1 library.
