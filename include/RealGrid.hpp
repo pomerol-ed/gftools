@@ -21,7 +21,7 @@ public:
      * \param[in] include_last True, if the max point needs to be included
      */
     RealGrid(RealType min, RealType max, size_t npoints, bool include_last = true);
-    RealGrid(int min, int max, const std::function<RealType(int)> &f);
+    RealGrid(int min, int max, const std::function<RealType(int)> &f, bool include_last = true);
     RealGrid(std::vector<RealType>&& in);
     RealGrid(const std::vector<RealType>& in);
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
@@ -38,23 +38,25 @@ public:
 inline RealGrid::RealGrid(RealType min, RealType max, size_t n_points, bool include_last):
     Grid<RealType,RealGrid>(0,n_points,[n_points,max,min,include_last](size_t in){return (max-min)/(n_points-include_last)*in+min;}),
     _min(min),
-    _max(max)
+    _max((include_last?max:_vals[n_points-1]))
 {
 }
 
-inline RealGrid::RealGrid(int min, int max, const std::function<RealType (int)> &f):
-    Grid(min,max,f),
+inline RealGrid::RealGrid(int min, int max, const std::function<RealType (int)> &f, bool include_last):
+    Grid(min,max+include_last,f),
     _min(f(min)),
-    _max(f(max))
+    _max(f(max-include_last))
 {
 }
 
 inline RealGrid::RealGrid(std::vector<RealType>&& in)
 {
     auto in2(in);
+    std::sort(in2.begin(), in2.end());
     size_t npts = in2.size();
     _vals.resize(npts);
     for (int i=0; i<npts; ++i) _vals[i]=point(in2[i],i);
+    _min = in2[0]; _max = in2[npts-1];
 }
 
 
@@ -65,6 +67,7 @@ inline RealGrid::RealGrid(const std::vector<RealType>& in)
     size_t npts = in2.size();
     _vals.resize(npts);
     for (int i=0; i<npts; ++i) _vals[i]=point(in2[i],i);
+    _min = in2[0]; _max = in2[npts-1];
 }
 
 template <class Obj> 
@@ -94,7 +97,7 @@ inline std::tuple <bool, size_t, RealType> RealGrid::find (RealType in) const
     DEBUG("Invoking find");
     #endif
     if (in<_min) { ERROR("Point to find is out of bounds, " << in << "<" << _min ); return std::make_tuple(0,0,0); };
-    if (in>=_max) { ERROR("Point to find is out of bounds, " << in << ">" << _max ); return std::make_tuple(0,_vals.size(),0); };
+    if (in>_max) { ERROR("Point to find is out of bounds, " << in << ">" << _max ); return std::make_tuple(0,_vals.size(),0); };
     auto out = std::lower_bound (_vals.begin(), _vals.end(), in);
     size_t i = size_t(out-_vals.begin());
     RealType val_i = _vals[i];

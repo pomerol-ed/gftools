@@ -47,6 +47,18 @@ include_directories(
 )
 
 add_subdirectory(include)
-add_subdirectory(test)
-enable_testing()
+option(Testing "Enable testing" OFF)
+if (Testing)
+    message(STATUS "Building tests")
+    add_subdirectory(test)
+    enable_testing()
+endif (Testing)
+
+option(Examples "Build examples" OFF)
+if (Examples)
+    message(STATUS "Building examples")
+    add_subdirectory(example)
+endif (Examples)
+
+
 
