@@ -2,7 +2,6 @@
 
 #include "Defaults.hpp"
 #include "Container.hpp"
-#include "Logger.h"
 
 #include <iostream>
 #include <ctime>
@@ -12,7 +11,6 @@ using namespace GFTools;
 
 int main()
 {
-    Log.setDebugging(true);
     std::cout << "Hi!" << std::endl;
 
     std::array<size_t,2> Ar1 {{1,3}};

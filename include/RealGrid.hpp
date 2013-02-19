@@ -14,8 +14,16 @@ class RealGrid : public Grid<RealType, RealGrid>
 public:
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
     template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
-    RealGrid(RealType min, RealType max, size_t npoints);
+    /** Generates a uniform grid.
+     * \param[in] min Minimal point
+     * \param[in] max Maximal point
+     * \param[in] npoints Number of points
+     * \param[in] include_last True, if the max point needs to be included
+     */
+    RealGrid(RealType min, RealType max, size_t npoints, bool include_last = true);
     RealGrid(int min, int max, const std::function<RealType(int)> &f);
+    RealGrid(std::vector<RealType>&& in);
+    RealGrid(const std::vector<RealType>& in);
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
     template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
@@ -27,8 +35,8 @@ public:
 // RealGrid implementation
 //
 
-inline RealGrid::RealGrid(RealType min, RealType max, size_t n_points):
-    Grid<RealType,RealGrid>(0,n_points,[n_points,max,min](size_t in){return (max-min)/n_points*in+min;}),
+inline RealGrid::RealGrid(RealType min, RealType max, size_t n_points, bool include_last):
+    Grid<RealType,RealGrid>(0,n_points,[n_points,max,min,include_last](size_t in){return (max-min)/(n_points-include_last)*in+min;}),
     _min(min),
     _max(max)
 {
@@ -41,6 +49,23 @@ inline RealGrid::RealGrid(int min, int max, const std::function<RealType (int)> 
 {
 }
 
+inline RealGrid::RealGrid(std::vector<RealType>&& in)
+{
+    auto in2(in);
+    size_t npts = in2.size();
+    _vals.resize(npts);
+    for (int i=0; i<npts; ++i) _vals[i]=point(in2[i],i);
+}
+
+
+inline RealGrid::RealGrid(const std::vector<RealType>& in)
+{
+    auto in2(in);
+    std::sort(in2.begin(), in2.end());
+    size_t npts = in2.size();
+    _vals.resize(npts);
+    for (int i=0; i<npts; ++i) _vals[i]=point(in2[i],i);
+}
 
 template <class Obj> 
 inline auto RealGrid::integrate(const Obj &in) const -> decltype(in(_vals[0]))

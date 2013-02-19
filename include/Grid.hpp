@@ -3,7 +3,6 @@
 
 #include "Defaults.hpp"
 #include "Tools.hpp"
-#include "Logger.h"
 
 namespace GFTools { 
 

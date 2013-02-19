@@ -21,7 +21,6 @@ bool is_equal ( F1 x, F2 y, RealType tolerance = 1e-7)
 
 int main()
 {
-    Log.setDebugging(true);
     size_t n_freq = 5;
     RealType beta = 10;
     FMatsubaraGrid gridF(0, n_freq, beta);

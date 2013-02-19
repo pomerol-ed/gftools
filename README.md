@@ -9,8 +9,8 @@ There exists a set of implementation of grids for common purposes:
 - Container<N, ValueType>. A recursive container of depth <N> to store ValueType objects.
 - GridObject<Grids..., ValueType>. An multidimensional object that is defined on a set of grids, Grids... that contains ValueType values.
 Example :
-    - GridObject<MatsubaraGrid<1>,ComplexType> - Green's function in imaginary frequencies
-    - GridObject<MatsubaraGrid<1>,KMesh,ComplexType> - Green's function in imaginary frequencies and reciprocal 1d space.
-    - GridObject<RealGrid,ComplexType> - Retarded or Advanced Green's function, etc...
+    - GridObject<ComplexType,MatsubaraGrid<1>> - Green's function in imaginary frequencies
+    - GridObject<ComplexType,MatsubaraGrid<1>,KMesh> - Green's function in imaginary frequencies and reciprocal 1d space.
+    - GridObject<ComplexType,RealGrid> - Retarded or Advanced Green's function, etc...
 
 The code is provided as a header-only library with a set of examples. Requires C++11 and >=Eigen3.1 library.

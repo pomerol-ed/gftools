@@ -13,7 +13,6 @@ using namespace GFTools;
 
 int main()
 {
-    Log.setDebugging(true);
     typedef GridObject<ComplexType,FMatsubaraGrid> GF;
     FMatsubaraGrid n1(0,2,10);
     FMatsubaraGrid n2(0,5,20);

@@ -12,8 +12,6 @@ using namespace GFTools;
 
 int main()
 {
-    Log.setDebugging(true);
-
     FMatsubaraGrid n1(-100,100,10);
     FMatsubaraGrid n2(0,32,20);
 

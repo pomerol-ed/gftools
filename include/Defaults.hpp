@@ -1,8 +1,9 @@
 #ifndef ___GFTOOLS_COMMON_H___
 #define ___GFTOOLS_COMMON_H___
 
-#include <complex>
-#include <iostream>
+#include<complex>
+#include<iostream>
+#include<utility>
 #include<Eigen/Core>
 #include<Eigen/StdVector>
 //#include "EigenIterator.h"
@@ -10,6 +11,16 @@
 #define REALTYPE_DOUBLE
 
 namespace GFTools {
+
+#define MSG_PREFIX            __FILE__ << ":" << __LINE__ << ": "
+#define DEBUG(MSG)            std::cout << MSG_PREFIX << MSG << std::endl;
+#define INFO(MSG)             std::cout << MSG << std::endl;
+#define INFO_NONEWLINE(MSG)   std::cout << MSG << std::flush;
+#define INFO2(MSG)            std::cout << "\t"     << MSG << std::endl;
+#define INFO3(MSG)            std::cout << "\t\t"   << MSG << std::endl;
+#define INFO4(MSG)            std::cout << "\t\t\t" << MSG << std::endl;
+#define ERROR(MSG)            std::cerr << MSG_PREFIX << MSG << std::endl;
+
 
 typedef double RealType;
 typedef std::complex<RealType> ComplexType;
