@@ -29,6 +29,7 @@ public:
     /** A typedef for the values stored in the container. */
     typedef ValueType ValType;
     static constexpr size_t N = sizeof...(GridTypes);
+    class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
 protected:
     /** Grids on which the data is defined. */
     const std::tuple<GridTypes...> _grids;
@@ -42,10 +43,14 @@ protected:
     std::unique_ptr<Container<N, ValueType>> _data;
 
     /** A helper recursive template utility to extract and set data from the container. */
-    template <size_t Nc, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor {
+    template <size_t Nc, typename> struct ContainerExtractor;
+    template <size_t Nc, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor<Nc,std::tuple<ArgType1, ArgTypes...>> {
         /** Gets the data by values. */
-        static ValueType& get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType& get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+        static ValueType get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+
+        static ValueType& get_ref(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType& get_ref(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
         /** Fills the container from function
          * \param[in] data Container to fill
          * \param[in] grids Grids, on which the data is defined. 
@@ -54,9 +59,12 @@ protected:
         static void set(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
-    template <typename ArgType1> struct ContainerExtractor<1,ArgType1> {
-        static ValueType& get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
-        static ValueType& get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+    template <typename ArgType1> struct ContainerExtractor<1,std::tuple<ArgType1>> {
+        static ValueType get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+
+        static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
         static void set(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
         };
 
@@ -102,6 +110,7 @@ public:
     template <typename ...ArgTypes> ValueType& get(const std::tuple<ArgTypes...>& in);
     template <typename ...ArgTypes> ValueType operator()(const ArgTypes&... in) const;
     template <typename ...ArgTypes> ValueType operator()(const std::tuple<ArgTypes...>& in) const;
+    ValueType operator()(const PointTupleType& in) const;
     //template <typename ...ArgTypes> auto operator()(const ArgType1& in)->decltype() const;
 
     /** A shortcut for fill method. */

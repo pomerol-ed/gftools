@@ -14,4 +14,5 @@ set (base_src
 add_library(libgftools OBJECT ${base_src})
 
 install(DIRECTORY . DESTINATION include/gftools
-          FILES_MATCHING PATTERN "*.hpp *.hxx")
+          FILES_MATCHING PATTERN "*.hpp"PATTERN "*.hxx"
+        )

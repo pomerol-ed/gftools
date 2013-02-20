@@ -3,6 +3,7 @@
 
 #include "Grid.hpp"
 #include <numeric>
+#include <unsupported/Eigen/Splines>
 
 namespace GFTools { 
 
@@ -26,8 +27,9 @@ public:
     RealGrid(const std::vector<RealType>& in);
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
-    template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
+    template <class Obj> auto getValue(Obj &in, RealGrid::point x) const -> decltype(in[0]);
+    template <class Obj> auto getValue(Obj &in, RealType x) const -> typename std::remove_reference<decltype(in[0])>::type;
+    //template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
 };
 
 
@@ -100,26 +102,40 @@ inline std::tuple <bool, size_t, RealType> RealGrid::find (RealType in) const
     if (in>_max) { ERROR("Point to find is out of bounds, " << in << ">" << _max ); return std::make_tuple(0,_vals.size(),0); };
     auto out = std::lower_bound (_vals.begin(), _vals.end(), in);
     size_t i = size_t(out-_vals.begin());
+    i--;
+    if (i==_vals.size()-1) return std::make_tuple(1,i,1.0);
     RealType val_i = _vals[i];
-    RealType weight=(in-val_i)/(_vals[i+1]/val_i);
+    RealType weight=(in-val_i)/(_vals[i+1] - val_i);
     return std::make_tuple (1,i,weight);
 }
 
 
 template <class Obj>
-inline auto RealGrid::getValue(Obj &in, RealType x) const ->decltype(in[0]) 
+inline auto RealGrid::getValue(Obj &in, RealType x) const -> typename std::remove_reference<decltype(in[0])>::type
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (exWrongIndex()); 
-    return in[std::get<1>(find_result)];
+// linear spline
+    auto prev_index = std::get<1>(find_result);
+    auto prev_value = in[prev_index];
+    auto weight = std::get<2>(find_result);
+    auto next_value = in[prev_index+1];
+    return prev_value + (next_value - prev_value)*weight;
+/*
+    VectorType<typename Eigen::Spline2d::PointType> a1(5);
+    DEBUG(a1.cols());
+    DEBUG(a1[0]);
+    exit(0);
+    //auto SplineF = Eigen::SplineFitting<Eigen::Spline<RealType,2>>::Interpolate(a1,Eigen::Dynamic);
+    //return SplineF(x)[0];
+*/
 }
 
 template <class Obj>
 inline auto RealGrid::getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]) 
 {
-    if (x._index < _vals.size() && x == _vals[x._index])
-    return in[x._index];
-    else { ERROR ("Point not found"); return this->getValue(in, RealType(x)); };
+    if (checkPoint(x)) return in[x._index];
+    else { ERROR ("Point not found"); throw exWrongIndex(); };
 }
 
 } // end of namespace GFTools

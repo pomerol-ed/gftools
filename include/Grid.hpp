@@ -57,6 +57,8 @@ public:
     const std::vector<point> & getPoints() const;
     /** Returns values of all points. */
     const std::vector<ValueType> & getPointVals() const;
+    /** Checks if a point is present in a grid. */
+    bool checkPoint(point in, RealType tolerance = std::numeric_limits<RealType>::epsilon()) const;
     /** Returns size of grid. */
     size_t getSize() const;
 
@@ -238,6 +240,13 @@ inline size_t Grid<ValueType,Derived>::getSize() const
 {
     return _vals.size();
 }
+
+template <typename ValueType, class Derived>
+inline bool Grid<ValueType,Derived>::checkPoint(point in, RealType tolerance) const
+{
+    return (in._index < _vals.size() && std::abs(in._val - _vals[in._index]._val) < tolerance);
+}
+
 
 template <typename ValueType, class Derived>
 template <class ArgType>

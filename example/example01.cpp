@@ -84,12 +84,50 @@ int main()
     INFO(G3);
     
     // Some advanced features. Grids allow to interpolate values.
-    // ERROR, this doesn't work well now.
-    INFO(grid1.getValue(G1,4.1));
-    
+/*
+    INFO(grid1.getValue(G1,4.47));
+    INFO(G1(4.47));
+    INFO(grid1.getValue(G1,0.0));
+    INFO(G1(0.0));
+  */  
     /*GridObjects allow for the extrapolation of the values, if they are out 
      of grid bounds. For this we need to assign the extrapolation
      function. */
     G1._f = sinF;
-    INFO(G1(2*PI));
+//    INFO(G1(2*PI));
+
+    Eigen::ArrayXd xvals(5),yvals(xvals); 
+    xvals << 1,2,3,4,5;
+    DEBUG(xvals);
+    yvals = xvals*xvals;
+    DEBUG(yvals);
+
+    Eigen::Spline<RealType,2>::PointType x1;
+    DEBUG(x1);
+    
+    //Eigen::Array<RealType, 2, 5>
+    Eigen::Spline2d::ControlPointVectorType x2(2,5);
+    x2.row(0) = xvals;
+    x2.row(1) = yvals;
+    DEBUG(x2);
+    //DEBUG(x2(0,0));
+/*
+    auto SplineF = Eigen::SplineFitting<Eigen::Spline<RealType,2>>::Interpolate(x2,3);
+    typedef Eigen::Spline2d::PointType PointType;
+    typedef Eigen::Spline2d::KnotVectorType KnotVectorType;
+    typedef Eigen::Spline2d::ControlPointVectorType ControlPointVectorType;
+    KnotVectorType chord_lengths; // knot parameters
+    Eigen::ChordLengths(x2, chord_lengths);
+    DEBUG(chord_lengths);
+    for (Eigen::DenseIndex i=0; i<x2.cols()-1; ++i)
+  {
+    DEBUG(SplineF.span(chord_lengths(i) + (chord_lengths(i+1)-chord_lengths(i))*0.5) );
+    PointType pt = SplineF(chord_lengths(i) + (chord_lengths(i+1)-chord_lengths(i))*0.5 );
+    PointType ref = x2.col(i);
+    DEBUG(ref);
+    DEBUG(pt);
+    DEBUG(chord_lengths(i));
+    //DEBUG( (pt - ref).matrix().norm() );
+  }
+*/
 }
