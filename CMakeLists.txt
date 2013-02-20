@@ -37,8 +37,8 @@ set(DOXYFILE_SOURCE_DIR "./include")
 include(UseDoxygen)
 # end :: doxygen
 
+# Eigen3 dependencies
 find_package (Eigen3 3.1)
-
 message(STATUS "Eigen3 includes: " ${EIGEN3_INCLUDE_DIR} )
 
 include_directories(
@@ -46,6 +46,7 @@ include_directories(
     ./include
 )
 
+# Build and enable tests
 add_subdirectory(include)
 option(Testing "Enable testing" OFF)
 if (Testing)
@@ -54,11 +55,14 @@ if (Testing)
     enable_testing()
 endif (Testing)
 
+# Build example
 option(Examples "Build examples" OFF)
 if (Examples)
     message(STATUS "Building examples")
     add_subdirectory(example)
 endif (Examples)
 
-
+# Generate pkg-config file
+configure_file("${CMAKE_SOURCE_DIR}/gftools.pc.in" "${CMAKE_BINARY_DIR}/gftools.pc")
+install(FILES "${CMAKE_BINARY_DIR}/gftools.pc" DESTINATION "lib/pkgconfig")
 
