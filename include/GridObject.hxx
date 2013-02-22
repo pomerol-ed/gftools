@@ -473,10 +473,11 @@ inline void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname
 template <typename ValueType, typename ...GridTypes> 
 inline void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
 {
+    INFO("Loading " << typeid(*this).name() << " from " << fname);
     std::ifstream in;
     static const RealType read_tol = 1e-6;
     in.open(fname.c_str());
-    if (!in.good()) { throw exIOProblem(); }
+    if (in.fail()) { ERROR("Couldn't open file " << fname); throw exIOProblem(); };
 
     for (auto x : std::get<0>(_grids).getPoints())
         {

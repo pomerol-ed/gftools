@@ -31,6 +31,11 @@ struct __num_format {
         std::cout << "Saving " << typeid(*this).name() << " to " << filename << std::endl;
         std::ofstream out; out.open(filename.c_str()); out << *this << std::endl; out.close(); 
     }; 
+   void loadtxt(const std::string& filename) { 
+        std::cout << "Loading " << typeid(*this).name() << " from " << filename << std::endl;
+        std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
+    }; 
+
     friend std::ostream& operator<< <>(std::ostream& lhs, const __num_format<T> &in);
     friend std::istream& operator>> <>(std::istream& lhs, __num_format<T> &out);
 };
