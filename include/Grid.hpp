@@ -3,6 +3,7 @@
 
 #include "Defaults.hpp"
 #include "Tools.hpp"
+#include <iterator>
 
 namespace GFTools { 
 
