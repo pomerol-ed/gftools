@@ -8,6 +8,7 @@ GridTest
 ContainerTest
 GridObjectTest
 ShiftTest
+InterpolateTest
 )
 
 foreach (test ${tests})

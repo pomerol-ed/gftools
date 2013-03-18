@@ -3,6 +3,8 @@ include_directories (. ../include)
 # Here all the examples are set. The source is file is assumed to be ${example}.cpp
 set (examples 
 example01
+#example02
+#example03
 )
 
 foreach (example ${examples})

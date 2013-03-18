@@ -137,6 +137,18 @@ inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple
         ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::set(data[i],grids,f1);
     }
 }
+
+template< typename ValueType, typename ...GridTypes> 
+template <size_t Nc, typename ArgType1, typename ...ArgTypes>
+inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::set(
+    Container<Nc, ValueType> &data, 
+    const std::tuple<GridTypes...> &grids, 
+    const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f)
+{
+    const auto f2 = __fun_traits<std::function<ValueType( ArgType1, ArgTypes...)>>::getFromTupleF(f);
+    ContainerExtractor::set(data,grids,f2);
+}
+ 
  
 template< typename ValueType, typename ...GridTypes> 
 template <typename ArgType1> 
@@ -244,6 +256,21 @@ inline ValueType GridObject<ValueType,GridTypes...>::operator()(const std::tuple
     std::function<ValueType(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType{return this->template operator()<ArgTypes...>(in1...); };// ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::get(*_data,_grids,in...);};
     __caller<ValueType,ArgTypes...> t = {in,f1};
     return t.call();
+}
+
+template <typename ValueType, typename ...GridTypes> 
+inline ValueType GridObject<ValueType,GridTypes...>::operator()(const ArgTupleType& in) const
+{
+    try {
+    return ContainerExtractor<sizeof...(GridTypes), ArgTupleType>::get(*_data,_grids,in);
+    }
+    catch (...) { 
+        #ifndef NDEBUG
+        DEBUG("Using analytical expression");
+        #endif
+        __caller_tuple<ValueType,ArgTupleType> t = {in,_f};
+        return t.call();
+     };
 }
 
 template <typename ValueType, typename ...GridTypes> 
@@ -489,6 +516,17 @@ inline void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname
             this->get(x) = tmp2._v;
         }
     in.close();
+}
+
+template <typename ValueType, typename ...GridTypes> 
+inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::copyInterpolate (
+    const GridObject<ValueType,GridTypes...>& rhs)
+{
+    //*_data=*(rhs._data);
+    _f = rhs._f;
+    const std::function<ValueType(ArgTupleType)> bindf = [&](ArgTupleType in){return rhs(in);};
+    ContainerExtractor<sizeof...(GridTypes), ArgTupleType>::set(*_data,_grids,bindf);
+    return *this;
 }
 
 

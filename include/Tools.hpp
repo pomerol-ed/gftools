@@ -79,12 +79,22 @@ template<int ...> struct __seq {};
 template<int N, int ...S> struct __gens : __gens<N-1, N-1, S...> {};
 template<int ...S> struct __gens<0, S...>{ typedef __seq<S...> type; };
 
+/** Caller for a function from the given tuple. */
 template <typename ReturnType, typename ...Args> struct __caller { 
     std::tuple<Args...> _params;
     std::function<ReturnType(Args...)> _f;
     template<int ...S> ReturnType _callf(__seq<S...>) { return _f(std::get<S>(_params)...); };
     ReturnType call(){ return _callf(typename __gens<sizeof...(Args)>::type()); };
 };
+
+template <typename, typename ...> struct __caller_tuple;
+template <typename ReturnType, typename ...Args> struct __caller_tuple<ReturnType,std::tuple<Args...>> { 
+    std::tuple<Args...> _params;
+    std::function<ReturnType(Args...)> _f;
+    template<int ...S> ReturnType _callf(__seq<S...>) { return _f(std::get<S>(_params)...); };
+    ReturnType call(){ return _callf(typename __gens<sizeof...(Args)>::type()); };
+};
+
 
 template <typename Arg, size_t D, typename... Extras> struct __repeater : __repeater<Arg,D-1,Arg,Extras...>  {  
     //template <int ...S> std::array<Arg,D> _get(const std::tuple<Arg...>& in){return { std::get<S>

@@ -57,6 +57,7 @@ protected:
          * \param[in] f A function that defines the data. 
          */
         static void set(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
+        static void set(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
     template <typename ArgType1> struct ContainerExtractor<1,std::tuple<ArgType1>> {
@@ -65,6 +66,7 @@ protected:
 
         static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
         static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+
         static void set(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
         };
 
@@ -111,10 +113,13 @@ public:
     template <typename ...ArgTypes> ValueType operator()(const ArgTypes&... in) const;
     template <typename ...ArgTypes> ValueType operator()(const std::tuple<ArgTypes...>& in) const;
     ValueType operator()(const PointTupleType& in) const;
+    ValueType operator()(const ArgTupleType& in) const;
     //template <typename ...ArgTypes> auto operator()(const ArgType1& in)->decltype() const;
 
     /** A shortcut for fill method. */
     //template <typename ...ArgTypes> GridObject& operator= (const std::function<ValueType(ArgTypes...)> &);
+    /** Same as operator=, but allows for non-equal grids. Slow. Uses analytic function to provide missing values. */
+    GridObject& copyInterpolate(const GridObject &rhs);
     /** Algebraic operators. */
     GridObject& operator= (const GridObject & rhs);
     GridObject& operator= (const ValueType & rhs);
