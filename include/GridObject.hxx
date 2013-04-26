@@ -158,12 +158,9 @@ inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<
     const std::function<ValueType(ArgType1)> &f)
 {
     const auto & grid=std::get<N-1>(grids);
-    const size_t grid_size = grid.getSize();
     const auto& grid_vals = grid.getPoints();
     static_assert(std::is_convertible<decltype(grid_vals[0]), ArgType1>::value, "!");
-    for (size_t i=0; i<grid_size; ++i) { 
-        data[i]=f(grid_vals[i]);
-        };
+    std::transform(grid_vals.begin(), grid_vals.end(), data.begin(), f);
 }
 //
 // GridObject
