@@ -6,100 +6,317 @@
 
 namespace GFTools {
 
-//
-// Container, N!=1
-//
 
-template <size_t N, typename ValueType>
-template <size_t M>
-inline Container<N,ValueType>::Container ( const std::array<size_t, M> &in):
-    _vals(std::vector<Container<N-1,ValueType> >(std::get<M-N>(in), Container<N-1,ValueType>(in)))
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template<typename U>
+inline ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>> ContainerBase<ValueType,N,BoostContainerType>::operator[](size_t i)
 {
+    std::array<size_t, N-1> shape_tail;
+    std::copy(_data.shape()+1, _data.shape()+N, shape_tail.begin());
+    boost::multi_array_ref<ValueType, N-1> out(_data[i].origin(),shape_tail);
+    return ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>>(out);
 }
 
-template <size_t N, typename ValueType>
-inline auto Container<N,ValueType>::operator[](size_t i)->decltype(_vals[0])
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template<typename U>
+inline const ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>> ContainerBase<ValueType,N,BoostContainerType>::operator[](size_t i) const
 {
-    if (i>=_vals.size()) throw exWrongIndex();
-    return _vals[i];
+    std::array<size_t, N-1> shape_tail;
+    std::copy(_data.shape()+1, _data.shape()+N, shape_tail.begin());
+    boost::multi_array_ref<ValueType, N-1> out(_data[i].origin(),shape_tail);
+    return ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>>(out);
 }
 
-template <size_t N, typename ValueType> 
-std::ostream& operator<<(std::ostream& lhs, const Container<N,ValueType> &in)
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+std::ostream& operator<<(std::ostream& lhs, const ContainerBase<ValueType,N, BoostContainerType> &in)
 {
     lhs << "[";
-    std::ostream_iterator<Container<N-1,ValueType> > out_it (lhs,", ");
-    std::copy(&in._vals.data()[0],&in._vals.data()[in._vals.size()], out_it);
+    std::ostream_iterator<decltype(in[0])> out_it (lhs,", ");
+    for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
+    //std::copy(in._data.begin(),in._data.end(),out_it);
+    std::copy(in.begin(),in.end(),out_it);
     lhs << "]";
     return lhs;
 }
 
-template <size_t N, typename ValueType> 
-typename Container<N,ValueType>::iterator Container<N,ValueType>::begin()
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template<typename N2>
+inline MatrixType<ValueType> ContainerBase<ValueType,N, BoostContainerType>::getAsMatrix() const
+{
+    Eigen::Map<MatrixType<ValueType>> Map1 (_data.origin(), _data.shape()[0],_data.shape()[1]);
+    return Map1;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template<typename N2>
+inline ContainerBase<ValueType,N, BoostContainerType>::ContainerBase(MatrixType<ValueType>&& rhs)
+{
+    std::array<size_t, 2> shape = {{ static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }};
+    boost_array_type r1 (shape);
+    *this = ContainerBase<ValueType,2,boost_array_type>(shape);
+    std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
+    //for (size_t i=0; i<shape[0]; ++i) { 
+    //        std::copy(rhs.row(i).data(), rhs.row(i).data()+shape[1],_vals[i]._vals.data());
+    //    }
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template<typename N2>
+inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(MatrixType<ValueType> &&rhs)
+{
+    assert(rhs.rows() == _data.shape()[0] && rhs.cols() == _data.shape()[1]);
+    std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
+    //for (size_t i=0; i<rhs.rows(); ++i) { 
+    //        std::copy(rhs.row(i).data(), rhs.row(i).data()+rhs.cols(),_data.origin());
+    //    }
+    return *this;
+}
+
+
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
+    map1+=map2;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const RhsArg& rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    map1+=rhs;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out+=rhs; 
+    return out;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const RhsArg& rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out+=rhs; 
+    return out;
+}
+
+
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
+    map1-=map2;
+    return (*this);
+}
+ 
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const RhsArg& rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    map1-=rhs;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out-=rhs; 
+    return out;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const RhsArg& rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out-=rhs; 
+    return out;
+}
+
+
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
+    map1*=map2;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const RhsArg& rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    map1*=rhs;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out*=rhs; 
+    return out;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const RhsArg& rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out*=rhs; 
+    return out;
+}
+
+
+
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
+    map1/=map2;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const RhsArg& rhs)
+{
+    EigenMap map1(_data.origin(),_data.num_elements());
+    map1/=rhs;
+    return (*this);
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename OtherContainerType> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out/=rhs; 
+    return out;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename RhsArg> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const RhsArg& rhs) const
+{
+    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    out/=rhs; 
+    return out;
+}
+
+
+
+
+/*
+template <typename ValueType, size_t N, typename BoostContainerType> 
+typename ContainerBase<ValueType,N, BoostContainerType>::iterator ContainerBase<ValueType,N, BoostContainerType>::begin()
+{
+    return _data.begin();
+}
+*/
+
+
+//
+// Container, N!=1
+//
+
+/*
+template <typename ValueType, size_t N>
+inline Container<ValueType,N>::Container ( const std::array<size_t, N> &in):_data(in)
+{
+}
+
+template <typename ValueType, size_t N>
+template<typename U>
+inline ContainerRef<ValueType,N-1> Container<ValueType,N>::operator[](size_t i)
+{
+    if (i>=_data.shape()[0]) throw exWrongIndex();
+    ContainerRef<ValueType, N-1> t1(_data[i]);
+}
+
+template <typename ValueType, size_t N>
+template <typename U>
+inline ValueType& Container<ValueType,N>::operator[](size_t i)
+{
+    if (i>=_data.shape()[0]) throw exWrongIndex();
+    return _data[i];
+}
+
+template <typename ValueType, size_t N>
+template <typename U>
+inline ValueType& ContainerRef<ValueType,N>::operator[](size_t i)
+{
+    if (i>=_data.shape()[0]) throw exWrongIndex();
+    return _data[i];
+}
+
+
+template <typename ValueType, size_t N>
+ContainerRef<ValueType,N>::ContainerRef(typename boost::multi_array<ValueType,N+1>::reference in):_data(in)
+{
+}
+
+template <typename ValueType, size_t N, size_t M>
+ContainerView<ValueType,N,M>::ContainerView(boost_view_type in):_data(in)
+{
+}
+*/
+/*
+template <typename ValueType, size_t N> 
+typename Container<ValueType,N>::iterator Container<ValueType,N>::begin()
 {
     return _vals.begin();
 }
 
-template <size_t N, typename ValueType> 
-typename Container<N,ValueType>::iterator Container<N,ValueType>::end()
+template <typename ValueType, size_t N> 
+typename Container<ValueType,N>::iterator Container<ValueType,N>::end()
 {
     return _vals.end();
 }
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline Container <N,ValueType> Container<N,ValueType>::conj()
+inline Container <ValueType,N> Container<ValueType,N>::conj()
 {
-    Container <N,ValueType> out(*this);
+    Container <ValueType,N> out(*this);
     for (iterator it1 = this->begin(); it1!=this->end(); it1++) {  
         *it1=it1->conj();
     }
     return out;
 }
 
-template <size_t N, typename ValueType> 
-inline ValueType Container<N,ValueType>::sum()
+template <typename ValueType, size_t N> 
+inline ValueType Container<ValueType,N>::sum()
 {
     ValueType out=0.0;
     out = std::accumulate(_vals.begin(), _vals.end(), out, [](ValueType x, Container<N-1,ValueType> &in){return x+in.sum();});
     return out;
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline MatrixType<ValueType> Container<N,ValueType>::getAsMatrix() const
-{
-    size_t rows = _vals.size();
-    size_t cols = _vals[0].getSize();
-    MatrixType<ValueType> out(rows, cols);
-    for (size_t i=0; i<rows; ++i) { 
-        const ValueType *d = _vals[i]._vals.data();
-        Eigen::Map<const VectorType<ValueType>> v(d, cols);
-        out.row(i) = v;
-        }
-    return out;
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline Container<N,ValueType>::Container(const MatrixType<ValueType> &rhs)
-{
-    std::array<size_t, 2> shape = {{ static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }};
-    *this = Container<2,ValueType>(shape);
-    for (size_t i=0; i<shape[0]; ++i) { 
-            std::copy(rhs.row(i).data(), rhs.row(i).data()+shape[1],_vals[i]._vals.data());
-        }
-}
-
-template <size_t N, typename ValueType> 
-template<typename N2>
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(MatrixType<ValueType> &&rhs)
-{
-    assert(rhs.rows() == _vals.size() && rhs.cols() == _vals[0].getSize());
-    for (size_t i=0; i<rhs.rows(); ++i) { 
-            std::copy(rhs.row(i).data(), rhs.row(i).data()+rhs.cols(),_vals[i]._vals.data());
-        }
-    return *this;
 }
 
 
@@ -208,8 +425,8 @@ inline VectorType<ValueType> Container<1,ValueType>::getAsVector() const
 
 // Operator=
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(const Container<N,ValueType> &rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator=(const Container<ValueType,N> &rhs)
 {
     _vals = rhs._vals; 
     return (*this);
@@ -222,8 +439,8 @@ inline Container<1,ValueType>& Container<1,ValueType>::operator=(const Container
     return (*this);
 }
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(Container<N,ValueType> &&rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator=(Container<ValueType,N> &&rhs)
 {
     _vals.swap(rhs._vals); 
     return (*this);
@@ -238,8 +455,8 @@ inline Container<1,ValueType>& Container<1,ValueType>::operator=(Container<1,Val
 
 
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator=(const ValueType &rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator=(const ValueType &rhs)
 {
     std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x=rhs;});
     return (*this);
@@ -255,16 +472,16 @@ inline Container<1,ValueType>& Container<1,ValueType>::operator=(const ValueType
 
 
 // Operator+=
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator+=(const RhsArg &rhs)
+inline Container<ValueType,N>& Container<ValueType,N>::operator+=(const RhsArg &rhs)
 {
     std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x+=rhs;});
     return *this;
 }
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator+=(const Container<N,ValueType> &rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator+=(const Container<ValueType,N> &rhs)
 {
     assert(this->_vals.size() == rhs._vals.size());
     //std::transform(_vals.begin(), _vals.end(), rhs._vals.begin(), _vals.begin(), [](Container<N-1,ValueType>&x, const Container<N-1,ValueType>&y){x+=y;} );
@@ -292,11 +509,11 @@ inline Container<1,ValueType>& Container<1,ValueType>::operator+=(const Containe
 
 //Operator +
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator+(const RhsArg &rhs) const
+inline Container<ValueType,N> Container<ValueType,N>::operator+(const RhsArg &rhs) const
 {
-    Container<N,ValueType> out(*this);
+    Container<ValueType,N> out(*this);
     out+=rhs;
     return out;
 }
@@ -313,16 +530,16 @@ inline Container<1,ValueType> Container<1,ValueType>::operator+(const RhsArg &rh
 //
 // Operator*=
 //
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator*=(const RhsArg &rhs)
+inline Container<ValueType,N>& Container<ValueType,N>::operator*=(const RhsArg &rhs)
 {
     std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x*=rhs;});
     return *this;
 }
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator*=(const Container<N,ValueType> &rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator*=(const Container<ValueType,N> &rhs)
 {
     assert(this->_vals.size() == rhs._vals.size());
     for (int i=0; i<_vals.size(); ++i) _vals[i]*=rhs._vals[i];
@@ -359,11 +576,11 @@ inline Container<1,ValueType> Container<1,ValueType>::operator*(const RhsArg &rh
     return out;
 }
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator*(const RhsArg &rhs) const
+inline Container<ValueType,N> Container<ValueType,N>::operator*(const RhsArg &rhs) const
 {
-    Container<N,ValueType> out(*this);
+    Container<ValueType,N> out(*this);
     out*=rhs;
     return out;
 }
@@ -380,9 +597,9 @@ inline Container<1,ValueType>& Container<1,ValueType>::operator-=(const RhsArg &
     return *this;
 }
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator-=(const RhsArg &rhs)
+inline Container<ValueType,N>& Container<ValueType,N>::operator-=(const RhsArg &rhs)
 {
     (*this)+=rhs*ValueType(-1);
     return *this;
@@ -392,11 +609,11 @@ inline Container<N,ValueType>& Container<N,ValueType>::operator-=(const RhsArg &
 // Operator-
 //
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator-(const RhsArg &rhs) const
+inline Container<ValueType,N> Container<ValueType,N>::operator-(const RhsArg &rhs) const
 {
-    Container<N,ValueType> out(*this);
+    Container<ValueType,N> out(*this);
     out-=rhs;
     return out;
 }
@@ -414,16 +631,16 @@ inline Container<1,ValueType> Container<1,ValueType>::operator-(const RhsArg &rh
 // Operator/=
 //
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType>& Container<N,ValueType>::operator/=(const RhsArg &rhs)
+inline Container<ValueType,N>& Container<ValueType,N>::operator/=(const RhsArg &rhs)
 {
     std::for_each(_vals.begin(), _vals.end(), [&](Container<N-1,ValueType> &x){x/=rhs;});
     return *this;
 }
 
-template <size_t N, typename ValueType> 
-inline Container<N,ValueType>& Container<N,ValueType>::operator/=(const Container<N,ValueType> &rhs)
+template <typename ValueType, size_t N> 
+inline Container<ValueType,N>& Container<ValueType,N>::operator/=(const Container<ValueType,N> &rhs)
 {
     assert(this->_vals.size() == rhs._vals.size());
     for (int i=0; i<_vals.size(); ++i) _vals[i]/=rhs._vals[i];
@@ -459,16 +676,16 @@ inline Container<1,ValueType> Container<1,ValueType>::operator/(const RhsArg &rh
     return out;
 }
 
-template <size_t N, typename ValueType> 
+template <typename ValueType, size_t N> 
 template <typename RhsArg>
-inline Container<N,ValueType> Container<N,ValueType>::operator/(const RhsArg &rhs) const
+inline Container<ValueType,N> Container<ValueType,N>::operator/(const RhsArg &rhs) const
 {
-    Container<N,ValueType> out(*this);
+    Container<ValueType,N> out(*this);
     out/=rhs;
     return out;
 }
 
-
+*/
 
 
 } // end of namespace GFTools
