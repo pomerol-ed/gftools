@@ -21,6 +21,7 @@ namespace GFTools {
 #define INFO4(MSG)            std::cout << "\t\t\t" << MSG << std::endl;
 #define ERROR(MSG)            std::cerr << MSG_PREFIX << MSG << std::endl;
 
+#define BOOST_RESULT_OF_USE_DECLTYPE
 
 typedef double RealType;
 typedef std::complex<RealType> ComplexType;

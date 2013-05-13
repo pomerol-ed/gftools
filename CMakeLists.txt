@@ -41,8 +41,14 @@ include(UseDoxygen)
 find_package (Eigen3 3.1)
 message(STATUS "Eigen3 includes: " ${EIGEN3_INCLUDE_DIR} )
 
+# Boost
+#set(Boost_USE_STATIC_LIBS        ON)
+#set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package (Boost) 
+
 include_directories(
     ${EIGEN3_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
     ./include
 )
 
