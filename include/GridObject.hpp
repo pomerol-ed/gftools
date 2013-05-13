@@ -40,34 +40,34 @@ protected:
     /** A pointer to the Container. A pointer is used as there exist no default 
      * constructor for the Container.
      */
-    std::unique_ptr<Container<N, ValueType>> _data;
+    std::unique_ptr<Container<ValueType, N>> _data;
 
     /** A helper recursive template utility to extract and set data from the container. */
     template <size_t Nc, typename> struct ContainerExtractor;
     template <size_t Nc, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor<Nc,std::tuple<ArgType1, ArgTypes...>> {
         /** Gets the data by values. */
-        static ValueType get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType get(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+        static ValueType get(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType get(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
 
-        static ValueType& get_ref(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType& get_ref(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+        static ValueType& get_ref(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType& get_ref(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
         /** Fills the container from function
          * \param[in] data Container to fill
          * \param[in] grids Grids, on which the data is defined. 
          * \param[in] f A function that defines the data. 
          */
-        static void set(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
-        static void set(Container<Nc, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
+        static void set(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
+        static void set(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
     template <typename ArgType1> struct ContainerExtractor<1,std::tuple<ArgType1>> {
-        static ValueType get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
-        static ValueType get(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+        static ValueType get(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType get(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
 
-        static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
-        static ValueType& get_ref(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+        static ValueType& get_ref(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType& get_ref(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
 
-        static void set(Container<1, ValueType> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
+        static void set(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
         };
 
     /** Returns _f(in). */
@@ -79,9 +79,9 @@ public:
     /** Constructs a grid object out of a tuple containing various grids. */
     GridObject( const std::tuple<GridTypes...> &grids);
     /** Constructor of grids and data. */
-    GridObject( const std::tuple<GridTypes...> &grids, const Container<sizeof...(GridTypes), ValueType>& data):
+    GridObject( const std::tuple<GridTypes...> &grids, const Container<ValueType, sizeof...(GridTypes)>& data):
         _grids(grids),
-        _data(new Container<sizeof...(GridTypes), ValueType>>(data)),
+        _data(new Container<ValueType, sizeof...(GridTypes)>>(data)),
         _f(__fun_traits<FunctionType>::constant(0.0)) { GetGridSizes<N>::TupleSizeToArray(_grids,_dims); };
     /** Copy constructor. */
     GridObject( const GridObject<ValueType, GridTypes...>& rhs);
@@ -99,7 +99,7 @@ public:
     auto operator[](size_t i) const ->decltype((*_data)[i]) const;
     //template <size_t M> ValueType& operator[](const std::array<size_t,M>& in);
     /** Returns the _data Container. */
-    Container<sizeof...(GridTypes), ValueType>& getData(){return *_data;};
+    Container<ValueType, sizeof...(GridTypes)>& getData(){return *_data;};
     /** Fills the Container with a provided function. */
     template <typename ...ArgTypes> void fill(const std::function<ValueType(ArgTypes...)> &);
     void fill(const FunctionType &in);

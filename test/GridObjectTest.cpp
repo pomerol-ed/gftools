@@ -31,7 +31,7 @@ int main()
     auto& C1 = D2.getData();
     DEBUG(C1[0]);
     //decltype (C1[0]) x(std::make_tuple(3));
-    Container<1,ComplexType> C2(C1[0]);
+    Container<ComplexType,1> C2(C1[0]);
     DEBUG(C2[1]);
     DEBUG(n2.getValue(C2, FMatsubara(1,20)));
     DEBUG(n1.getValue(C1, FMatsubara(1,10)));
