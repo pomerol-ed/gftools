@@ -73,8 +73,8 @@ int main()
     DEBUG(B[0][2]);
     DEBUG(B[0][0]);
 
-    DEBUG(B._data.shape()[0]);
-    DEBUG(B[0]._data.shape()[0]);
+    //DEBUG(B._data.shape()[0]);
+    //DEBUG(B[0]._data.shape()[0]);
 
     DEBUG(B);
     DEBUG(B[0]);
@@ -90,7 +90,10 @@ int main()
 
     C[0][0]=1.0;
     C[0][2]=-5;
+    DEBUG(C);
     C+=B;
+    DEBUG(C);
+    C+=1.0;
     DEBUG(C);
     DEBUG(C+B);
     Container<ComplexType,3> E(D);
@@ -126,23 +129,22 @@ int main()
     Vals[2][1] = 1.5;
     INFO(Vals);
     INFO(Vals.getAsMatrix());
-    decltype(Vals) Vals_2(Vals.getAsMatrix());
+    DEBUG("!");
+    Container<RealType,2> Vals_2(Vals.getAsMatrix());
     INFO(Vals_2);
 
     decltype(Vals) Vals_3(dim1);
     Vals_3 = Vals.getAsMatrix();
     INFO(Vals_3);
 
-    //if ((Vals-Vals_2).sum()!=0 || (Vals-Vals_3).sum()!=0) return EXIT_FAILURE;
-/*
+    if ((Vals-Vals_2).sum()!=0 || (Vals-Vals_3).sum()!=0) return EXIT_FAILURE;
     INFO("1-dim test");
-    Container<RealType,1> Vals_1d(5);
+    Container<RealType,1> Vals_1d(std::array<size_t,1>({{5}}));
     Vals_1d[2]=1.6;
     Vals_1d[4]=3;
     INFO(Vals_1d);
     INFO(Vals_1d.getAsVector());
     INFO(Vals_1d.getAsDiagonalMatrix());
-  */  
 
     return EXIT_SUCCESS;
 }

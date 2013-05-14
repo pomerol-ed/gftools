@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& lhs, const ContainerBase<ValueType,N, Boo
     std::ostream_iterator<decltype(in[0])> out_it (lhs,", ");
     for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
     //std::copy(in._data.begin(),in._data.end(),out_it);
-    std::copy(in.begin(),in.end(),out_it);
+    //std::copy(in.begin(),in.end(),out_it);
     lhs << "]";
     return lhs;
 }
@@ -48,17 +48,12 @@ inline MatrixType<ValueType> ContainerBase<ValueType,N, BoostContainerType>::get
     return Map1;
 }
 
-template <typename ValueType, size_t N, typename BoostContainerType> 
-template<typename N2>
-inline ContainerBase<ValueType,N, BoostContainerType>::ContainerBase(MatrixType<ValueType>&& rhs)
+template <typename ValueType, size_t N> 
+template<typename U>
+inline Container<ValueType,N>::Container(MatrixType<ValueType>&& rhs):
+    Container<ValueType,N>(std::array<size_t,2>({{static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }}))
 {
-    std::array<size_t, 2> shape = {{ static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }};
-    boost_array_type r1 (shape);
-    *this = ContainerBase<ValueType,2,boost_array_type>(shape);
     std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
-    //for (size_t i=0; i<shape[0]; ++i) { 
-    //        std::copy(rhs.row(i).data(), rhs.row(i).data()+shape[1],_vals[i]._vals.data());
-    //    }
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
@@ -67,17 +62,26 @@ inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N
 {
     assert(rhs.rows() == _data.shape()[0] && rhs.cols() == _data.shape()[1]);
     std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
-    //for (size_t i=0; i<rhs.rows(); ++i) { 
-    //        std::copy(rhs.row(i).data(), rhs.row(i).data()+rhs.cols(),_data.origin());
-    //    }
     return *this;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename U>
+inline ContainerBase<ValueType,N, BoostContainerType> ContainerBase<ValueType,N, BoostContainerType>::conj()
+{
+    ContainerBase <ValueType,N,BoostContainerType> out(*this);
+    //for (iterator it1 = this->begin(); it1!=this->end(); it1++) {  
+    //    *it1=it1->conj();
+    //}
+    return out;
 }
 
 
 
+
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType>
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const R &rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
@@ -86,8 +90,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const RhsArg& rhs)
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator+=(const R2& rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     map1+=rhs;
@@ -95,8 +99,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R &rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out+=rhs; 
@@ -104,8 +108,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const RhsArg& rhs) const
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R2& rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out+=rhs; 
@@ -115,8 +119,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType>
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const R &rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
@@ -125,8 +129,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
  
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const RhsArg& rhs)
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator-=(const R2& rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     map1-=rhs;
@@ -134,8 +138,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R &rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out-=rhs; 
@@ -143,8 +147,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const RhsArg& rhs) const
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R2& rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out-=rhs; 
@@ -154,8 +158,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType>
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const R &rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
@@ -164,8 +168,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const RhsArg& rhs)
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator*=(const R2& rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     map1*=rhs;
@@ -173,8 +177,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R &rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out*=rhs; 
@@ -182,8 +186,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const RhsArg& rhs) const
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R2& rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out*=rhs; 
@@ -194,8 +198,8 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType>
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const ContainerBase<ValueType,N,OtherContainerType> &rhs)
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>>
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const R &rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     EigenMap map2(rhs._data.origin(),rhs._data.num_elements());
@@ -204,8 +208,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const RhsArg& rhs)
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostContainerType>::operator/=(const R2& rhs)
 {
     EigenMap map1(_data.origin(),_data.num_elements());
     map1/=rhs;
@@ -213,8 +217,8 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename OtherContainerType> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const ContainerBase<ValueType,N,OtherContainerType> &rhs) const
+template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R &rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out/=rhs; 
@@ -222,13 +226,36 @@ ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostCon
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename RhsArg> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const RhsArg& rhs) const
+template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
+ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R2& rhs) const
 {
     ContainerBase<ValueType,N,BoostContainerType> out(*this); 
     out/=rhs; 
     return out;
 }
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename U>
+inline MatrixType<ValueType> ContainerBase<ValueType,N,BoostContainerType>::getAsDiagonalMatrix() const
+{
+    size_t size1 = _data.shape()[0];
+    Eigen::DiagonalMatrix<ValueType, Eigen::Dynamic> out(size1);
+    Eigen::Map<const VectorType<ValueType>> v(_data.origin(), size1);
+    out.diagonal() = v;
+    return out;
+}
+
+template <typename ValueType, size_t N, typename BoostContainerType> 
+template <typename U>
+inline VectorType<ValueType> ContainerBase<ValueType,N,BoostContainerType>::getAsVector() const
+{
+    size_t size1 = _data.shape()[0];
+    VectorType<ValueType> out(size1);
+    Eigen::Map<const VectorType<ValueType>> v(_data.origin(), size1);
+    out = v;
+    return out;
+}
+
 
 
 
@@ -298,17 +325,6 @@ template <typename ValueType, size_t N>
 typename Container<ValueType,N>::iterator Container<ValueType,N>::end()
 {
     return _vals.end();
-}
-
-template <typename ValueType, size_t N> 
-template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline Container <ValueType,N> Container<ValueType,N>::conj()
-{
-    Container <ValueType,N> out(*this);
-    for (iterator it1 = this->begin(); it1!=this->end(); it1++) {  
-        *it1=it1->conj();
-    }
-    return out;
 }
 
 template <typename ValueType, size_t N> 
@@ -395,29 +411,6 @@ void Container<1,ValueType>::savetxt(const std::string& fname)
 
     out.close();
 }
-
-template <typename ValueType> 
-inline MatrixType<ValueType> Container<1,ValueType>::getAsDiagonalMatrix() const
-{
-    size_t size1 = _vals.size();
-    Eigen::DiagonalMatrix<ValueType, Eigen::Dynamic> out(size1);
-    const ValueType *d = _vals.data();
-    Eigen::Map<const VectorType<ValueType>> v(d, size1);
-    out.diagonal() = v;
-    return out;
-}
-
-template <typename ValueType> 
-inline VectorType<ValueType> Container<1,ValueType>::getAsVector() const
-{
-    size_t size1 = _vals.size();
-    VectorType<ValueType> out(size1);
-    const ValueType *d = _vals.data();
-    Eigen::Map<const VectorType<ValueType>> v(d, size1);
-    out = v;
-    return out;
-}
-
 
 //
 // Algebraic operators
