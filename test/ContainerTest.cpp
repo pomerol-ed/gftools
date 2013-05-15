@@ -70,6 +70,15 @@ int main()
     
     B[0][2]=3.0;
     C[0][2]=-2.0;
+
+    std::array<size_t, 2> coord1 {{0,1}};
+    DEBUG(B._data(coord1));
+
+    
+    Container<ComplexType,2>::iterator t1;
+    auto it2 = B.begin();
+    auto it3 = B[0].begin();
+    
     DEBUG(B[0][2]);
     DEBUG(B[0][0]);
 

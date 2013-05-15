@@ -43,31 +43,31 @@ protected:
     std::unique_ptr<Container<ValueType, N>> _data;
 
     /** A helper recursive template utility to extract and set data from the container. */
-    template <size_t Nc, typename> struct ContainerExtractor;
-    template <size_t Nc, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor<Nc,std::tuple<ArgType1, ArgTypes...>> {
+    template <size_t Nc, typename, typename> struct ContainerExtractor;
+    template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor<Nc,CT,std::tuple<ArgType1, ArgTypes...>> {
         /** Gets the data by values. */
-        static ValueType get(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType get(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+        static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
 
-        static ValueType& get_ref(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType& get_ref(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
+        static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
+        static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
         /** Fills the container from function
          * \param[in] data Container to fill
          * \param[in] grids Grids, on which the data is defined. 
          * \param[in] f A function that defines the data. 
          */
-        static void set(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
-        static void set(Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
+        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
+        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
-    template <typename ArgType1> struct ContainerExtractor<1,std::tuple<ArgType1>> {
-        static ValueType get(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
-        static ValueType get(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+    template <typename CT, typename ArgType1> struct ContainerExtractor<1,CT,std::tuple<ArgType1>> {
+        static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
 
-        static ValueType& get_ref(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
-        static ValueType& get_ref(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
+        static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
+        static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
 
-        static void set(Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
+        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
         };
 
     /** Returns _f(in). */

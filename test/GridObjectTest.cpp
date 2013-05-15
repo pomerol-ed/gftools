@@ -37,7 +37,7 @@ int main()
     DEBUG(n1.getValue(C1, FMatsubara(1,10)));
     auto C22 = n1.getValue(C1, FMatsubara(0,10));
     DEBUG(C22+C2-C22*2.0);
-    DEBUG(n2.getValue(n1.getValue(C1, FMatsubara(1,10)), FMatsubara(1,20)));
+    //DEBUG(n2.getValue(std::forward<Container<ComplexType,1>>(n1.getValue(C1, FMatsubara(1,10))), FMatsubara(1,20)));
 
     DEBUG(D2(FMatsubara(1,10),FMatsubara(2,20)));
 
@@ -58,7 +58,7 @@ int main()
     DEBUG(D3);
     DEBUG(D3+D4);
 
-    /** Tails test. */
+    // Tails test.
     int n_freq = 6;
     RealType beta=10.0;
     FMatsubaraGrid fgrid(-n_freq,n_freq,beta);

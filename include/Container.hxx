@@ -6,7 +6,7 @@
 
 namespace GFTools {
 
-
+/*
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template<typename U>
 inline ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>> ContainerBase<ValueType,N,BoostContainerType>::operator[](size_t i)
@@ -26,16 +26,16 @@ inline const ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1
     boost::multi_array_ref<ValueType, N-1> out(_data[i].origin(),shape_tail);
     return ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>>(out);
 }
-
+*/
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 std::ostream& operator<<(std::ostream& lhs, const ContainerBase<ValueType,N, BoostContainerType> &in)
 {
     lhs << "[";
     std::ostream_iterator<decltype(in[0])> out_it (lhs,", ");
-    for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
+    //for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
     //std::copy(in._data.begin(),in._data.end(),out_it);
-    //std::copy(in.begin(),in.end(),out_it);
+    std::copy(in.begin(),in.end(),out_it);
     lhs << "]";
     return lhs;
 }

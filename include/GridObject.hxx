@@ -17,22 +17,22 @@ namespace GFTools {
 // ContainerExtactor::get_ref
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::get_ref(
-    Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::get_ref(
+    CT &data, const std::tuple<GridTypes...> &grids, 
     const ArgType1& arg1, const ArgTypes&... args) 
 {
     const auto & grid=std::get<N-Nc>(grids);
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-Nc,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
     if (!grid.checkPoint(arg1)) throw (exPointMismatch());
     auto &tmp = data[arg1._index];
-    return ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::get_ref(tmp,grids,args...);
+    return ContainerExtractor<Nc-1, decltype(tmp), std::tuple<ArgTypes...>>::get_ref(tmp,grids,args...);
 };
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::get_ref(
-    Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::get_ref(
+    CT &data, const std::tuple<GridTypes...> &grids, 
     const std::tuple<ArgType1, ArgTypes...>& argtuple) 
 {
     const auto & grid=std::get<N-Nc>(grids);
@@ -40,15 +40,15 @@ inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std:
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-Nc,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
     if (!grid.checkPoint(arg1)) throw (exPointMismatch());
     auto &tmp = data[arg1._index];
-    return ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::get_ref(tmp,grids,__tuple_tail(argtuple));
+    return ContainerExtractor<Nc-1, decltype(tmp), std::tuple<ArgTypes...>>::get_ref(tmp,grids,__tuple_tail(argtuple));
 };
 
 
 
 template< typename ValueType, typename ...GridTypes>
-template <typename ArgType1> 
-inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<ArgType1>>::get_ref(
-    Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
+template <typename CT, typename ArgType1> 
+inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std::tuple<ArgType1>>::get_ref(
+    CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
 {
     const auto & grid=std::get<N-1>(grids);
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-1,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
@@ -58,9 +58,9 @@ inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::
 }
 
 template< typename ValueType, typename ...GridTypes>
-template <typename ArgType1> 
-inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<ArgType1>>::get_ref(
-    Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1> & argtuple1)
+template <typename CT, typename ArgType1> 
+inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std::tuple<ArgType1>>::get_ref(
+    CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1> & argtuple1)
 {
     const auto & grid=std::get<N-1>(grids);
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-1,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
@@ -73,34 +73,34 @@ inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::
 // ContainerExtactor::get
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::get(
-    Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::get(
+    CT &data, const std::tuple<GridTypes...> &grids, 
     const ArgType1& arg1, const ArgTypes&... args) 
 {
     const auto & grid=std::get<N-Nc>(grids);
     auto tmp = grid.getValue(data, arg1);
-    return ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::get(tmp,grids,args...);
+    return ContainerExtractor<Nc-1, decltype(tmp), std::tuple<ArgTypes...>>::get(tmp,grids,args...);
 };
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::get(
-    Container<ValueType, Nc> &data, const std::tuple<GridTypes...> &grids, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::get(
+    CT &data, const std::tuple<GridTypes...> &grids, 
     const std::tuple<ArgType1, ArgTypes...>& argtuple) 
 {
     const auto & grid=std::get<N-Nc>(grids);
     const auto arg1 = std::get<0>(argtuple);
     auto tmp = grid.getValue(data, arg1);
-    return ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::get(tmp,grids,__tuple_tail(argtuple));
+    return ContainerExtractor<Nc-1, decltype(tmp), std::tuple<ArgTypes...>>::get(tmp,grids,__tuple_tail(argtuple));
 };
 
 
 
 template< typename ValueType, typename ...GridTypes>
-template <typename ArgType1> 
-inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<ArgType1>>::get(
-    Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
+template <typename CT, typename ArgType1> 
+inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std::tuple<ArgType1>>::get(
+    CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
 {
     const auto & grid=std::get<N-1>(grids);
     auto tmp = grid.getValue(data, arg1);
@@ -108,9 +108,9 @@ inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::t
 }
 
 template< typename ValueType, typename ...GridTypes>
-template <typename ArgType1> 
-inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<ArgType1>>::get(
-    Container<ValueType, 1> &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1> & argtuple1)
+template <typename CT, typename ArgType1> 
+inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std::tuple<ArgType1>>::get(
+    CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1> & argtuple1)
 {
     const auto & grid=std::get<N-1>(grids);
     const auto arg1 = std::get<0>(argtuple1);
@@ -121,9 +121,9 @@ inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::t
 //ContainerExtactor::set
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::set(
-    Container<ValueType, Nc> &data, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::set(
+    CT &data, 
     const std::tuple<GridTypes...> &grids, 
     const std::function<ValueType(ArgType1, ArgTypes...)> &f)
 {
@@ -134,14 +134,14 @@ inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple
     for (size_t i=0; i<grid_size; ++i) { 
         const auto& cur_val = grid_vals[i];
         const auto f1 = [&f,&cur_val](const ArgTypes&... Args){return f(cur_val,Args...);};
-        ContainerExtractor<Nc-1, std::tuple<ArgTypes...>>::set(data[i],grids,f1);
+        ContainerExtractor<Nc-1, decltype(data[i]), std::tuple<ArgTypes...>>::set(data[i],grids,f1);
     }
 }
 
 template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename ArgType1, typename ...ArgTypes>
-inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple<ArgType1,ArgTypes...>>::set(
-    Container<ValueType, Nc> &data, 
+template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
+inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,std::tuple<ArgType1,ArgTypes...>>::set(
+    CT &data, 
     const std::tuple<GridTypes...> &grids, 
     const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f)
 {
@@ -151,9 +151,9 @@ inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,std::tuple
  
  
 template< typename ValueType, typename ...GridTypes> 
-template <typename ArgType1> 
-inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<1,std::tuple<ArgType1>>::set(
-    Container<ValueType, 1> &data, 
+template <typename CT, typename ArgType1> 
+inline void GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std::tuple<ArgType1>>::set(
+    CT &data, 
     const std::tuple<GridTypes...> &grids, 
     const std::function<ValueType(ArgType1)> &f)
 {
@@ -217,7 +217,7 @@ template <typename ...ArgTypes>
 inline ValueType& GridObject<ValueType,GridTypes...>::get(const ArgTypes&... in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    return ContainerExtractor<sizeof...(GridTypes), std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in...);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in...);
 }
 
 template <typename ValueType, typename ...GridTypes> 
@@ -225,7 +225,7 @@ template <typename ...ArgTypes>
 inline ValueType& GridObject<ValueType,GridTypes...>::get(const std::tuple<ArgTypes...> &in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    return ContainerExtractor<sizeof...(GridTypes), std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in);
 }
 
 
@@ -234,7 +234,7 @@ template <typename ...ArgTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const ArgTypes&... in) const
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    try { return ContainerExtractor<sizeof...(GridTypes), std::tuple<ArgTypes...>>::get(*_data,_grids,in...); }
+    try { return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get(*_data,_grids,in...); }
     //catch (std::exception &e) { 
     catch (...) { 
         #ifndef NDEBUG
@@ -259,7 +259,7 @@ template <typename ValueType, typename ...GridTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const ArgTupleType& in) const
 {
     try {
-    return ContainerExtractor<sizeof...(GridTypes), ArgTupleType>::get(*_data,_grids,in);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, ArgTupleType>::get(*_data,_grids,in);
     }
     catch (...) { 
         #ifndef NDEBUG
@@ -274,7 +274,7 @@ template <typename ValueType, typename ...GridTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const PointTupleType& in) const
 {
     try {
-        return ContainerExtractor<sizeof...(GridTypes), PointTupleType>::get_ref(*_data,_grids,in); 
+        return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, PointTupleType>::get_ref(*_data,_grids,in); 
     }
     catch (exPointMismatch)
     {
@@ -312,7 +312,7 @@ template <typename ...ArgTypes>
 inline void GridObject<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject fill, number of input parameters mismatch."); 
-    ContainerExtractor<sizeof...(GridTypes), std::tuple<ArgTypes...>>::set(*_data,_grids,in);
+    ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, std::tuple<ArgTypes...>>::set(*_data,_grids,in);
 }
 
 /*
@@ -337,7 +337,7 @@ inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<V
 template <typename ValueType, typename ...GridTypes> 
 inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::FunctionType& in)
 {
-    ContainerExtractor<sizeof...(GridTypes), ArgTupleType>::set(*_data,_grids,in);
+    ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, ArgTupleType>::set(*_data,_grids,in);
     _f = in;
 }
 
@@ -522,7 +522,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::c
     //*_data=*(rhs._data);
     _f = rhs._f;
     const std::function<ValueType(ArgTupleType)> bindf = [&](ArgTupleType in){return rhs(in);};
-    ContainerExtractor<sizeof...(GridTypes), ArgTupleType>::set(*_data,_grids,bindf);
+    ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, ArgTupleType>::set(*_data,_grids,bindf);
     return *this;
 }
 
