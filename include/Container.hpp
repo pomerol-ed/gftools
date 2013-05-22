@@ -11,7 +11,6 @@
 #include <boost/operators.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/range.hpp>
 
 namespace GFTools { 
 
@@ -26,6 +25,7 @@ struct _container_underlying_type;
 template <typename ValueType, size_t N, typename BoostContainerType>
 struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainerType>>
 {
+    constexpr static size_t _N = N;
 
     typedef ValueType value_type;
 //    template <size_t M> using boost_view_type = typename boost::multi_array<ValueType, N>::template array_view<M>::type;
@@ -86,11 +86,12 @@ struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainer
     /** Mathematical operators. */
 
     template <typename T>
-    using isContainer = typename std::enable_if<std::is_convertible<typename T::value_type,typename ContainerBase::value_type>::value, bool>::type;
+    //using isContainer = typename std::enable_if<std::is_convertible<typename T::value_type,typename ContainerBase::value_type>::value, bool>::type;
+    using isContainer = typename std::enable_if<T::_N>=1, bool>::type;
     template <typename T>
     using isValue = typename std::enable_if<std::is_convertible<T,ValueType>::value, bool>::type;
 
-    ContainerBase& operator=(ValueType rhs){}
+    ContainerBase& operator=(ValueType rhs);
     template <typename R, isContainer<R> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator+=(const R &rhs);//ContainerBase<ValueType,N,R> &rhs); 
     template <typename R, isContainer<R> = 0> 
@@ -127,7 +128,6 @@ struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainer
     template <typename R2, isValue<R2> = 0> 
         ContainerBase<ValueType,N,BoostContainerType> operator/(const R2& rhs) const;
     
-    //ContainerBase<ValueType,N,BoostContainerType>& operator=(const ValueType &rhs);
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>
     friend std::ostream& operator<<(std::ostream& lhs, const ContainerBase<V1, M, B> &in);
@@ -201,6 +201,7 @@ struct Container : ContainerBase<ValueType,N,typename boost::multi_array<ValueTy
     using Base::operator-=;
     using Base::operator*=;
     using Base::operator/=;
+    using Base::operator=;
 };
 
 template <typename ValueType, size_t N>

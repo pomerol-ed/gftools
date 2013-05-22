@@ -87,6 +87,5 @@ int main()
     auto D41 = D21+D31;
     DEBUG(D41);
     DEBUG(D41(FMatsubara(n_freq+1,beta)));
- 
     return EXIT_SUCCESS;
 }

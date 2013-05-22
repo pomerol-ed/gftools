@@ -17,7 +17,7 @@ class GridObject
 {
 public:
     /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
-    typedef typename GridPointTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_type FunctionType;
+    typedef typename GridArgTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_type FunctionType;
     /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
     typedef typename GridPointExtractor<ValueType, std::tuple<GridTypes...> >::point_type PointFunctionType;
     /** A typedef for a tuple of grids. */
@@ -25,22 +25,31 @@ public:
     /** A typedef for a tuple of grid points. */
     typedef typename GridPointExtractor<ValueType, std::tuple<GridTypes...> >::arg_tuple_type PointTupleType;
     /** A typedef for a tuple of grid point values. */
-    typedef typename GridPointTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_tuple_type ArgTupleType;
+    typedef typename GridArgTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_tuple_type ArgTupleType;
     /** A typedef for the values stored in the container. */
     typedef ValueType ValType;
     static constexpr size_t N = sizeof...(GridTypes);
+    typedef std::array<size_t, N> PointIndices;
     class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
 protected:
     /** Grids on which the data is defined. */
     const std::tuple<GridTypes...> _grids;
 public:
     /** The dimensions of the Container - deduced from grids. */
-    std::array<size_t, N> _dims;
+    PointIndices _dims;
 protected:
     /** A pointer to the Container. A pointer is used as there exist no default 
      * constructor for the Container.
      */
     std::unique_ptr<Container<ValueType, N>> _data;
+
+    template <int M = N-1, typename U = typename std::enable_if<M >= 1>::type> PointTupleType getPointFromIndices(PointIndices in);
+    template <int M = 0> PointTupleType getPointFromIndices(PointIndices in);
+    PointTupleType getPointFromIndices(PointIndices in);
+
+    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in);
+    template <int M = 0, typename std::enable_if<M == 0, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in);
+    ArgTupleType getArgsFromIndices(PointIndices in);
 
     /** A helper recursive template utility to extract and set data from the container. */
     template <size_t Nc, typename, typename> struct ContainerExtractor;
@@ -56,8 +65,6 @@ protected:
          * \param[in] grids Grids, on which the data is defined. 
          * \param[in] f A function that defines the data. 
          */
-        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1, ArgTypes...)> &f);
-        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(std::tuple<ArgType1, ArgTypes...>)> &f);
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
     template <typename CT, typename ArgType1> struct ContainerExtractor<1,CT,std::tuple<ArgType1>> {
@@ -66,12 +73,11 @@ protected:
 
         static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
         static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
-
-        static void set(CT &data, const std::tuple<GridTypes...> &grids, const std::function<ValueType(ArgType1)> &f);
         };
 
     /** Returns _f(in). */
     template <typename ...ArgTypes> ValueType __get_f(const std::tuple<ArgTypes...>& in) const;
+    PointIndices _getPointIndices(const size_t index) const;
 
 public:
     /** This function returns the value of the object when the point is not in container. */
@@ -89,6 +95,7 @@ public:
     GridObject( GridObject<ValueType, GridTypes...>&& rhs);
 
     const std::tuple<GridTypes...> getGrids() const;
+    const size_t getTotalContainerSize() const;
     /** Returns an Mth grid in _grids. */
     template<size_t M> auto getGrid() const -> const decltype(std::get<M>(_grids));
     /** Returns the top level grid. */

@@ -76,7 +76,12 @@ inline ContainerBase<ValueType,N, BoostContainerType> ContainerBase<ValueType,N,
     return out;
 }
 
-
+template <typename ValueType, size_t N, typename BoostContainerType> 
+inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(ValueType rhs)
+{
+    std::fill(_data.begin(), _data.end(), rhs);
+    return *this;
+}
 
 
 template <typename ValueType, size_t N, typename BoostContainerType> 

@@ -7,7 +7,7 @@
 
 namespace GFTools { 
 
-template <typename ValueType, typename ... > struct GridPointTypeExtractor;
+template <typename ValueType, typename ... > struct GridArgTypeExtractor;
 template <typename ValueType, typename ... > struct GridPointExtractor;
 
 /** A representation of a one-dimensional grid, which stores an array of the ValueType values. */
@@ -102,16 +102,17 @@ std::istream& operator>>(std::istream& lhs, __num_format<typename Grid::point> &
 
 /** A tool to generate a function of argtypes of grids. */
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>
-struct GridPointTypeExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
-GridPointTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::_val)>
+struct GridArgTypeExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
+GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::_val)>
 {
 };
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
-struct GridPointTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
+struct GridArgTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
     typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::_val))> type; 
     typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::_val))> arg_type; 
     typedef std::tuple<ArgTypes...,decltype(GridType1::point::_val)> arg_tuple_type;
+    typedef __caller<ValueType, ArgTypes..., decltype(GridType1::point::_val)> arg_function_wrapper;
 };
 
 /** A tool to generate a function of argtypes of grids. */
@@ -125,6 +126,7 @@ template <typename ValueType, template <typename ...> class T, typename GridType
 struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
     typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> point_type; 
     typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple_type;
+    typedef __caller<ValueType, ArgTypes..., typename GridType1::point> point_function_wrappe;
 };
 
 
