@@ -33,7 +33,7 @@ public:
     class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
 protected:
     /** Grids on which the data is defined. */
-    const std::tuple<GridTypes...> _grids;
+    mutable std::tuple<GridTypes...> _grids;
 public:
     /** The dimensions of the Container - deduced from grids. */
     PointIndices _dims;
@@ -41,7 +41,8 @@ protected:
     /** A pointer to the Container. A pointer is used as there exist no default 
      * constructor for the Container.
      */
-    std::unique_ptr<Container<ValueType, N>> _data;
+    //std::unique_ptr<Container<ValueType, N>> _data;
+    mutable Container<ValueType, N> _data;
 
     template <int M = N-1, typename U = typename std::enable_if<M >= 1>::type> PointTupleType getPointFromIndices(PointIndices in);
     template <int M = 0> PointTupleType getPointFromIndices(PointIndices in);
@@ -85,10 +86,7 @@ public:
     /** Constructs a grid object out of a tuple containing various grids. */
     GridObject( const std::tuple<GridTypes...> &grids);
     /** Constructor of grids and data. */
-    GridObject( const std::tuple<GridTypes...> &grids, const Container<ValueType, sizeof...(GridTypes)>& data):
-        _grids(grids),
-        _data(new Container<ValueType, sizeof...(GridTypes)>>(data)),
-        _f(__fun_traits<FunctionType>::constant(0.0)) { GetGridSizes<N>::TupleSizeToArray(_grids,_dims); };
+    GridObject( const std::tuple<GridTypes...> &grids, const Container<ValueType, sizeof...(GridTypes)>& data);
     /** Copy constructor. */
     GridObject( const GridObject<ValueType, GridTypes...>& rhs);
     /** Move constructor. */
@@ -101,12 +99,12 @@ public:
     /** Returns the top level grid. */
     auto getGrid() const -> const decltype(std::get<0>(_grids));
     /** Returns element number i, which corresponds to (*_grid)[i]. */
-    auto operator[](size_t i)->decltype((*_data)[i]);
+    auto operator[](size_t i)->decltype(_data[i]);
     /** Const operator[]. */
-    auto operator[](size_t i) const ->decltype((*_data)[i]) const;
+    auto operator[](size_t i) const ->decltype(_data[i]) const;
     //template <size_t M> ValueType& operator[](const std::array<size_t,M>& in);
     /** Returns the _data Container. */
-    Container<ValueType, sizeof...(GridTypes)>& getData(){return *_data;};
+    Container<ValueType, sizeof...(GridTypes)>& getData(){return _data;};
     /** Fills the Container with a provided function. */
     template <typename ...ArgTypes> void fill(const std::function<ValueType(ArgTypes...)> &);
     void fill(const FunctionType &in);

@@ -131,22 +131,26 @@ struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
 
 
 /* A tool to generate an array of grid sizes from a given tuple of grids. */
-template <size_t N>
+template <size_t N> 
 struct GetGridSizes {
-    template <typename... GridType, size_t M>
-    static inline void TupleSizeToArray( const std::tuple<GridType...>& in, std::array<size_t, M> &out ) {
+    template <typename ... GridType>
+    static inline std::array<size_t,sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
         static_assert(N>1,"!");
+        auto out = GetGridSizes<N-1>::template TupleSizeToArray<GridType...>( in );
         std::get<N-1>(out) = std::get<N-1>(in).getSize();
-        GetGridSizes<N-1>::TupleSizeToArray( in, out );
-    }
+        return out;
+    };
 };
 
-template <>
-template <typename... GridType, size_t M>
-inline void GetGridSizes<1>::TupleSizeToArray( const std::tuple<GridType...>& in, std::array<size_t, M> &out ) {
-    std::get<0>(out) = std::get<0>(in).getSize();
-}
-
+template <> 
+struct GetGridSizes<1> {
+    template <typename... GridType>
+    static inline std::array<size_t, sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
+        std::array<size_t,sizeof...(GridType)> out;
+        std::get<0>(out) = std::get<0>(in).getSize();
+        return out;
+    }
+};
 
 /** A tool to recursiverly integrate over a grid. */
 template <typename GridType, class Obj> struct RecursiveGridIntegrator;

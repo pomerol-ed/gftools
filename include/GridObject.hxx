@@ -124,30 +124,39 @@ inline ValueType GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,std
 //
 // GridObject
 //
+    
+template <typename ValueType, typename ...GridTypes> 
+GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridTypes...> &grids, const Container<ValueType, sizeof...(GridTypes)>& data):
+    _grids(grids),
+    _dims(GetGridSizes<N>::TupleSizeToArray(_grids)),
+    _data(data),
+    _f(__fun_traits<FunctionType>::constant(0.0)) 
+{
+};
 
 template <typename ValueType, typename ...GridTypes> 
 inline GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridTypes...> &in):
     _grids(in),
+    _dims(GetGridSizes<N>::TupleSizeToArray(_grids)),
+    _data(_dims),
     _f(__fun_traits<FunctionType>::constant(0.0))
 {
-    GetGridSizes<N>::TupleSizeToArray(_grids,_dims);   
-    _data.reset(new Container<ValueType, sizeof...(GridTypes)>(_dims));
 }
 
 template <typename ValueType, typename ...GridTypes> 
 inline GridObject<ValueType,GridTypes...>::GridObject( const GridObject<ValueType, GridTypes...>& rhs):
     _grids(rhs._grids), 
     _dims(rhs._dims),
-    _data(new Container<ValueType, sizeof...(GridTypes)>(*(rhs._data))),
+    _data(rhs._data),
     _f(rhs._f)
 {
 }; 
 
 template <typename ValueType, typename ...GridTypes> 
 inline GridObject<ValueType,GridTypes...>::GridObject( GridObject<ValueType,GridTypes...> && rhs):
-    _grids(rhs._grids)
+    _grids(rhs._grids),
+    _data(rhs._data)
 {
-    _data.swap(rhs._data);
     _dims.swap(rhs._dims);
     _f.swap(rhs._f);
 }
@@ -159,9 +168,9 @@ inline const std::tuple<GridTypes...> GridObject<ValueType,GridTypes...>::getGri
 };
 
 template <typename ValueType, typename ...GridTypes> 
-inline auto GridObject<ValueType,GridTypes...>::operator[](size_t i)->decltype((*_data)[i])
+inline auto GridObject<ValueType,GridTypes...>::operator[](size_t i)->decltype(_data[i])
 {
-    return (*_data)[i];
+    return _data[i];
 }
 
 /*
@@ -176,7 +185,7 @@ template <typename ...ArgTypes>
 inline ValueType& GridObject<ValueType,GridTypes...>::get(const ArgTypes&... in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in...);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(_data,_grids,in...);
 }
 
 template <typename ValueType, typename ...GridTypes> 
@@ -184,7 +193,7 @@ template <typename ...ArgTypes>
 inline ValueType& GridObject<ValueType,GridTypes...>::get(const std::tuple<ArgTypes...> &in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(*_data,_grids,in);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get_ref(_data,_grids,in);
 }
 
 
@@ -193,7 +202,7 @@ template <typename ...ArgTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const ArgTypes&... in) const
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    try { return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get(*_data,_grids,in...); }
+    try { return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, std::tuple<ArgTypes...>>::get(_data,_grids,in...); }
     //catch (std::exception &e) { 
     catch (...) { 
         #ifndef NDEBUG
@@ -209,7 +218,7 @@ template <typename ...ArgTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const std::tuple<ArgTypes...>& in) const
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject call, number of input parameters mismatch."); 
-    std::function<ValueType(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType{return this->template operator()<ArgTypes...>(in1...); };// ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::get(*_data,_grids,in...);};
+    std::function<ValueType(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType{return this->template operator()<ArgTypes...>(in1...); };// ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::get(_data,_grids,in...);};
     __caller<ValueType,ArgTypes...> t = {in,f1};
     return t.call();
 }
@@ -218,7 +227,7 @@ template <typename ValueType, typename ...GridTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const ArgTupleType& in) const
 {
     try {
-    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, ArgTupleType>::get(*_data,_grids,in);
+    return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, ArgTupleType>::get(_data,_grids,in);
     }
     catch (...) { 
         #ifndef NDEBUG
@@ -233,7 +242,7 @@ template <typename ValueType, typename ...GridTypes>
 inline ValueType GridObject<ValueType,GridTypes...>::operator()(const PointTupleType& in) const
 {
     try {
-        return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, PointTupleType>::get_ref(*_data,_grids,in); 
+        return ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, PointTupleType>::get_ref(_data,_grids,in); 
     }
     catch (exPointMismatch)
     {
@@ -246,7 +255,7 @@ inline ValueType GridObject<ValueType,GridTypes...>::operator()(const PointTuple
 template <typename ValueType, typename ...GridTypes> 
 std::ostream& operator<<(std::ostream& lhs, const GridObject<ValueType,GridTypes...> &in)
 {
-    lhs << *(in._data);
+    lhs << (in._data);
     return lhs;
 }
 
@@ -272,7 +281,7 @@ template <typename ...ArgTypes>
 inline void GridObject<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
 {
     //static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject fill, number of input parameters mismatch."); 
-    //ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, std::tuple<ArgTypes...>>::set(*_data,_grids,in);
+    //ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, std::tuple<ArgTypes...>>::set(_data,_grids,in);
 }*/
 
 /*
@@ -280,9 +289,9 @@ template <typename ValueType, typename ...GridTypes>
 inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::PointFunctionType& in)
 {
 
-    __genContainerExtractor<sizeof...(GridTypes), ContainerExtractor, std::tuple<GridTypes...>>::type::set(*_data,_grids,in);
+    __genContainerExtractor<sizeof...(GridTypes), ContainerExtractor, std::tuple<GridTypes...>>::type::set(_data,_grids,in);
 
-    //ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::set(*_data,_grids,in);
+    //ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::set(_data,_grids,in);
     //_f = in;
 }
 */
@@ -340,7 +349,7 @@ inline typename GridObject<ValueType,GridTypes...>::ArgTupleType GridObject<Valu
 template <typename ValueType, typename ...GridTypes> 
 inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::FunctionType& in)
 {
-    //ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, ArgTupleType>::set(*_data,_grids,in);
+    //ContainerExtractor<sizeof...(GridTypes), Container<ValueType,N>, ArgTupleType>::set(_data,_grids,in);
     size_t total_size = this->getTotalContainerSize();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointIndices(i);
@@ -354,7 +363,7 @@ inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<V
         DEBUG(std::get<2>(_grids)[0]);
         exit(0);
     */
-        _data->_data(pts_index) = val;
+        _data._data(pts_index) = val;
         
 
         //ValueType val = in(args);
@@ -383,7 +392,7 @@ template <template <typename, class> class Filler, typename ...ArgTypes>
 inline void GridObject<ValueType,GridTypes...>::fill(const Filler<ValueType, ArgTypes...> &in)
 {
     static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "GridObject fill, number of input parameters mismatch."); 
-    ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::set(*_data,_grids,in);
+    ContainerExtractor<sizeof...(GridTypes), ArgTypes...>::set(_data,_grids,in);
 }
 */
 
@@ -419,14 +428,14 @@ template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::valu
 inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::conj()
 {
     GridObject<ValueType,GridTypes...> out(*this);
-    *(out._data) = out._data->conj();
+    *(out._data) = out._data.conj();
     return out;
 }
 
 template <typename ValueType, typename ...GridTypes> 
 inline ValueType GridObject<ValueType,GridTypes...>::sum()
 {
-    return _data->sum();
+    return _data.sum();
 }
 
 template <typename ValueType, typename ...GridTypes> 
@@ -543,10 +552,9 @@ template <typename ValueType, typename ...GridTypes>
 inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::copyInterpolate (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
-    //*_data=*(rhs._data);
+    //_data=rhs._data;
     _f = rhs._f;
     const std::function<ValueType(ArgTupleType)> bindf = [&](ArgTupleType in){return rhs(in);};
-    //    ContainerExtractor<sizeof...(GridTypes), Container<ValueType, N>, ArgTupleType>::set(*_data,_grids,bindf);
     this->fill(bindf);
 
     return *this;
@@ -573,7 +581,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data=*(rhs._data);
+    _data=rhs._data;
     _f = rhs._f;
     return *this;
 }
@@ -583,7 +591,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const ValueType& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data=rhs;
+    _data=rhs;
     _f = __fun_traits<FunctionType>::constant(rhs);
     return *this;
 }
@@ -595,7 +603,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data+=*(rhs._data);
+    _data+=rhs._data;
     //_f=__fun_traits<FunctionType>::add(_f, rhs._f);
     return *this;
 }
@@ -604,7 +612,7 @@ template <typename ValueType, typename ...GridTypes>
 inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator+= (
     const ValueType & rhs)
 {
-    *_data+=rhs;
+    _data+=rhs;
     //_f=__fun_traits<FunctionType>::add(_f, __fun_traits<FunctionType>::constant(rhs));
     return *this;
 }
@@ -615,7 +623,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data*=*(rhs._data);
+    _data*=rhs._data;
     //_f=__fun_traits<FunctionType>::multiply(_f, rhs._f);
     return *this;
 }
@@ -624,7 +632,7 @@ template <typename ValueType, typename ...GridTypes>
 inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator*= (
     const ValueType & rhs)
 {
-    *_data*=rhs;
+    _data*=rhs;
     //_f=__fun_traits<FunctionType>::multiply(_f, __fun_traits<FunctionType>::constant(rhs));
     return *this;
 }
@@ -635,7 +643,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data/=*(rhs._data);
+    _data/=rhs._data;
     //_f=__fun_traits<FunctionType>::divide(_f, rhs._f);
     return *this;
 }
@@ -644,7 +652,7 @@ template <typename ValueType, typename ...GridTypes>
 inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator/= (
     const ValueType & rhs)
 {
-    *_data/=rhs;
+    _data/=rhs;
     //_f=__fun_traits<FunctionType>::divide(_f, __fun_traits<FunctionType>::constant(rhs));
     return *this;
 }
@@ -655,7 +663,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
-    *_data-=*(rhs._data);
+    _data-=rhs._data;
     //_f=__fun_traits<FunctionType>::subtract(_f, rhs._f);
     return *this;
 }
@@ -664,7 +672,7 @@ template <typename ValueType, typename ...GridTypes>
 inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator-= (
     const ValueType & rhs)
 {
-    *_data-=rhs;
+    _data-=rhs;
     //_f=__fun_traits<FunctionType>::subtract(_f, __fun_traits<FunctionType>::constant(rhs));
     return *this;
 }
