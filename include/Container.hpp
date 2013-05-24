@@ -8,7 +8,6 @@
 #include <type_traits>
 
 #include <boost/multi_array.hpp>
-#include <boost/operators.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
@@ -18,12 +17,15 @@ template <typename ValueType, size_t N, typename BoostContainerType>
 struct ContainerBase;
 
 template <typename ValueType, size_t N>
+struct Container;
+
+template <typename ValueType, size_t N>
 struct _container_underlying_type;
 
 // ================================================================== //
 
 template <typename ValueType, size_t N, typename BoostContainerType>
-struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainerType>>
+struct ContainerBase 
 {
     constexpr static size_t _N = N;
 
@@ -51,6 +53,7 @@ struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainer
     /** Copy constructor. */
     ContainerBase(const ContainerBase<ValueType,N,BoostContainerType> &rhs):_data(rhs._data){};
     ContainerBase& operator=(const ContainerBase<ValueType,N,BoostContainerType> &rhs){_data = rhs._data; return (*this);};
+    template <class B2> ContainerBase& operator=(const ContainerBase<ValueType,N,B2> &rhs){_data = rhs._data; return (*this);};
     /** Move constructor. */
     ContainerBase(ContainerBase<ValueType,N,BoostContainerType> &&rhs):_data(rhs._data){};
     ContainerBase& operator=(ContainerBase<ValueType,N,BoostContainerType> &&rhs){std::swap(_data,rhs._data); return (*this);};
@@ -71,7 +74,7 @@ struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainer
 
     /** Return operators. */
     template<typename U = typename std::enable_if<N==2, bool>> MatrixType<ValueType> getAsMatrix() const;
-    template<typename U = typename std::enable_if<N==2, bool>> ContainerBase<ValueType,N,BoostContainerType>& operator=(MatrixType<ValueType> &&rhs);
+    template<typename U = typename std::enable_if<N==2, bool>> ContainerBase<ValueType,N,BoostContainerType>& operator=(MatrixType<ValueType> rhs);
     /** Return a diagonal matrix, corresponding to the object */
     template<typename U = typename std::enable_if<N==2, bool>> MatrixType<ValueType> getAsDiagonalMatrix() const;
     /** Return a vector, corresponding to the object. */
@@ -95,38 +98,43 @@ struct ContainerBase : boost::operators<ContainerBase<ValueType,N,BoostContainer
     template <typename R, isContainer<R> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator+=(const R &rhs);//ContainerBase<ValueType,N,R> &rhs); 
     template <typename R, isContainer<R> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator+(const R &rhs) const;
+        Container<ValueType,N> operator+(const R &rhs) const;
     template <typename R2, isValue<R2> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator+=(const R2& rhs);
     template <typename R2, isValue<R2> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator+(const R2& rhs) const;
+        Container<ValueType,N> operator+(const R2& rhs) const;
 
     template <typename R, isContainer<R> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator-=(const R &rhs); 
     template <typename R, isContainer<R> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator-(const R &rhs) const;
+        Container<ValueType,N> operator-(const R &rhs) const;
     template <typename R2, isValue<R2> = 0> 
         ContainerBase<ValueType,N,BoostContainerType>& operator-=(const R2& rhs);
     template <typename R2, isValue<R2> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator-(const R2& rhs) const;
+        Container<ValueType,N> operator-(const R2& rhs) const;
 
     template <typename R, isContainer<R> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator*=(const R &rhs); 
     template <typename R, isContainer<R> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator*(const R &rhs) const;
+        Container<ValueType,N> operator*(const R &rhs) const;
     template <typename R2, isValue<R2> = 0> 
         ContainerBase<ValueType,N,BoostContainerType>& operator*=(const R2& rhs);
     template <typename R2, isValue<R2> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator*(const R2& rhs) const;
+        Container<ValueType,N> operator*(const R2& rhs) const;
 
     template <typename R, isContainer<R> = 0>
         ContainerBase<ValueType,N,BoostContainerType>& operator/=(const R &rhs); 
     template <typename R, isContainer<R> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator/(const R &rhs) const;
+        Container<ValueType,N> operator/(const R &rhs) const;
     template <typename R2, isValue<R2> = 0> 
         ContainerBase<ValueType,N,BoostContainerType>& operator/=(const R2& rhs);
     template <typename R2, isValue<R2> = 0> 
-        ContainerBase<ValueType,N,BoostContainerType> operator/(const R2& rhs) const;
+        Container<ValueType,N> operator/(const R2& rhs) const;
+
+    friend inline Container<ValueType,N> operator* (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*lhs;};
+    friend inline Container<ValueType,N> operator+ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs+lhs;};
+    friend inline Container<ValueType,N> operator- (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*(-1.0)+lhs;};
+    friend inline Container<ValueType,N> operator/ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {Container<ValueType,N> out(rhs); out=lhs; return out/rhs;};
     
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>
@@ -196,7 +204,7 @@ struct Container : ContainerBase<ValueType,N,typename boost::multi_array<ValueTy
     Container(std::array<size_t,N> shape):ContainerBase<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
     template <typename CT>
     Container(ContainerBase<ValueType,N,CT> in) : ContainerBase<ValueType,N,typename boost::multi_array<ValueType, N>>(in._data) {};
-    template<typename U = typename std::enable_if<N==2, bool>> Container<ValueType,N> (MatrixType<ValueType> &&rhs);
+    template<typename U = typename std::enable_if<N==2, bool>> Container<ValueType,N> (MatrixType<ValueType> rhs);
     using Base::operator+=;
     using Base::operator-=;
     using Base::operator*=;
@@ -211,6 +219,7 @@ struct _container_underlying_type
     //typedef boost::multi_array_ref<ValueType, N-1> type;
     //typedef boost::detail::multi_array::sub_array<ValueType, N-1> type;
     typedef ContainerBase<ValueType,N-1,boost::detail::multi_array::sub_array<ValueType, N-1>> type;
+    //typedef ContainerBase<ValueType,N-1,boost::multi_array_ref<ValueType, N-1>> type;
 };
 
 template <typename ValueType>

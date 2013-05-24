@@ -29,44 +29,34 @@ using namespace GFTools;
 
 int main()
 {
-/*
-    std::array<size_t,3> sizes = { { 3, 3, 3 } };
-    std::array<size_t,2> size2 = { { 3 , 3 } };
-    std::array<size_t,1> size1 = { { 3 } };
-    typedef boost::multi_array<double,3> array;
-    typedef array::size_type size_type;
-    size_type num_elements = 27;
-    std::vector<double> vals(num_elements, 4.5);
-
-    boost::multi_array<double, 3> A1(sizes);
-    A1.assign(vals.begin(),vals.end());
-
-    auto D1 = A1[1][1];
-    array::subarray<1>::type D2 = D1;
-    A1[1][1][0]=3.3;
-    DEBUG(D2[0]);
-
-    //boost::multi_array_ref<double, 1> array2(&(*D2.begin()), size1);
-    boost::multi_array_ref<double, 1> array2(A1[0].origin(), size2);
-
-    typedef array::subarray<2>::type subarray;
-    subarray B1 = A1[1];
-    subarray::value_type C1 = B1[0];
-
-    DEBUG(equal(A1[1][0],C1));
-    DEBUG(equal(B1[0],C1));
-
-*/
     std::cout << "Hi!" << std::endl;
-    std::array<size_t,2> Ar1 {{1,3}};
-    std::array<size_t,3> Ar2 {{2,1,3}};
+    std::array<size_t,1> Ar1 {{5}};
+    std::array<size_t,2> Ar2 {{3,3}};
+    std::array<size_t,3> Ar3 {{2,1,3}};
 
 
     INFO("Container")
 
-    Container<ComplexType,2> B(Ar1);
-    Container<ComplexType,2> C(Ar1);
-    Container<ComplexType,3> D(Ar2);
+    Container<ComplexType,2> A1(Ar2), A2(Ar2), A3(Ar2);
+    A1 = 1.;
+    A2 = 2.;
+    DEBUG(A1);
+    A3 = 3.0*(A1+0.5)*2+A2;
+    DEBUG(A3);
+    DEBUG(A1);
+    auto a01 = 3*(A1[1]+A1[0])*2;
+    DEBUG(a01);
+    DEBUG(A1);
+
+    Container<ComplexType,1> E1(A1[1]), E2(A1[2]);
+    E1*=3;
+    DEBUG(E1);
+    DEBUG(A1);
+    
+
+    Container<ComplexType,2> B(Ar2);
+    Container<ComplexType,2> C(Ar2);
+    Container<ComplexType,3> D(Ar3);
     
     B[0][2]=3.0;
     C[0][2]=-2.0;

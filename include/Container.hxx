@@ -33,9 +33,9 @@ std::ostream& operator<<(std::ostream& lhs, const ContainerBase<ValueType,N, Boo
 {
     lhs << "[";
     std::ostream_iterator<decltype(in[0])> out_it (lhs,", ");
-    //for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
+    for (size_t i=0; i<in._data.size(); ++i) {*out_it = in[i]; out_it++;};
     //std::copy(in._data.begin(),in._data.end(),out_it);
-    std::copy(in.begin(),in.end(),out_it);
+    //std::copy(in.begin(),in.end(),out_it);
     lhs << "]";
     return lhs;
 }
@@ -50,7 +50,7 @@ inline MatrixType<ValueType> ContainerBase<ValueType,N, BoostContainerType>::get
 
 template <typename ValueType, size_t N> 
 template<typename U>
-inline Container<ValueType,N>::Container(MatrixType<ValueType>&& rhs):
+inline Container<ValueType,N>::Container(MatrixType<ValueType> rhs):
     Container<ValueType,N>(std::array<size_t,2>({{static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }}))
 {
     std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
@@ -58,7 +58,7 @@ inline Container<ValueType,N>::Container(MatrixType<ValueType>&& rhs):
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template<typename N2>
-inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(MatrixType<ValueType> &&rhs)
+inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(MatrixType<ValueType> rhs)
 {
     assert(rhs.rows() == _data.shape()[0] && rhs.cols() == _data.shape()[1]);
     std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), _data.origin());
@@ -79,7 +79,7 @@ inline ContainerBase<ValueType,N, BoostContainerType> ContainerBase<ValueType,N,
 template <typename ValueType, size_t N, typename BoostContainerType> 
 inline ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(ValueType rhs)
 {
-    std::fill(_data.begin(), _data.end(), rhs);
+    std::fill(_data.origin(), _data.origin()+_data.num_elements(), rhs);
     return *this;
 }
 
@@ -105,18 +105,18 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R &rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R &rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out+=rhs; 
     return out;
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R2& rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator+(const R2& rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out+=rhs; 
     return out;
 }
@@ -144,18 +144,18 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R &rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R &rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out-=rhs; 
     return out;
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R2& rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator-(const R2& rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out-=rhs; 
     return out;
 }
@@ -183,18 +183,18 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R &rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R &rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out*=rhs; 
     return out;
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R2& rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator*(const R2& rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out*=rhs; 
     return out;
 }
@@ -223,18 +223,18 @@ ContainerBase<ValueType,N,BoostContainerType>& ContainerBase<ValueType,N,BoostCo
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R, ContainerBase<ValueType,N,BoostContainerType>::isContainer<R>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R &rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R &rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out/=rhs; 
     return out;
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
 template <typename R2, ContainerBase<ValueType,N,BoostContainerType>::isValue<R2>> 
-ContainerBase<ValueType,N,BoostContainerType> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R2& rhs) const
+Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator/(const R2& rhs) const
 {
-    ContainerBase<ValueType,N,BoostContainerType> out(*this); 
+    Container<ValueType,N> out(*this); 
     out/=rhs; 
     return out;
 }
