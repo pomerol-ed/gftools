@@ -28,7 +28,7 @@ public:
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
     template <class Obj> auto getValue(Obj &in, RealGrid::point x) const -> decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, RealType x) const -> typename std::remove_reference<decltype(in[0])>::type;
+    template <class Obj> auto getValue(Obj &in, RealType x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
     //template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
 };
 
@@ -111,7 +111,7 @@ inline std::tuple <bool, size_t, RealType> RealGrid::find (RealType in) const
 
 
 template <class Obj>
-inline auto RealGrid::getValue(Obj &in, RealType x) const -> typename std::remove_reference<decltype(in[0])>::type
+inline auto RealGrid::getValue(Obj &in, RealType x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (exWrongIndex()); 
@@ -120,7 +120,8 @@ inline auto RealGrid::getValue(Obj &in, RealType x) const -> typename std::remov
     auto prev_value = in[prev_index];
     auto weight = std::get<2>(find_result);
     auto next_value = in[prev_index+1];
-    return prev_value + (next_value - prev_value)*weight;
+    auto out = prev_value + (next_value - prev_value)*weight;
+    return out;
 /*
     VectorType<typename Eigen::Spline2d::PointType> a1(5);
     DEBUG(a1.cols());
