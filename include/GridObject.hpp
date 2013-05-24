@@ -44,31 +44,26 @@ protected:
     //std::unique_ptr<Container<ValueType, N>> _data;
     mutable Container<ValueType, N> _data;
 
-    template <int M = N-1, typename U = typename std::enable_if<M >= 1>::type> PointTupleType getPointFromIndices(PointIndices in);
-    template <int M = 0> PointTupleType getPointFromIndices(PointIndices in);
-    PointTupleType getPointFromIndices(PointIndices in);
+    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
+    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
+    PointTupleType getPointsFromIndices(PointIndices in) const;
 
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in);
-    template <int M = 0, typename std::enable_if<M == 0, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in);
-    ArgTupleType getArgsFromIndices(PointIndices in);
+    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in) const;
+    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in) const;
+    ArgTupleType getArgsFromIndices(PointIndices in) const;
+
+    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> PointIndices getIndicesFromPoints(PointTupleType in) const;
+    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointIndices getIndicesFromPoints(PointTupleType in) const;
+    PointIndices getIndicesFromPoints(PointTupleType in) const;
 
     /** A helper recursive template utility to extract and set data from the container. */
-    template <size_t Nc, typename, typename> struct ContainerExtractor;
-    template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor<Nc,CT,std::tuple<ArgType1, ArgTypes...>> {
+    template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes> struct ContainerExtractor { 
         /** Gets the data by values. */
         static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
-
         static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1, const ArgTypes&... args);
-        static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1, ArgTypes...>& args); 
-        /** Fills the container from function
-         * \param[in] data Container to fill
-         * \param[in] grids Grids, on which the data is defined. 
-         * \param[in] f A function that defines the data. 
-         */
              };
     /** Specialization of ContainerExtractor for 1-dim container. */
-    template <typename CT, typename ArgType1> struct ContainerExtractor<1,CT,std::tuple<ArgType1>> {
+    template <typename CT, typename ArgType1> struct ContainerExtractor<1,CT,ArgType1> {
         static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1); 
         static ValueType get(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
 
@@ -78,7 +73,7 @@ protected:
 
     /** Returns _f(in). */
     template <typename ...ArgTypes> ValueType __get_f(const std::tuple<ArgTypes...>& in) const;
-    PointIndices _getPointIndices(const size_t index) const;
+    PointIndices _getPointsIndices(const size_t index) const;
 
 public:
     /** This function returns the value of the object when the point is not in container. */
@@ -108,17 +103,21 @@ public:
     /** Fills the Container with a provided function. */
     template <typename ...ArgTypes> void fill(const std::function<ValueType(ArgTypes...)> &);
     void fill(const FunctionType &in);
-    template <typename ...ArgTypes> void fill_tuple(const std::function<ValueType(const std::tuple<ArgTypes...>)> &);
+    void fill(const PointFunctionType &in);
+    //template <typename ...ArgTypes> void fill_tuple(const std::function<ValueType(const std::tuple<ArgTypes...>)> &);
+    void fill_tuple(const std::function<ValueType(ArgTupleType)>& in);
+    void fill_tuple(const std::function<ValueType(PointTupleType)>& in);
     /** Fills the Container with any proper class with call operator. Untested */
     //template <template <typename, class> class Filler, typename ...ArgTypes> void fill(const Filler<ValueType,ArgTypes...> &);
 
     /** Return the value by grid values. */
     template <typename ...ArgTypes> ValueType& get(const ArgTypes&... in);
     template <typename ...ArgTypes> ValueType& get(const std::tuple<ArgTypes...>& in);
+    ValueType& get(const PointTupleType& in);
     template <typename ...ArgTypes> ValueType operator()(const ArgTypes&... in) const;
     template <typename ...ArgTypes> ValueType operator()(const std::tuple<ArgTypes...>& in) const;
     ValueType operator()(const PointTupleType& in) const;
-    ValueType operator()(const ArgTupleType& in) const;
+    //ValueType operator()(const ArgTupleType& in) const;
     //template <typename ...ArgTypes> auto operator()(const ArgType1& in)->decltype() const;
 
     /** A shortcut for fill method. */
@@ -173,6 +172,7 @@ public:
     template <typename ValType, class ...GridTypes2> friend std::ostream& operator<<(std::ostream& lhs, const GridObject<ValType,GridTypes2...> &in);
     
     class exIOProblem : public std::exception { virtual const char* what() const throw(){return "IO problem.";} }; 
+    class exWrongIndex : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
     
 /** Returns a tuple of input args shifted by values from another tuple. */
     template <typename OrigArg1, typename ...OrigArgs, typename ArgType1, typename ...ArgTypes, 

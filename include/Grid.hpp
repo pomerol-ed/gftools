@@ -126,7 +126,7 @@ template <typename ValueType, template <typename ...> class T, typename GridType
 struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
     typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> point_type; 
     typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., typename GridType1::point> point_function_wrappe;
+    typedef __caller<ValueType, ArgTypes..., typename GridType1::point> point_function_wrapper;
 };
 
 

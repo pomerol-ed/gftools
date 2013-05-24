@@ -44,7 +44,7 @@ int main()
     if (!success) { ERROR("Point mismatch after shift."); return EXIT_FAILURE; };
 
     GridObject<RealType,KMesh,KMesh> e_k(std::forward_as_tuple(kGrid,kGrid));
-    auto ekf = [](RealType kx, RealType ky){return 2.0*(cos(kx)+cos(ky));};
+    decltype(e_k)::FunctionType ekf = [](RealType kx, RealType ky){return 2.0*(cos(kx)+cos(ky));};
     e_k.fill(ekf);
     DEBUG(e_k);
     DEBUG(e_k.shift(PI,PI));
