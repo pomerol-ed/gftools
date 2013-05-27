@@ -68,6 +68,7 @@ public:
         point shift(point in, ArgType shift_arg) const;
     template <class ArgType>
         ValueType shift(ValueType in, ArgType shift_arg) const;
+    point shift (point in, point shift_arg) const;
 
     // CFTP forwards
     /** Get a value of an object at the given point, which is defined on a grid. */
@@ -285,6 +286,17 @@ inline ValueType Grid<ValueType,Derived>::shift(ValueType in, ArgType shift_arg)
     return in+ValueType(shift_arg);
 }
 
+template <typename ValueType, class Derived>
+inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(point in, point shift_arg) const
+{
+    size_t index = (in._index + shift_arg._index)%_vals.size();
+    #ifndef NDEBUG
+    ValueType val = this->shift(in._val, shift_arg._val);
+    if (std::abs(val - _vals[index])>1e-3) throw (exWrongIndex()); 
+    #endif
+    return _vals[index];
+
+}
 
 template <typename ValueType, class Derived>
 std::ostream& operator<<(std::ostream& lhs, const Grid<ValueType,Derived> &gr)

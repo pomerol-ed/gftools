@@ -22,6 +22,7 @@ public:
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
     template <class Obj> auto getValue(Obj &in, point x) const ->decltype(in[0]);
+    point shift(point in, point shift_arg) const;
     template <class ArgType> point shift(point in, ArgType shift_arg) const;
     template <class ArgType> RealType shift(RealType in, ArgType shift_arg) const;
 };
@@ -128,6 +129,19 @@ inline typename KMesh::point KMesh::shift(point in, ArgType shift_arg) const
     out._index = std::get<1>(find_result);
     return (*this)[out._index];
 }
+
+inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
+{
+    size_t index = (in._index + shift_arg._index)%_points;
+    #ifndef NDEBUG
+    RealType val = this->shift(in._val, shift_arg._val);
+    if (std::abs(val - _vals[index])>1e-3) throw (exWrongIndex()); 
+    #endif
+    //out._val = _vals[out._index];
+    return _vals[index];
+}
+
+
 
 //
 // KMeshPatch

@@ -151,7 +151,7 @@ struct __split_tuple_struct<Target,Tuple,N,true>
 };
 
 template < typename Head, typename ... Tail >
-std::tuple<Tail...> __tuple_tail(std::tuple<Head,Tail...> const& tpl)
+inline std::tuple<Tail...> __tuple_tail(std::tuple<Head,Tail...> const& tpl)
 {
     return __split_tuple_struct<std::tuple<Tail...>, std::tuple<Head,Tail...>, 1, std::tuple_size<std::tuple<Head,Tail...>>::value == 1>::create(tpl);
 }

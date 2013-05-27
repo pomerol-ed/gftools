@@ -182,16 +182,7 @@ public:
     OrigArg1 arg1 = std::get<0>(in);
     ArgType1 shift_arg1 = std::get<0>(shift_args);
     OrigArg1 out1 = std::get<sizeof...(GridTypes)-sizeof...(ArgTypes)-1>(_grids).shift(arg1,shift_arg1); 
-    auto f_o = [&in](OrigArg1 arg1, OrigArgs... others)->std::tuple<OrigArgs...>{ return std::forward_as_tuple(others...);};
-    auto f_s = [&shift_args](ArgType1 arg1, ArgTypes... others)->std::tuple<ArgTypes...>{ return std::forward_as_tuple(others...);};
-
-    __caller<std::tuple<OrigArgs...>,OrigArg1,OrigArgs...> t_o = {in,f_o};
-    std::tuple<OrigArgs...> other_orig_args(t_o.call());
-
-    __caller<std::tuple<ArgTypes...>,ArgType1,ArgTypes...> t_s = {shift_args,f_s};
-    std::tuple<ArgTypes...> other_shift_args(t_s.call());
-
-    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(other_orig_args,other_shift_args));
+    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(__tuple_tail(in),__tuple_tail(shift_args)));
 }
 
     /** Specialization of _shiftArgs for a tuple of 1 element. */
