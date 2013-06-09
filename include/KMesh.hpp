@@ -40,6 +40,8 @@ public:
     template <class Obj> auto getValue(Obj &in, KMesh::point x) const ->decltype(in[0]);
     size_t getIndex(KMesh::point x) const;
 };
+template <>
+inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename KMesh::point> &in){lhs << std::setprecision(in._prec) << RealType(in._v._val); return lhs;};
 
 //
 // KMesh
