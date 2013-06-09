@@ -112,6 +112,7 @@ template <class ArgType>
 inline RealType KMesh::shift(RealType in, ArgType shift_arg) const
 {
     assert (in>=0 && in < 2.0*PI);
+    //if (std::abs(RealType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
     RealType out;
     out = in + RealType(shift_arg); 
     out-= std::floor(out/(2.0*PI))*2.0*PI;
@@ -122,6 +123,7 @@ inline RealType KMesh::shift(RealType in, ArgType shift_arg) const
 template <class ArgType>
 inline typename KMesh::point KMesh::shift(point in, ArgType shift_arg) const
 {
+    if (std::abs(RealType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
     point out;
     out._val = this->shift(in._val, shift_arg);
     auto find_result = this->find(out._val);

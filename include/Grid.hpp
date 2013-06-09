@@ -261,6 +261,7 @@ template <class ArgType>
 inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(point in, ArgType shift_arg) const
 {
     point out;
+    if (std::abs(ValueType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
     out._val = in._val + ValueType(shift_arg);
     auto find_result = this->find(out._val);
     if (std::get<0>(find_result)) { out._index = std::get<1>(find_result); return (*this)[out._index]; }
