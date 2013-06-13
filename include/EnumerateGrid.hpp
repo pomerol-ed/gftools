@@ -1,9 +1,7 @@
-#ifndef ___GFTOOLS_REALGRID_HPP___
-#define ___GFTOOLS_REALGRID_HPP___
+#ifndef ___GFTOOLS_ENUMERATEGRID_HPP___
+#define ___GFTOOLS_ENUMERATEGRID_HPP___
 
 #include "Grid.hpp"
-#include <numeric>
-#include <unsupported/Eigen/Splines>
 
 namespace GFTools { 
 
