@@ -19,7 +19,9 @@ public:
         ValueType _val;
         size_t _index;
         operator ValueType() const { return _val; }
+        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
         explicit inline operator size_t() const { return _index; }
+        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
         explicit inline operator int() const { return _index; }
         point(){};
         inline point(ValueType val, size_t index):_val(val),_index(index){};

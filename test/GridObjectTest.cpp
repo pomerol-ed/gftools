@@ -4,6 +4,7 @@
 #include "MatsubaraGrid.hpp"
 #include "Container.hpp"
 #include "GridObject.hpp"
+#include "EnumerateGrid.hpp"
 
 #include <iostream>
 #include <ctime>
@@ -87,5 +88,11 @@ int main()
     auto D41 = D21+D31;
     DEBUG(D41);
     DEBUG(D41(FMatsubara(n_freq+1,beta)));
+
+    GridObject<RealType, EnumerateGrid> g1(EnumerateGrid(0,10));
+    g1.fill(typename decltype(g1)::FunctionType([](int x){return x/2.0;}));
+    DEBUG(g1);
+    DEBUG(g1(3));
+    DEBUG(g1(15));
     return EXIT_SUCCESS;
 }

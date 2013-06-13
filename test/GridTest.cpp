@@ -3,6 +3,7 @@
 #include "Defaults.hpp"
 #include "MatsubaraGrid.hpp"
 #include "KMesh.hpp"
+#include "EnumerateGrid.hpp"
 
 #include <iostream>
 #include <ctime>
@@ -43,5 +44,7 @@ int main()
     INFO(n2.getValue(x,FMatsubara(10,20)));
     if (n2.getValue(x,FMatsubara(10,20))!=100) return EXIT_FAILURE;
 
+    EnumerateGrid g1(3,8);
+    INFO(g1);
     return EXIT_SUCCESS;
 }
