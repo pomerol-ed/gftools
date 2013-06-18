@@ -52,7 +52,7 @@ inline std::istream& operator>>(std::istream& lhs, __num_format<typename BMatsub
 //
 
 template <bool F>
-inline MatsubaraGrid<F>::MatsubaraGrid(int min, int max, RealType beta):
+MatsubaraGrid<F>::MatsubaraGrid(int min, int max, RealType beta):
     //Grid<ComplexType, MatsubaraGrid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
     Grid<ComplexType, MatsubaraGrid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     _beta(beta), 
@@ -63,7 +63,7 @@ inline MatsubaraGrid<F>::MatsubaraGrid(int min, int max, RealType beta):
 }
 
 template <bool F>
-inline MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) : 
+MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) : 
     Grid<ComplexType, MatsubaraGrid<F>>(rhs._vals),
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
@@ -73,7 +73,7 @@ inline MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) :
 }
 
 template <bool F>
-inline MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
+MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
     Grid<ComplexType, MatsubaraGrid>(rhs._vals), 
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
@@ -84,7 +84,7 @@ inline MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
 
 template <bool F>
 template <class Obj> 
-inline auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(_vals[0]))
+auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(this->_vals[0])) R = in(this->_vals[0]);
     R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x);}); 
@@ -93,7 +93,7 @@ inline auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(_val
 
 template <bool F>
 template <class Obj, typename ...OtherArgTypes> 
-inline auto MatsubaraGrid<F>::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
+auto MatsubaraGrid<F>::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
 {
     decltype(in(_vals[0],Args...)) R = in(_vals[0],Args...);
     R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x,Args...);}); 
@@ -102,7 +102,7 @@ inline auto MatsubaraGrid<F>::integrate(const Obj &in, OtherArgTypes... Args) co
 
 template <bool F>
 template <class Obj> 
-inline auto MatsubaraGrid<F>::prod(const Obj &in) const -> decltype(in(_vals[0]))
+auto MatsubaraGrid<F>::prod(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(_vals[0])) R = in(_vals[0]);
     R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y*in(x);}); 

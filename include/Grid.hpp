@@ -20,16 +20,16 @@ public:
         size_t _index;
         operator ValueType() const { return _val; }
         template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
-        explicit inline operator size_t() const { return _index; }
+        explicit operator size_t() const { return _index; }
         template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
-        explicit inline operator int() const { return _index; }
+        explicit operator int() const { return _index; }
         point(){};
-        inline point(ValueType val, size_t index):_val(val),_index(index){};
-        inline point(const point& rhs):_val(rhs._val),_index(rhs._index){};
-        inline point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
-        inline point& operator=(point&& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        inline point operator=(const point& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        //inline point(ValueType in):_val(in){_index=2;};
+        point(ValueType val, size_t index):_val(val),_index(index){};
+        point(const point& rhs):_val(rhs._val),_index(rhs._index){};
+        point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
+        point& operator=(point&& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
+        point operator=(const point& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
+        //point(ValueType in):_val(in){_index=2;};
         bool operator==(const point &rhs) const {return (_val == rhs._val) && (_index == rhs._index);}
         friend std::ostream& operator<<(std::ostream& lhs, const point &gr)
             {lhs<<"{"<<gr._val<<"<-["<<gr._index<<"]}"; return lhs;};
@@ -202,23 +202,23 @@ struct RecursiveGridIntegrator<GridType, std::function<ValueType(ArgType1, ArgTy
 //
 
 template <typename ValueType, class Derived>
-inline Grid<ValueType,Derived>::Grid()
+Grid<ValueType,Derived>::Grid()
 {};
 
 template <typename ValueType, class Derived>
-inline Grid<ValueType,Derived>::Grid(const std::vector<point> &vals):_vals(vals)
+Grid<ValueType,Derived>::Grid(const std::vector<point> &vals):_vals(vals)
 {
 };
 
 
 template <typename ValueType, class Derived>
-inline Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals):_vals(vals)
+Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals):_vals(vals)
 {
     for (size_t i=0; i<_vals.size(); ++i) _vals[i]._index = i;
 };
 
 template <typename ValueType, class Derived>
-inline Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f)
+Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f)
 {
     if (max<min) std::swap(min,max);
     size_t n_points = max-min;

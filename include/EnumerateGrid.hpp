@@ -31,7 +31,7 @@ public:
 // EnumerateGrid implementation
 //
 
-inline EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
+EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
     Grid<int, EnumerateGrid>(min,max+include_last,[](int n){return n;})
 {}
 

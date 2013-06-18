@@ -81,7 +81,7 @@ GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridTypes...> &
 };
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridTypes...> &in):
+GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridTypes...> &in):
     _grids(in),
     _dims(GetGridSizes<N>::TupleSizeToArray(_grids)),
     _data(_dims),
@@ -90,7 +90,7 @@ inline GridObject<ValueType,GridTypes...>::GridObject( const std::tuple<GridType
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>::GridObject( const GridObject<ValueType, GridTypes...>& rhs):
+GridObject<ValueType,GridTypes...>::GridObject( const GridObject<ValueType, GridTypes...>& rhs):
     _grids(rhs._grids), 
     _dims(rhs._dims),
     _data(rhs._data),
@@ -99,7 +99,7 @@ inline GridObject<ValueType,GridTypes...>::GridObject( const GridObject<ValueTyp
 }; 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>::GridObject( GridObject<ValueType,GridTypes...> && rhs):
+GridObject<ValueType,GridTypes...>::GridObject( GridObject<ValueType,GridTypes...> && rhs):
     _grids(rhs._grids),
     _data(rhs._data)
 {
@@ -108,7 +108,7 @@ inline GridObject<ValueType,GridTypes...>::GridObject( GridObject<ValueType,Grid
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline const std::tuple<GridTypes...> GridObject<ValueType,GridTypes...>::getGrids() const 
+const std::tuple<GridTypes...> GridObject<ValueType,GridTypes...>::getGrids() const 
 { 
     return _grids; 
 };
@@ -222,7 +222,7 @@ std::ostream& operator<<(std::ostream& lhs, const GridObject<ValueType,GridTypes
 
 template <typename ValueType, typename ...GridTypes> 
 template <size_t M>
-inline auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<M>(_grids))
+auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<M>(_grids))
 {
     return std::get<M>(_grids);
 }
@@ -230,7 +230,7 @@ inline auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltyp
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<0>(_grids))
+auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<0>(_grids))
 {
     return std::get<0>(_grids);
 }
@@ -238,7 +238,7 @@ inline auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltyp
 
 template <typename ValueType, typename ...GridTypes> 
 template <typename ...ArgTypes> 
-inline void GridObject<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
+void GridObject<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
 {
     this->fill(FunctionType(in));
 }
@@ -361,7 +361,7 @@ inline typename GridObject<ValueType,GridTypes...>::PointIndices GridObject<Valu
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(ArgTupleType)>& in)
+void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(ArgTupleType)>& in)
 {
     size_t total_size = this->getTotalContainerSize();
     for (size_t i=0; i<total_size; ++i) {
@@ -375,7 +375,7 @@ inline void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<V
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::FunctionType& in)
+void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::FunctionType& in)
 {
     size_t total_size = this->getTotalContainerSize();
     for (size_t i=0; i<total_size; ++i) {
@@ -389,7 +389,7 @@ inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<V
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::PointFunctionType& in)
+void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<ValueType,GridTypes...>::PointFunctionType& in)
 {
     size_t total_size = this->getTotalContainerSize();
     for (size_t i=0; i<total_size; ++i) {
@@ -402,7 +402,7 @@ inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<V
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(PointTupleType)>& in)
+void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(PointTupleType)>& in)
 {
     size_t total_size = this->getTotalContainerSize();
     for (size_t i=0; i<total_size; ++i) {
@@ -419,7 +419,7 @@ inline void GridObject<ValueType,GridTypes...>::fill_tuple(const std::function<V
 
 template <typename ValueType, typename ...GridTypes> 
 template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueType,GridTypes...>& rhs) const
+RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject outObj(_grids);
     auto f1 = [&](PointTupleType in){return std::abs((*this)(in) - rhs(in));};
@@ -432,7 +432,7 @@ inline RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueT
 
 template <typename ValueType, typename ...GridTypes> 
 template <typename U, typename std::enable_if<std::is_same<U, RealType>::value, int>::type>
-inline RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueType,GridTypes...>& rhs) const
+RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject outObj(_grids);
     auto f1 = [&](PointTupleType in){return std::abs((*this)(in) - rhs(in));};
@@ -446,7 +446,7 @@ inline RealType GridObject<ValueType,GridTypes...>::diff(const GridObject<ValueT
 
 template <typename ValueType, typename ...GridTypes> 
 template <typename U, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type>
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::conj()
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::conj()
 {
     GridObject<ValueType,GridTypes...> out(*this);
     (out._data) = out._data.conj();
@@ -542,7 +542,8 @@ inline std::tuple<OrigArg1> GridObject<ValueType,GridTypes...>::_shiftArgs(const
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname) const
+template <typename U>
+void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname) const
 {
     INFO("Saving " << typeid(*this).name() << " to " << fname);
     std::ofstream out;
@@ -555,7 +556,8 @@ inline void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
+template <typename U>
+void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
 {
     INFO("Loading " << typeid(*this).name() << " from " << fname);
     std::ifstream in;
@@ -576,7 +578,7 @@ inline void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::copyInterpolate (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::copyInterpolate (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //_data=rhs._data;
@@ -604,7 +606,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 */
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator= (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -614,7 +616,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator= (
     const ValueType& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -626,7 +628,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator+= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator+= (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -636,7 +638,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator+= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator+= (
     const ValueType & rhs)
 {
     _data+=rhs;
@@ -646,7 +648,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator*= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator*= (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -656,7 +658,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator*= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator*= (
     const ValueType & rhs)
 {
     _data*=rhs;
@@ -666,7 +668,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator/= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator/= (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -676,7 +678,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator/= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator/= (
     const ValueType & rhs)
 {
     _data/=rhs;
@@ -686,7 +688,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator-= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator-= (
     const GridObject<ValueType,GridTypes...>& rhs)
 {
     //static_assert(rhs._grids == _grids, "Grid mismatch");
@@ -696,7 +698,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator-= (
+GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::operator-= (
     const ValueType & rhs)
 {
     _data-=rhs;
@@ -706,7 +708,7 @@ inline GridObject<ValueType,GridTypes...>& GridObject<ValueType,GridTypes...>::o
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator+ (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator+ (
     const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject out(*this);
@@ -715,7 +717,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator+ (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator+ (
     const ValueType & rhs) const
 {
     GridObject out(*this);
@@ -725,7 +727,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator* (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator* (
     const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject out(*this);
@@ -734,7 +736,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator* (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator* (
     const ValueType & rhs) const
 {
     GridObject out(*this);
@@ -743,7 +745,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator/ (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator/ (
     const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject out(*this);
@@ -752,7 +754,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator/ (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator/ (
     const ValueType & rhs) const
 {
     GridObject out(*this);
@@ -762,7 +764,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator- (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator- (
     const GridObject<ValueType,GridTypes...>& rhs) const
 {
     GridObject out(*this);
@@ -771,7 +773,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::op
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator- (
+GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::operator- (
     const ValueType & rhs) const
 {
     GridObject out(*this);

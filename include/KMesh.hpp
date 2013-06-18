@@ -47,17 +47,17 @@ inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename 
 // KMesh
 //
 
-inline KMesh::KMesh(size_t n_points):
+KMesh::KMesh(size_t n_points):
 Grid<RealType,KMesh>(0,n_points,[n_points](size_t in){return 2.0*PI/n_points*in;}),
 _points(n_points)
 {
 }
 
-inline KMesh::KMesh(const KMesh& rhs):Grid(rhs._vals),_points(rhs._points)
+KMesh::KMesh(const KMesh& rhs):Grid(rhs._vals),_points(rhs._points)
 {
 }
 
-inline KMesh::KMesh(KMesh &&rhs):Grid(rhs._vals),_points(rhs._points)
+KMesh::KMesh(KMesh &&rhs):Grid(rhs._vals),_points(rhs._points)
 {
 }
 
@@ -95,7 +95,7 @@ inline auto KMesh::getValue(Obj &in, KMesh::point x) const ->decltype(in[0])
 }
 
 template <class Obj> 
-inline auto KMesh::integrate(const Obj &in) const -> decltype(in(_vals[0]))
+auto KMesh::integrate(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(_vals[0])) R = in(RealType(_vals[0]));
     R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x);}); 
@@ -103,7 +103,7 @@ inline auto KMesh::integrate(const Obj &in) const -> decltype(in(_vals[0]))
 }
 
 template <class Obj, typename ...OtherArgTypes> 
-inline auto KMesh::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
+auto KMesh::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
 {
     decltype(in(_vals[0],Args...)) R = in(_vals[0],Args...);
     R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x,Args...);}); 
@@ -152,7 +152,7 @@ inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
 //
 
 
-inline KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
+KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
     _parent(parent),
     _npoints(indices.size())
 {
@@ -163,7 +163,7 @@ inline KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
         }
 }
 
-inline KMeshPatch::KMeshPatch(const KMesh& parent):
+KMeshPatch::KMeshPatch(const KMesh& parent):
     _parent(parent),
     _npoints(parent.getSize())
 {

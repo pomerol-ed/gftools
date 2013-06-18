@@ -143,10 +143,10 @@ public:
     GridObject& operator/= (const ValueType& rhs);
     GridObject operator/ (const GridObject & rhs) const;
     GridObject operator/ (const ValueType & rhs) const;
-    friend inline GridObject operator* (const ValueType & lhs, const GridObject & rhs) {return rhs*lhs;};
-    friend inline GridObject operator+ (const ValueType & lhs, const GridObject & rhs) {return rhs+lhs;};
-    friend inline GridObject operator- (const ValueType & lhs, const GridObject & rhs) {return rhs*(-1.0)+lhs;};
-    friend inline GridObject operator/ (const ValueType & lhs, const GridObject & rhs) {GridObject out(rhs); out=lhs; return out/rhs;};
+    friend GridObject operator* (const ValueType & lhs, const GridObject & rhs) {return rhs*lhs;};
+    friend GridObject operator+ (const ValueType & lhs, const GridObject & rhs) {return rhs+lhs;};
+    friend GridObject operator- (const ValueType & lhs, const GridObject & rhs) {return rhs*(-1.0)+lhs;};
+    friend GridObject operator/ (const ValueType & lhs, const GridObject & rhs) {GridObject out(rhs); out=lhs; return out/rhs;};
 
     /** Returns the complex conjugate of this object, if it's complex valued. */
     template <typename U = ValueType, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type=0>
@@ -165,8 +165,10 @@ public:
     template <typename ...ArgTypes> GridObject shift(ArgTypes... args) const;
     template <typename ...ArgTypes> GridObject shift(const std::tuple<ArgTypes...>& arg_tuple) const;
     /** Save the data to the txt file. */
+    template<typename U = typename std::enable_if<sizeof...(GridTypes)==1>::type> 
     void savetxt(const std::string& fname) const;
     /** Loads the data to the txt file. */
+    template<typename U = typename std::enable_if<sizeof...(GridTypes)==1>::type> 
     void loadtxt(const std::string& fname);
     /** Dumps the object to the stream. */
     template <typename ValType, class ...GridTypes2> friend std::ostream& operator<<(std::ostream& lhs, const GridObject<ValType,GridTypes2...> &in);

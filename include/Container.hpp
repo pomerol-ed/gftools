@@ -131,10 +131,10 @@ struct ContainerBase
     template <typename R2, isValue<R2> = 0> 
         Container<ValueType,N> operator/(const R2& rhs) const;
 
-    friend inline Container<ValueType,N> operator* (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*lhs;};
-    friend inline Container<ValueType,N> operator+ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs+lhs;};
-    friend inline Container<ValueType,N> operator- (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*(-1.0)+lhs;};
-    friend inline Container<ValueType,N> operator/ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {Container<ValueType,N> out(rhs); out=lhs; return out/rhs;};
+    friend Container<ValueType,N> operator* (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*lhs;};
+    friend Container<ValueType,N> operator+ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs+lhs;};
+    friend Container<ValueType,N> operator- (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {return rhs*(-1.0)+lhs;};
+    friend Container<ValueType,N> operator/ (const ValueType & lhs, const ContainerBase<ValueType,N,BoostContainerType> & rhs) {Container<ValueType,N> out(rhs); out=lhs; return out/rhs;};
     
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>
