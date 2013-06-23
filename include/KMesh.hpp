@@ -8,14 +8,15 @@ namespace GFTools {
 
 class KMesh : public Grid<RealType, KMesh>
 {
+    mutable RealType _domain_len = 2.0*PI;
 public:
     int _points;
-    KMesh(size_t n_points);
-    KMesh(const KMesh& rhs);
-    KMesh(KMesh &&rhs);
-    KMesh(){};
-    KMesh& operator=(KMesh &&rhs){_points = rhs._points; _vals.swap(rhs._vals); return (*this);};
-    KMesh& operator=(const KMesh &rhs){_points = rhs._points; _vals = rhs._vals; return (*this);};
+    KMesh(size_t n_points, RealType len = 2.0*PI);
+    KMesh(const KMesh& rhs) = default;
+    KMesh(KMesh &&rhs) = default;
+    KMesh() = default;
+    KMesh& operator=(KMesh &&rhs) {_points = rhs._points; _domain_len = rhs._domain_len; _vals.swap(rhs._vals); return (*this);};
+    KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;_vals = rhs._vals; return (*this);};
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
     template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
@@ -47,12 +48,13 @@ inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename 
 // KMesh
 //
 
-KMesh::KMesh(size_t n_points):
-Grid<RealType,KMesh>(0,n_points,[n_points](size_t in){return 2.0*PI/n_points*in;}),
+KMesh::KMesh(size_t n_points, RealType len):
+Grid<RealType,KMesh>(0,n_points,[n_points,len](size_t in){return len/n_points*in;}),
+_domain_len(len),
 _points(n_points)
 {
 }
-
+/*
 KMesh::KMesh(const KMesh& rhs):Grid(rhs._vals),_points(rhs._points)
 {
 }
@@ -60,15 +62,15 @@ KMesh::KMesh(const KMesh& rhs):Grid(rhs._vals),_points(rhs._points)
 KMesh::KMesh(KMesh &&rhs):Grid(rhs._vals),_points(rhs._points)
 {
 }
-
+*/
 inline std::tuple <bool, size_t, RealType> KMesh::find (RealType in) const
 {
-    assert(in>=0 && in < 2.0*PI);
-    int n = std::lround(in/2.0/PI*_points);
+    assert(in>=0 && in < _domain_len);
+    int n = std::lround(in/_domain_len*_points);
     if (n<0) { ERROR("KMesh point is out of bounds, " << in << "<" << 0); return std::make_tuple(0,0,0); };
     if (n==_points) n=0; 
-    if (n>_points) { ERROR("KMesh point is out of bounds, " << in << "> 2*PI"); return std::make_tuple(0,_points,0); };
-    RealType weight=in/2.0/PI*_points-RealType(n);
+    if (n>_points) { ERROR("KMesh point is out of bounds, " << in << ">" << _domain_len); return std::make_tuple(0,_points,0); };
+    RealType weight=in/_domain_len*_points-RealType(n);
     return std::make_tuple (1,n,weight);
 }
 
@@ -113,11 +115,11 @@ auto KMesh::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in
 template <class ArgType>
 inline RealType KMesh::shift(RealType in, ArgType shift_arg) const
 {
-    assert (in>=0 && in < 2.0*PI);
+    assert (in>=0 && in < _domain_len);
     //if (std::abs(RealType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
     RealType out;
     out = in + RealType(shift_arg); 
-    out-= std::floor(out/(2.0*PI))*2.0*PI;
+    out-= std::floor(out/_domain_len)*_domain_len;
     return out;
 }
 
