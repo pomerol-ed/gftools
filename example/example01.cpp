@@ -30,7 +30,7 @@ int main()
     // This generates a uniform grid of 20 real numbers from -5 to 5
     RealGrid grid1(-5,5,20);
     // And prints it
-    INFO(grid1);
+    INFO(grid1); // same as std::cout << grid1 << std::endl
     
     // New c++ feature - store a function
     std::function<RealType(int)> f1;
