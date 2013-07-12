@@ -95,4 +95,11 @@ int main()
      function. */
     G1._f = sinF;
     INFO(G1(2*PI));
+    G1.savetxt("G1.dat");
+
+    GridObject<RealType,RealGrid,RealGrid> R1(std::make_tuple(grid1,grid1));
+    std::function<RealType(RealType,RealType)> cos2;
+    cos2 = [](RealType x,RealType y){return cos(x)*cos(y);};
+    R1.fill(cos2);
+    R1.savetxt("G2.dat",true);
 }

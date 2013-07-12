@@ -159,10 +159,28 @@ inline std::tuple<Tail...> __tuple_tail(std::tuple<Head,Tail...> const& tpl)
 /** Print a tuple. */
 template <class T> struct __tuple_print;
 template <typename...ArgTypes> struct __tuple_print<std::tuple<ArgTypes...>> 
-    { static void print(std::tuple<ArgTypes...> in ){std::cout << std::get<0>(in) << " " << std::flush; auto a = __tuple_tail(in); __tuple_print<decltype(a)>::print(a);};
+    { 
+        static void print(std::tuple<ArgTypes...> in ){std::cout << std::get<0>(in) << " " << std::flush; auto a = __tuple_tail(in); __tuple_print<decltype(a)>::print(a);};
+        static std::string serialize(std::tuple<ArgTypes...> in){ 
+            std::string out; std::stringstream b; 
+            auto v = std::get<0>(in);
+            b << __num_format<decltype(v)>(v);
+            b >> out;
+            auto d = __tuple_tail(in);
+            auto t_print = __tuple_print<decltype(d)>::serialize(d); 
+            out+=" "; out+=t_print;
+            return out;
+            };
     };
 template <typename ArgType> struct __tuple_print<std::tuple<ArgType>> 
     { static void print(std::tuple<ArgType> in ){std::cout << std::get<0>(in) << std::endl;};
+      static std::string serialize(std::tuple<ArgType> in){ 
+            std::string out; std::stringstream b; 
+            auto v = std::get<0>(in);
+            b << __num_format<decltype(v)>(v) << std::flush;
+            b >> out;
+            return out;
+        };
     };
 
 } // end namespace GFTools

@@ -165,8 +165,7 @@ public:
     template <typename ...ArgTypes> GridObject shift(ArgTypes... args) const;
     template <typename ...ArgTypes> GridObject shift(const std::tuple<ArgTypes...>& arg_tuple) const;
     /** Save the data to the txt file. */
-    template<typename U = typename std::enable_if<sizeof...(GridTypes)==1>::type> 
-    void savetxt(const std::string& fname) const;
+    void savetxt(const std::string& fname, bool force_real = false) const;
     /** Loads the data to the txt file. */
     template<typename U = typename std::enable_if<sizeof...(GridTypes)==1>::type> 
     void loadtxt(const std::string& fname);
