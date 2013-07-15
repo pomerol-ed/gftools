@@ -26,7 +26,8 @@ public:
     //template <class Obj> auto getValue(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
 };
 
-
+template <>
+inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v._val); return lhs;};
 //
 // EnumerateGrid implementation
 //

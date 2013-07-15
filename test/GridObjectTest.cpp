@@ -28,6 +28,8 @@ int main()
     D2.getData()[0][1]=4.0;
     D2.getData()[1][2]=3.1;
     DEBUG(D2);
+    D1.savetxt("D1.dat");
+    D2.savetxt("D2.dat");
 
     auto& C1 = D2.getData();
     DEBUG(C1[0]);
