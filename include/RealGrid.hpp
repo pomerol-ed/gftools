@@ -32,6 +32,10 @@ public:
     //template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
 };
 
+template <>
+inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename RealGrid::point> &in){lhs << std::setprecision(in._prec) << in._v._val; return lhs;};
+template <>
+inline std::istream& operator>>(std::istream& lhs, __num_format<typename RealGrid::point> &out){RealType im; lhs >> im; out._v._val = im; return lhs;};
 
 //
 // RealGrid implementation

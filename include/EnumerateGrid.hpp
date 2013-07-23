@@ -28,6 +28,8 @@ public:
 
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v._val); return lhs;};
+template <>
+inline std::istream& operator>>(std::istream& lhs, __num_format<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v._val = im; return lhs;};
 //
 // EnumerateGrid implementation
 //
