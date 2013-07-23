@@ -541,7 +541,7 @@ inline std::tuple<OrigArg1> GridObject<ValueType,GridTypes...>::_shiftArgs(const
 }
 
 template <typename ValueType, typename ...GridTypes> 
-void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname, bool force_real) const
+void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname) const
 {
     INFO("Saving " << typeid(*this).name() << " to " << fname);
     std::ofstream out;
@@ -553,10 +553,7 @@ void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname, bool 
         //ArgTupleType args = this->getArgsFromIndices(pts_index);
         PointTupleType pts = this->getPointsFromIndices(pts_index);
         auto val = (*this)(pts);
-        if (force_real)
-            out << std::scientific << __tuple_print<PointTupleType>::serialize(pts) << "    " << __num_format<RealType>(std::real(val)) << std::endl;
-        else
-            out << std::scientific << __tuple_print<PointTupleType>::serialize(pts) << "    " << __num_format<ValueType>(val) << std::endl;
+        out << std::scientific << __tuple_print<PointTupleType>::serialize(pts) << "    " << __num_format<ValueType>(val) << std::endl;
         if (N > 1 && i && (i+1)%last_grid_size==0) out << std::endl;
         };
     out.close();

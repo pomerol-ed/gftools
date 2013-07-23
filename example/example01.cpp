@@ -101,5 +101,5 @@ int main()
     std::function<RealType(RealType,RealType)> cos2;
     cos2 = [](RealType x,RealType y){return cos(x)*cos(y);};
     R1.fill(cos2);
-    R1.savetxt("G2.dat",true);
+    R1.savetxt("G2.dat");
 }
