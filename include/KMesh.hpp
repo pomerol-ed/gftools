@@ -43,6 +43,8 @@ public:
 };
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename KMesh::point> &in){lhs << std::setprecision(in._prec) << RealType(in._v._val); return lhs;};
+template <>
+inline std::istream& operator>>(std::istream& lhs, __num_format< typename KMesh::point> &in){RealType v; lhs >> v; in._v._val = v; return lhs;};
 
 //
 // KMesh

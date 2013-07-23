@@ -171,6 +171,14 @@ template <typename...ArgTypes> struct __tuple_print<std::tuple<ArgTypes...>>
             out+=" "; out+=t_print;
             return out;
             };
+        static std::tuple<ArgTypes...> read (std::istream &in) {
+            typedef typename std::tuple_element<0, std::tuple<ArgTypes...>>::type point_type; // aka Point
+            typedef decltype(__tuple_tail(std::declval<std::tuple<ArgTypes...>>())) tail_type;
+            point_type out;
+            __num_format<point_type> t1(out);
+            in >> t1;
+            return std::tuple_cat(std::make_tuple(t1._v),__tuple_print<tail_type>::read(in));
+            }
     };
 template <typename ArgType> struct __tuple_print<std::tuple<ArgType>> 
     { static void print(std::tuple<ArgType> in ){std::cout << std::get<0>(in) << std::endl;};
@@ -180,6 +188,12 @@ template <typename ArgType> struct __tuple_print<std::tuple<ArgType>>
             b << __num_format<decltype(v)>(v) << std::flush;
             b >> out;
             return out;
+        };
+      static std::tuple<ArgType> read (std::istream &in) {
+            ArgType out;
+            __num_format<ArgType> t1(out);
+            in >> t1;
+            return std::make_tuple(t1._v);
         };
     };
 

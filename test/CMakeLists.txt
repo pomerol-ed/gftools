@@ -9,6 +9,7 @@ set (tests
 GridTest
 ContainerTest
 GridObjectTest
+SaveLoadTest
 ShiftTest
 InterpolateTest
 )

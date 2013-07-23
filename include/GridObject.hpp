@@ -167,7 +167,6 @@ public:
     /** Save the data to the txt file. */
     void savetxt(const std::string& fname, bool force_real = false) const;
     /** Loads the data to the txt file. */
-    template<typename U = typename std::enable_if<sizeof...(GridTypes)==1>::type> 
     void loadtxt(const std::string& fname);
     /** Dumps the object to the stream. */
     template <typename ValType, class ...GridTypes2> friend std::ostream& operator<<(std::ostream& lhs, const GridObject<ValType,GridTypes2...> &in);
