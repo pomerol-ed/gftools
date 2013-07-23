@@ -567,11 +567,9 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
 {
     INFO("Loading " << typeid(*this).name() << " from " << fname);
     std::ifstream in;
-    static const RealType read_tol = 1e-6;
     in.open(fname.c_str());
     if (in.fail()) { ERROR("Couldn't open file " << fname); throw exIOProblem(); };
     size_t total_size = this->getTotalContainerSize();
-    size_t last_grid_size = std::get<N-1>(_grids).getSize();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
 
@@ -579,7 +577,7 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
         ArgTupleType args = this->getArgsFromIndices(pts_index);
         PointTupleType pts2 = __tuple_print<PointTupleType>::read(in);
 
-//        DEBUG(__tuple_print<PointTupleType>::serialize(pts) << "|" << __tuple_print<PointTupleType>::serialize(pts2));
+        if (__tuple_print<PointTupleType>::serialize(pts) != __tuple_print<PointTupleType>::serialize(pts2)) throw (exIOProblem());
 
         __num_format<ValueType> tmp2(this->get(pts));
         in >> tmp2;
@@ -587,17 +585,6 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
         };
 
 
-/*
-    for (auto x : std::get<0>(_grids).getPoints())
-        {
-            __num_format<decltype(x)> tmp(x);
-            in >> tmp;
-            if (std::abs(tmp._v._val-ValueType(x))>read_tol) { ERROR("loadtxt - grid mismatch"); throw exIOProblem(); };
-             __num_format<ValueType> tmp2(this->get(x));
-            in >> tmp2;
-            this->get(x) = tmp2._v;
-        }
-*/
     in.close();
 }
 
