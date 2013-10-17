@@ -92,9 +92,13 @@ int main()
     DEBUG(D41(FMatsubara(n_freq+1,beta)));
 
     GridObject<RealType, EnumerateGrid> g1(EnumerateGrid(0,10));
+    GridObject<RealType, EnumerateGrid> g2(EnumerateGrid(0,10));
     g1.fill(typename decltype(g1)::FunctionType([](int x){return x/2.0;}));
     DEBUG(g1);
     DEBUG(g1(3));
     DEBUG(g1(15));
+
+    g1.savetxt("g1.dat");
+    g2.loadtxt("g1.dat");
     return EXIT_SUCCESS;
 }

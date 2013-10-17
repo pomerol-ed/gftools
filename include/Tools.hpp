@@ -197,6 +197,23 @@ template <typename ArgType> struct __tuple_print<std::tuple<ArgType>>
         };
     };
 
+template <typename T> bool __is_equal (T t1, T t2, RealType tol)
+{
+    return (std::abs(ComplexType(t1) - ComplexType(t2))<tol);
+}
+
+template <typename ... Args>
+bool __is_equal (std::tuple<Args...> t1, std::tuple<Args...> t2, RealType tol)
+{
+    return __is_equal(std::get<0>(t1), std::get<0>(t2), tol) && is_equal(__tuple_tail(t1), __tuple_tail(t2), tol);
+}
+
+template <typename Arg>
+bool __is_equal (std::tuple<Arg> t1, std::tuple<Arg> t2, RealType tol)
+{
+    return __is_equal(std::get<0>(t1), std::get<0>(t2), tol);
+}
+
 } // end namespace GFTools
 
 #endif // endif::ifndef ___GFTOOLS_TOOLS_HPP___

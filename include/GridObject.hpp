@@ -37,13 +37,13 @@ protected:
 public:
     /** The dimensions of the Container - deduced from grids. */
     PointIndices _dims;
-protected:
     /** A pointer to the Container. A pointer is used as there exist no default 
      * constructor for the Container.
      */
     //std::unique_ptr<Container<ValueType, N>> _data;
     mutable Container<ValueType, N> _data;
 
+protected:
     template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
     template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
     PointTupleType getPointsFromIndices(PointIndices in) const;
