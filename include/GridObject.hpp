@@ -167,7 +167,7 @@ public:
     /** Save the data to the txt file. */
     void savetxt(const std::string& fname) const;
     /** Loads the data to the txt file. */
-    void loadtxt(const std::string& fname);
+    void loadtxt(const std::string& fname, RealType tol = std::numeric_limits<RealType>::epsilon());
     /** Dumps the object to the stream. */
     template <typename ValType, class ...GridTypes2> friend std::ostream& operator<<(std::ostream& lhs, const GridObject<ValType,GridTypes2...> &in);
     

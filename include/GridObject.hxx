@@ -560,7 +560,7 @@ void GridObject<ValueType,GridTypes...>::savetxt(const std::string& fname) const
 }
 
 template <typename ValueType, typename ...GridTypes> 
-void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
+void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname, RealType tol)
 {
     INFO("Loading " << typeid(*this).name() << " from " << fname);
     std::ifstream in;
@@ -574,7 +574,7 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname)
         ArgTupleType args = this->getArgsFromIndices(pts_index);
         PointTupleType pts2 = __tuple_print<PointTupleType>::read(in);
 
-        if (!__is_equal<ArgTupleType>(pts,pts2,1e-9)) throw (exIOProblem());
+        if (!__is_equal<ArgTupleType>(pts,pts2,tol)) throw (exIOProblem());
 
         __num_format<ValueType> tmp2(this->get(pts));
         in >> tmp2;
