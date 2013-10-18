@@ -572,8 +572,7 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname, RealT
 
         PointTupleType pts = this->getPointsFromIndices(pts_index);
         ArgTupleType args = this->getArgsFromIndices(pts_index);
-        PointTupleType pts2 = __tuple_print<PointTupleType>::read(in);
-
+        ArgTupleType pts2 = __tuple_print<PointTupleType>::read(in);
         if (!__is_equal<ArgTupleType>(pts,pts2,tol)) throw (exIOProblem());
 
         __num_format<ValueType> tmp2(this->get(pts));

@@ -1,6 +1,7 @@
 #include <numeric>
 
 #include "Defaults.hpp"
+#include "Tools.hpp"
 #include "MatsubaraGrid.hpp"
 #include "Container.hpp"
 #include "GridObject.hpp"
@@ -26,7 +27,14 @@ int main()
     D2.savetxt("data_in.dat");
     INFO("Saved" << D2);
 
+    try {
     D3.loadtxt("data_in.dat");
+        }
+    catch (...)
+    {
+        ERROR("Caught error");
+        return EXIT_FAILURE;
+    };
     INFO("Loaded" << D2);
     D3.savetxt("data_out.dat");
     if (D3.diff(D2)>1e-5) return EXIT_FAILURE;

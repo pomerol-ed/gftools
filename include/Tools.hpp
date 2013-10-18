@@ -162,10 +162,11 @@ template <typename...ArgTypes> struct __tuple_print<std::tuple<ArgTypes...>>
     { 
         static void print(std::tuple<ArgTypes...> in ){std::cout << std::get<0>(in) << " " << std::flush; auto a = __tuple_tail(in); __tuple_print<decltype(a)>::print(a);};
         static std::string serialize(std::tuple<ArgTypes...> in){ 
+            typedef typename std::tuple_element<0, std::tuple<ArgTypes...>>::type point_type; // aka Point
             std::string out; std::stringstream b; 
             auto v = std::get<0>(in);
-            b << __num_format<decltype(v)>(v);
-            b >> out;
+            b << __num_format<point_type>(v);
+            out = b.str();
             auto d = __tuple_tail(in);
             auto t_print = __tuple_print<decltype(d)>::serialize(d); 
             out+=" "; out+=t_print;
@@ -174,7 +175,7 @@ template <typename...ArgTypes> struct __tuple_print<std::tuple<ArgTypes...>>
         static std::tuple<ArgTypes...> read (std::istream &in) {
             typedef typename std::tuple_element<0, std::tuple<ArgTypes...>>::type point_type; // aka Point
             typedef decltype(__tuple_tail(std::declval<std::tuple<ArgTypes...>>())) tail_type;
-            point_type out;
+            point_type out; 
             __num_format<point_type> t1(out);
             in >> t1;
             return std::tuple_cat(std::make_tuple(t1._v),__tuple_print<tail_type>::read(in));
@@ -197,22 +198,40 @@ template <typename ArgType> struct __tuple_print<std::tuple<ArgType>>
         };
     };
 
-template <typename T> bool __is_equal (T t1, T t2, RealType tol)
-{
-    return (std::abs(ComplexType(t1) - ComplexType(t2))<tol);
-}
+template <typename TT>
+std::string tuple_serialize(TT t1){return __tuple_print<TT>::serialize(t1);};
 
-template <typename ... Args>
-bool __is_equal (std::tuple<Args...> t1, std::tuple<Args...> t2, RealType tol)
-{
-    return __is_equal(std::get<0>(t1), std::get<0>(t2), tol) && is_equal(__tuple_tail(t1), __tuple_tail(t2), tol);
-}
+/** Set of tools to check float equality of numbers or tuples. */
+
+template <typename > struct __equal_checker;
+
+template <typename T>
+struct __equal_checker {//<T, typename std::enable_if<std::is_convertible<T,ComplexType>::value, int>::type = 0> { 
+    typedef T type;
+    static bool is_equal(T t1, T t2, RealType tol) { 
+        return bool(std::abs(ComplexType(t1) - ComplexType(t2))<tol); };
+};
+
+template <typename Arg1, typename ... Args>
+struct __equal_checker<std::tuple<Arg1, Args...>> { 
+    typedef std::tuple<Arg1, Args...> type;
+    static bool is_equal(type t1, type t2, RealType tol) {
+        bool out = ((__equal_checker<Arg1>::is_equal(std::get<0>(t1), std::get<0>(t2), tol) && 
+               __equal_checker<std::tuple<Args...>>::is_equal(__tuple_tail(t1), __tuple_tail(t2), tol)));
+        return out;
+    };
+};
 
 template <typename Arg>
-bool __is_equal (std::tuple<Arg> t1, std::tuple<Arg> t2, RealType tol)
-{
-    return __is_equal(std::get<0>(t1), std::get<0>(t2), tol);
-}
+struct __equal_checker<std::tuple<Arg>> { 
+    typedef std::tuple<Arg> type;
+    static bool is_equal (std::tuple<Arg> t1, std::tuple<Arg> t2, RealType tol) {
+        return __equal_checker<Arg>::is_equal(std::get<0>(t1), std::get<0>(t2), tol);
+    }
+};
+
+// free function
+template <typename T> bool __is_equal(T t1, T t2, RealType tol = std::numeric_limits<RealType>::epsilon()){ return __equal_checker<T>::is_equal(t1,t2,tol); };
 
 } // end namespace GFTools
 
