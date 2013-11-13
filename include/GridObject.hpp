@@ -80,6 +80,7 @@ public:
     FunctionType _f;
     /** Constructs a grid object out of a tuple containing various grids. */
     GridObject( const std::tuple<GridTypes...> &grids);
+    template <int M = N, typename std::enable_if<M == 1, bool>::type = 0>  GridObject( GridTypes... grids):GridObject(std::forward_as_tuple(grids...)){};
     /** Constructor of grids and data. */
     GridObject( const std::tuple<GridTypes...> &grids, const Container<ValueType, sizeof...(GridTypes)>& data);
     /** Copy constructor. */

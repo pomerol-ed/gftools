@@ -56,12 +56,15 @@ int main()
     DEBUG(kGrid.shift(kGrid[31],PI) << "==" << 15./16*PI);
     DEBUG(kGrid.shift(kGrid[31],-5*PI) << "==" << 15./16*PI);
 
-    kGrid = KMesh(32);
+    DEBUG(gridF[1] << "+" << gridF[0]._val*2. << "==" << gridF[0]._val*2. + gridF[1]._val);
+    DEBUG(gridF.shift(gridF[1],gridF[0]._val*2.));
+    kGrid = KMesh(2);
 
     GridObject<ComplexType,FMatsubaraGrid,KMesh,KMesh,KMesh,KMesh> gw4d(std::forward_as_tuple(gridF,kGrid,kGrid,kGrid,kGrid));
     gw4d = 2.0;
 
-    auto gw4d_2 = gw4d.shift(std::make_tuple(gridF[0],kGrid[1],kGrid[2],kGrid[0],kGrid[0]));
+    auto gw4d_2 = gw4d.shift(std::make_tuple(gridF[0]._val*2.,kGrid[1],kGrid[2],kGrid[0],kGrid[0]));
+    DEBUG(gw4d_2);
     
     return EXIT_SUCCESS;
 }

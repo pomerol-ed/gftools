@@ -295,7 +295,7 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(po
     size_t index = (in._index + shift_arg._index)%_vals.size();
     #ifndef NDEBUG
     ValueType val = this->shift(in._val, shift_arg._val);
-    if (std::abs(val - _vals[index])>1e-3) throw (exWrongIndex()); 
+    if (std::abs(val - _vals[index]._val)>1e-3) throw (exWrongIndex()); 
     #endif
     return _vals[index];
 

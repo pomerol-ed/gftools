@@ -483,7 +483,7 @@ template <typename ...ArgTypes>
 inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::shift(const std::tuple<ArgTypes...>& shift_args) const
 {
     GridObject<ValueType,GridTypes...> out(_grids);
-    auto ShiftFunction = [&](PointTupleType args1)->ValueType { 
+    std::function<ValueType(PointTupleType)> ShiftFunction = [&](PointTupleType args1)->ValueType { 
         PointTupleType out_args = this->_shiftArgs(args1, shift_args);
     //    __tuple_print<PointTupleType>::print(args1); 
     //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
@@ -492,7 +492,9 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::sh
         };
     PointFunctionType fillF = __fun_traits<PointFunctionType>::getFromTupleF(ShiftFunction);
     //out.fill(fillF);
+    DEBUG("!");
     out.fill_tuple(ShiftFunction);
+    DEBUG("!!");
     
     static std::function<ValueType(ArgTupleType)> ShiftAnalyticF;
     ShiftAnalyticF = [this, shift_args](const ArgTupleType& in)->ValueType {
@@ -571,7 +573,7 @@ void GridObject<ValueType,GridTypes...>::loadtxt(const std::string& fname, RealT
         auto pts_index = _getPointsIndices(i);
 
         PointTupleType pts = this->getPointsFromIndices(pts_index);
-        ArgTupleType args = this->getArgsFromIndices(pts_index);
+        //ArgTupleType args = this->getArgsFromIndices(pts_index);
         ArgTupleType pts2 = __tuple_print<PointTupleType>::read(in);
         if (!__is_equal<ArgTupleType>(pts,pts2,tol)) throw (exIOProblem());
 

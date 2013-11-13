@@ -32,7 +32,7 @@ int main()
     std::cout << "Hi!" << std::endl;
     std::array<size_t,1> Ar1 {{5}};
     std::array<size_t,2> Ar2 {{3,3}};
-    std::array<size_t,3> Ar3 {{2,1,3}};
+    std::array<size_t,3> Ar3 {{2,3,3}};
 
 
     INFO("Container")
@@ -152,7 +152,7 @@ int main()
     INFO("Container in : " << C1);
     typedef boost::multi_array<RealType, 3>::array_view<3>::type myview_3_t;
     typedef boost::multi_array_types::index_range range;
-    myview_3_t boost_view1 = C1._data[boost::indices[range(0,1)][range(0,2)][range(0,2)]]; 
+    myview_3_t boost_view1 = C1._data[boost::indices[range(0,1)][range(0,1)][range(0,2)]]; 
     ContainerView<RealType, 3, 3> C1_v2(myview_3_t(C1._data[boost::indices[range().stride(2)][range()][range().stride(1)]]));
     ContainerView<RealType, 3, 3> C1_v3(C1_v2);
     INFO(C1_v2);
