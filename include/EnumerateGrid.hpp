@@ -34,7 +34,7 @@ inline std::istream& operator>>(std::istream& lhs, __num_format<typename Enumera
 // EnumerateGrid implementation
 //
 
-EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
+inline EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
     Grid<int, EnumerateGrid>(min,max+include_last,[](int n){return n;})
 {}
 

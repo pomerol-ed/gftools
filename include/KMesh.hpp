@@ -50,7 +50,7 @@ inline std::istream& operator>>(std::istream& lhs, __num_format< typename KMesh:
 // KMesh
 //
 
-KMesh::KMesh(size_t n_points, RealType len):
+inline KMesh::KMesh(size_t n_points, RealType len):
 Grid<RealType,KMesh>(0,n_points,[n_points,len](size_t in){return len/n_points*in;}),
 _domain_len(len),
 _points(n_points)
@@ -156,7 +156,7 @@ inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
 //
 
 
-KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
+inline KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
     _parent(parent),
     _npoints(indices.size())
 {
@@ -167,7 +167,7 @@ KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
         }
 }
 
-KMeshPatch::KMeshPatch(const KMesh& parent):
+inline KMeshPatch::KMeshPatch(const KMesh& parent):
     _parent(parent),
     _npoints(parent.getSize())
 {

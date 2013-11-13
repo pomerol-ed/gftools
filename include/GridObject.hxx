@@ -492,9 +492,7 @@ inline GridObject<ValueType,GridTypes...> GridObject<ValueType,GridTypes...>::sh
         };
     PointFunctionType fillF = __fun_traits<PointFunctionType>::getFromTupleF(ShiftFunction);
     //out.fill(fillF);
-    DEBUG("!");
     out.fill_tuple(ShiftFunction);
-    DEBUG("!!");
     
     static std::function<ValueType(ArgTupleType)> ShiftAnalyticF;
     ShiftAnalyticF = [this, shift_args](const ArgTupleType& in)->ValueType {
