@@ -7,6 +7,10 @@
 #include "Tools.hpp"
 #include <type_traits>
 
+#ifdef NDEBUG
+#define BOOST_DISABLE_ASSERTS
+#endif
+
 #include <boost/multi_array.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
