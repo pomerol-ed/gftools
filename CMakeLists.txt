@@ -14,6 +14,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     execute_process(
         COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
     if (NOT (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6))
         message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.6 or greater.")
     endif ()
