@@ -37,7 +37,8 @@ int main()
 
     KMesh kGrid(8);
     DEBUG(kGrid.shift(PI*5.0/4,PI) - PI/4.);
-    DEBUG(kGrid[7] << "|" << 7.0/8*2*PI);
+    kGrid[7];
+    //INFO((kGrid[7]) << "|" << 7.0/8*2*PI);
     DEBUG(kGrid.shift(7./4*PI,PI) << "|" << 3/4.*PI);
     DEBUG(kGrid.shift(kGrid[7],PI) << "|" << 3/4.*PI << "|" << kGrid[3]);
     bool success = (kGrid.shift(kGrid[7],PI)==kGrid[3]);

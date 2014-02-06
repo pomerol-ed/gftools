@@ -8,7 +8,7 @@
 #include<Eigen/StdVector>
 //#include "EigenIterator.h"
 
-#define REALTYPE_DOUBLE
+//#define REALTYPE_DOUBLE
 
 namespace GFTools {
 

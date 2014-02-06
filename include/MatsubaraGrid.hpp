@@ -27,7 +27,6 @@ public:
     int getNumber(ComplexType in) const;
     std::tuple <bool, size_t, RealType> find (ComplexType in) const ;
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(_vals[0]));
-    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(_vals[0]));
     //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto getValue(Obj &in, ComplexType x) const ->decltype(in[0]);
@@ -37,6 +36,7 @@ public:
 typedef MatsubaraGrid<1> FMatsubaraGrid;
 typedef MatsubaraGrid<0> BMatsubaraGrid;
 
+/*
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename FMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v._val); return lhs;};
 template <>
@@ -45,7 +45,7 @@ template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename BMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v._val); return lhs;};
 template <>
 inline std::istream& operator>>(std::istream& lhs, __num_format<typename BMatsubaraGrid::point> &out){RealType im; lhs >> im; out._v._val = I*im; return lhs;};
-
+*/
 
 //
 // MatsubaraGrid implementations
@@ -87,16 +87,7 @@ template <class Obj>
 auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(this->_vals[0])) R = in(this->_vals[0]);
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x);}); 
-    return R/_beta;
-}
-
-template <bool F>
-template <class Obj, typename ...OtherArgTypes> 
-auto MatsubaraGrid<F>::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
-{
-    decltype(in(_vals[0],Args...)) R = in(_vals[0],Args...);
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x,Args...);}); 
+    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) &x) {return y+in(x);}); 
     return R/_beta;
 }
 
@@ -105,7 +96,7 @@ template <class Obj>
 auto MatsubaraGrid<F>::prod(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(_vals[0])) R = in(_vals[0]);
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y*in(x);}); 
+    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) &x) {return y*in(x);}); 
     //decltype(in(_vals[0])) R = in(_vals[_vals.size()/2]);
     //R=std::accumulate(_vals.begin()+1+_vals.size()/2, _vals.end(), R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) &x) {DEBUG(x << "|" << in(x) << "|" << y << "->" << y*in(x)); return y*in(x);}); 
     //R=std::accumulate(_vals.begin(), _vals.begin()+_vals.size()/2, R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) &x) {DEBUG(x << "|" << in(x) << "|" << y << "->" << y*in(x)); return y*in(x);}); 

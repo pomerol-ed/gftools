@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& lhs, const ContainerBase<ValueType,N, Boo
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template<typename N2>
+template <size_t, typename>
 MatrixType<ValueType> ContainerBase<ValueType,N, BoostContainerType>::getAsMatrix() const
 {
     Eigen::Map<MatrixType<ValueType>> Map1 (_data.origin(), _data.shape()[0],_data.shape()[1]);
@@ -49,7 +49,7 @@ MatrixType<ValueType> ContainerBase<ValueType,N, BoostContainerType>::getAsMatri
 }
 
 template <typename ValueType, size_t N> 
-template<typename U>
+template <size_t, typename>
 Container<ValueType,N>::Container(MatrixType<ValueType> rhs):
     Container<ValueType,N>(std::array<size_t,2>({{static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }}))
 {
@@ -57,7 +57,7 @@ Container<ValueType,N>::Container(MatrixType<ValueType> rhs):
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template<typename N2>
+template <size_t, typename>
 ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, BoostContainerType>::operator=(MatrixType<ValueType> rhs)
 {
     assert(rhs.rows() == _data.shape()[0] && rhs.cols() == _data.shape()[1]);
@@ -66,7 +66,7 @@ ContainerBase<ValueType,N, BoostContainerType>& ContainerBase<ValueType,N, Boost
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename U>
+template <typename, typename>
 ContainerBase<ValueType,N, BoostContainerType> ContainerBase<ValueType,N, BoostContainerType>::conj()
 {
     ContainerBase <ValueType,N,BoostContainerType> out(*this);
@@ -240,7 +240,7 @@ Container<ValueType,N> ContainerBase<ValueType,N,BoostContainerType>::operator/(
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename U>
+template <size_t, typename>
 MatrixType<ValueType> ContainerBase<ValueType,N,BoostContainerType>::getAsDiagonalMatrix() const
 {
     size_t size1 = _data.shape()[0];
@@ -251,7 +251,7 @@ MatrixType<ValueType> ContainerBase<ValueType,N,BoostContainerType>::getAsDiagon
 }
 
 template <typename ValueType, size_t N, typename BoostContainerType> 
-template <typename U>
+template <size_t, typename>
 VectorType<ValueType> ContainerBase<ValueType,N,BoostContainerType>::getAsVector() const
 {
     size_t size1 = _data.shape()[0];

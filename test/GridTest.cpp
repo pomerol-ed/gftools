@@ -13,8 +13,14 @@ using namespace GFTools;
 
 int main()
 {
+    FMatsubaraGrid::p2 p101;
+    std::cout << p101 << std::endl;
+
+
     FMatsubaraGrid n1(-100,100,10);
     FMatsubaraGrid n2(0,32,20);
+    
+
 
     KMesh k1(32);
     std::function<RealType(RealType)> F1=[](RealType x) {return cos(x);};
@@ -31,7 +37,7 @@ int main()
     auto a1 = std::make_tuple(n1,n2);
     
     std::vector<int> x(n2.getSize());
-    for (int i=0; i<x.size(); ++i) x[i]=i*i;
+    for (size_t i=0; i<x.size(); ++i) x[i]=i*i;
 
     INFO(std::get<1>(n2.find(FMatsubara(10,20))));
     if (std::get<1>(n2.find(FMatsubara(10,20)))!=10) return EXIT_FAILURE;
@@ -46,5 +52,7 @@ int main()
 
     EnumerateGrid g1(3,8);
     INFO(g1);
+    EnumerateGrid::point p1 = g1[0];
+    std::cout << p1 << std::endl;
     return EXIT_SUCCESS;
 }

@@ -222,7 +222,7 @@ std::ostream& operator<<(std::ostream& lhs, const GridObject<ValueType,GridTypes
 
 template <typename ValueType, typename ...GridTypes> 
 template <size_t M>
-auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<M>(_grids))
+auto GridObject<ValueType,GridTypes...>::getGrid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type& 
 {
     return std::get<M>(_grids);
 }
@@ -230,7 +230,7 @@ auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::
 
 
 template <typename ValueType, typename ...GridTypes> 
-auto GridObject<ValueType,GridTypes...>::getGrid() const -> const decltype(std::get<0>(_grids))
+auto GridObject<ValueType,GridTypes...>::getGrid() const -> const typename std::tuple_element<0, std::tuple<GridTypes...>>::type&
 {
     return std::get<0>(_grids);
 }

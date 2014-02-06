@@ -15,26 +15,8 @@ template <typename ValueType, class Derived>
 class Grid {
 public:
     /** A point combines a point of the grid and it's index. */
-    struct point {
-        ValueType _val;
-        size_t _index;
-        operator ValueType() const { return _val; }
-        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
-        explicit operator size_t() const { return _index; }
-        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
-        explicit operator int() const { return _index; }
-        point(){};
-        point(ValueType val, size_t index):_val(val),_index(index){};
-        point(const point& rhs):_val(rhs._val),_index(rhs._index){};
-        point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
-        point& operator=(point&& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        point operator=(const point& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        //point(ValueType in):_val(in){_index=2;};
-        bool operator==(const point &rhs) const {return (_val == rhs._val) && (_index == rhs._index);}
-        friend std::ostream& operator<<(std::ostream& lhs, const point &gr)
-            {lhs<<"{"<<gr._val<<"<-["<<gr._index<<"]}"; return lhs;};
-    };
-protected:
+    struct point;
+    struct p2;
     std::vector<point> _vals;
     Grid(const std::vector<point> & vals);
 public:
@@ -96,12 +78,41 @@ public:
     class exWrongIndex : public std::exception { virtual const char* what() const throw(); }; 
 };
 
+template <typename ValueType, class Derived>
+struct Grid<ValueType,Derived>::point 
+{
+        ValueType _val;
+        size_t _index;
+        operator ValueType() const { return _val; }
+        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
+        explicit operator size_t() const { return _index; }
+        template <typename T=ValueType, typename std::enable_if<!std::is_same<T,int>::value, bool>::type=0> 
+        explicit operator int() const { return _index; }
+        point(ValueType val, size_t index):_val(val),_index(index){};
+        point(const point& rhs):_val(rhs._val),_index(rhs._index){};
+        point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
+        point& operator=(point&& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
+        point operator=(const point& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
+        //point(ValueType in):_val(in){_index=2;};
+        bool operator==(const point &rhs) const {return (_val == rhs._val) && (_index == rhs._index);}
+};
+
+template <typename ValueType, class Derived>
+struct Grid<ValueType,Derived>::p2 
+{
+    int i;
+};
+
+template <typename ValueType, class Derived>
+std::ostream& operator<<(std::ostream& lhs, const typename Grid<ValueType,Derived>::point &gr);
+        //    {lhs<<"{"<<gr._val<<"<-["<<gr._index<<"]}"; return lhs;};
+/*
 template <class Grid>
 std::ostream& operator<<(std::ostream& lhs, const __num_format<typename Grid::point> &in){lhs << std::setprecision(in._prec) << in._v._val; return lhs;};
 template <class Grid>
 std::istream& operator>>(std::istream& lhs, __num_format<typename Grid::point> &out)
 {__num_format<decltype(std::declval<typename Grid::point>()._v)> d(0.0); lhs >> d; out._v._val = d._v; return lhs;};
-
+*/
 
 /** A tool to generate a function of argtypes of grids. */
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>

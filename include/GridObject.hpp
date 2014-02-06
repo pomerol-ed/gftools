@@ -91,13 +91,14 @@ public:
     const std::tuple<GridTypes...> getGrids() const;
     const size_t getTotalContainerSize() const;
     /** Returns an Mth grid in _grids. */
-    template<size_t M> auto getGrid() const -> const decltype(std::get<M>(_grids));
+    template<size_t M> 
+        auto getGrid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type& ;
     /** Returns the top level grid. */
-    auto getGrid() const -> const decltype(std::get<0>(_grids));
+    auto getGrid() const -> const typename std::tuple_element<0, std::tuple<GridTypes...>>::type& ;
     /** Returns element number i, which corresponds to (*_grid)[i]. */
     auto operator[](size_t i)->decltype(_data[i]);
     /** Const operator[]. */
-    auto operator[](size_t i) const ->decltype(_data[i]) const;
+    //auto operator[](size_t i) const -> const decltype(_data[i]);
     //template <size_t M> ValueType& operator[](const std::array<size_t,M>& in);
     /** Returns the _data Container. */
     Container<ValueType, sizeof...(GridTypes)>& getData(){return _data;};

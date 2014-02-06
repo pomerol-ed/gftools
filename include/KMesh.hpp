@@ -19,7 +19,6 @@ public:
     KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;_vals = rhs._vals; return (*this);};
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
-    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
     template <class Obj> auto getValue(Obj &in, point x) const ->decltype(in[0]);
@@ -102,15 +101,7 @@ template <class Obj>
 auto KMesh::integrate(const Obj &in) const -> decltype(in(_vals[0]))
 {
     decltype(in(_vals[0])) R = in(RealType(_vals[0]));
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x);}); 
-    return R/_points;
-}
-
-template <class Obj, typename ...OtherArgTypes> 
-auto KMesh::integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
-{
-    decltype(in(_vals[0],Args...)) R = in(_vals[0],Args...);
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,const decltype(_vals[0]) &x) {return y+in(x,Args...);}); 
+    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) & x) {return y+in(x);}); 
     return R/_points;
 }
 

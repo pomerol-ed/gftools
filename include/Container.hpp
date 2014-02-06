@@ -54,29 +54,29 @@ struct ContainerBase
     ContainerBase& operator=(ContainerBase<ValueType,N,BoostContainerType> &&rhs){std::swap(_data,rhs._data); return (*this);};
 
     /** Access operators. */
-    template<typename U = typename std::enable_if<N==1>::type> ValueType& operator[](size_t i) { return _data[i]; };
-    template<typename U = typename std::enable_if<N==1>::type> const ValueType& operator[](size_t i) const { return _data[i]; };
+    template<size_t N2 = N, typename = typename std::enable_if<N2==1>::type> ValueType& operator[](size_t i) { return _data[i]; };
+    template<size_t N2 = N, typename = typename std::enable_if<N2==1>::type> const ValueType& operator[](size_t i) const { return _data[i]; };
 
-    //template<typename U = typename std::enable_if<N!=1>::type> 
+    //template<size_t N2 = N, typename U = typename std::enable_if<N2!=1>::type> 
     //    ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>> operator[](size_t i);
-    //template<typename U = typename std::enable_if<N!=1>::type> 
+    //template<size_t N2 = N, typename U = typename std::enable_if<N2!=1>::type> 
     //    const ContainerBase<ValueType, N-1, boost::multi_array_ref<ValueType, N-1>> operator[](size_t i) const;
 
-    template<typename U = typename std::enable_if<N!=1>::type> 
+    template<size_t N2 = N, typename = typename std::enable_if<N2!=1>::type> 
         auto operator[](size_t i) -> ContainerBase<ValueType, N-1, decltype(_data[0])> { return  ContainerBase<ValueType, N-1, decltype(_data[0])>(_data[i]); }
-    template<typename U = typename std::enable_if<N!=1>::type> 
+    template<size_t N2 = N, typename = typename std::enable_if<N2!=1>::type> 
         auto operator[](size_t i) const -> ContainerBase<ValueType, N-1, decltype(_data[0])> const { return  ContainerBase<ValueType, N-1, decltype(_data[0])>(_data[i]); }
 
     /** Return operators. */
-    template<typename U = typename std::enable_if<N==2, bool>> MatrixType<ValueType> getAsMatrix() const;
-    template<typename U = typename std::enable_if<N==2, bool>> ContainerBase<ValueType,N,BoostContainerType>& operator=(MatrixType<ValueType> rhs);
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> MatrixType<ValueType> getAsMatrix() const;
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> ContainerBase<ValueType,N,BoostContainerType>& operator=(MatrixType<ValueType> rhs);
     /** Return a diagonal matrix, corresponding to the object */
-    template<typename U = typename std::enable_if<N==2, bool>> MatrixType<ValueType> getAsDiagonalMatrix() const;
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> MatrixType<ValueType> getAsDiagonalMatrix() const;
     /** Return a vector, corresponding to the object. */
-    template<typename U = typename std::enable_if<N==2, bool>> VectorType<ValueType> getAsVector() const;
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> VectorType<ValueType> getAsVector() const;
  
     /** Conjugate. */
-    template <typename U = typename std::enable_if<std::is_same<ValueType, ComplexType>::value, int>::type> 
+    template <typename U = ValueType, typename = typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type> 
         ContainerBase conj();
     /** Recursively iterates and sums all values in the container. */
     ValueType sum(){return EigenMap(_data.origin(), _data.num_elements()).sum();};
@@ -137,13 +137,13 @@ struct ContainerBase
     typedef boost::transform_iterator<action_type,typename BoostContainerType::iterator> iterator; 
     typedef boost::transform_iterator<action_type,typename BoostContainerType::iterator> const_iterator; 
     /** Begin iterator. */
-    template<typename U = typename std::enable_if<N!=1>::type>
+    template<size_t N2 = N, typename U = typename std::enable_if<N2!=1>::type>
     const_iterator begin() const { 
         //DEBUG("Using N!=1");
         auto f1 = [this](boost_under_type in){return ContainerBase<ValueType, N-1, boost_under_type>(in);}; //(boost_under_type in){return _act(in);}; 
         return boost::make_transform_iterator(_data.begin(),f1);
         };
-    template<typename U = typename std::enable_if<N==1>::type>
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==1>::type>
     const iterator begin() const {
         //DEBUG("Using N=1");
         auto f1 = [this](boost_under_type in){return in;} ;
@@ -151,14 +151,14 @@ struct ContainerBase
     }
 
     /** End iterator. */
-    template<typename U = typename std::enable_if<N!=1>::type>
+    template<size_t N2 = N, typename U = typename std::enable_if<N2!=1>::type>
     const_iterator end() const { 
         //action_type f1 = [&](boost_under_type in){return _act(in);}; 
         auto f1 = [this](boost_under_type in){return ContainerBase<ValueType, N-1, boost_under_type>(in);}; //(boost_under_type in){return _act(in);}; 
         //auto f1 = [&](boost_under_type in){return _act(in);}; 
         return boost::make_transform_iterator(_data.end(),f1);
     };
-    template<typename U = typename std::enable_if<N==1>::type>
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==1>::type>
     const iterator end() const {
         //DEBUG("Using N=1");
         auto f1 = [this](boost_under_type in){return in;} ;
@@ -176,7 +176,7 @@ struct Container : ContainerBase<ValueType,N,typename boost::multi_array<ValueTy
     Container(std::array<size_t,N> shape):ContainerBase<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
     template <typename CT>
     Container(ContainerBase<ValueType,N,CT> in) : ContainerBase<ValueType,N,typename boost::multi_array<ValueType, N>>(in._data) {};
-    template<typename U = typename std::enable_if<N==2, bool>> Container<ValueType,N> (MatrixType<ValueType> rhs);
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> Container<ValueType,N> (MatrixType<ValueType> rhs);
     using Base::operator+=;
     using Base::operator-=;
     using Base::operator*=;
