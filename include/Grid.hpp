@@ -12,38 +12,46 @@ namespace GFTools {
 template <typename ValueType, typename ... > struct GridArgTypeExtractor;
 template <typename ValueType, typename ... > struct GridPointExtractor;
 
+template <typename ValueType>
+struct point_base {
+    static_assert(!std::is_same<ValueType,int>::value, "Can't create a grid of ints");
+
+    typedef ValueType value_type;
+
+    operator ValueType() const { return val_; }
+    explicit operator size_t() const { return index_; }
+    explicit operator int() const { return index_; }
+
+    point_base(ValueType val, size_t index):val_(val),index_(index){};
+    point_base(const point_base& rhs):val_(rhs.val_),index_(rhs.index_){};
+    point_base(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; }
+    point_base& operator=(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
+    point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
+    bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
+    friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
+
+    ValueType val_;
+    size_t index_;
+}; 
+
 /** A representation of a one-dimensional grid, which stores an array of the ValueType values. */
 //template <typename ValueType, class Derived, typename = typename std::enable_if<!std::is_same<ValueType, int>::value>::type>
 template <typename ValueType, class Derived>
 class Grid {
 public:
     /** A point combines a point of the grid and it's index. */
-    struct point
-{
-        ValueType _val;
-        size_t _index;
-        operator ValueType() const { return _val; }
-        explicit operator size_t() const { return _index; }
-        //template <typename V = ValueType, typename = typename std::enable_if<!std::is_same<V,int>::value>::type> 
-        explicit operator int() const { return _index; }
-        point(){};
-        point(ValueType val, size_t index):_val(val),_index(index){};
-        point(const point& rhs):_val(rhs._val),_index(rhs._index){};
-        point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
-        point& operator=(point&& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        point operator=(const point& rhs) { _val = rhs._val, _index = rhs._index; return *this;}
-        bool operator==(const point &rhs) const {return (_val == rhs._val) && (_index == rhs._index);}
-        friend std::ostream& operator<<(std::ostream& lhs, const point &p){lhs<<"{"<<p._val<<"<-["<<p._index<<"]}"; return lhs;};
-};
+    struct point : point_base<ValueType> { 
+        using point_base<ValueType>::point_base;
+        };
+    typedef ValueType value_type;
 
+    std::vector<point> vals_;
 
-    std::vector<point> _vals;
     Grid(const std::vector<point> & vals);
-public:
     typedef typename std::vector<ValueType>::iterator iterator;
     typedef typename std::vector<ValueType>::const_iterator const_iterator;
-    typename Grid<ValueType, Derived>::const_iterator begin() const { return _vals.begin(); };
-    typename Grid<ValueType, Derived>::const_iterator end() const { return _vals.end(); };
+    typename Grid<ValueType, Derived>::const_iterator begin() const { return vals_.begin(); };
+    typename Grid<ValueType, Derived>::const_iterator end() const { return vals_.end(); };
     /** Empty constructor. */
     Grid();
     /** Copy from vector. */
@@ -53,9 +61,9 @@ public:
      */
     Grid(int min, int max, std::function<ValueType (int)> f);
     /** Copy constructor. */
-    Grid(const Grid& rhs):_vals(rhs._vals){};
+    Grid(const Grid& rhs):vals_(rhs.vals_){};
     /** Move constructor. */
-    Grid(Grid&& rhs){_vals.swap(rhs._vals);};
+    Grid(Grid&& rhs){vals_.swap(rhs.vals_);};
     /** Returns a value at given index. */
     point operator[](size_t in) const;
     /** Returns all values. */
@@ -87,15 +95,16 @@ public:
     /** Returns the closest point to the given value. */
     point findClosest(ValueType in) const;
     /** Integrate over grid. */
-    template <class Obj> auto integrate(const Obj &in) const ->decltype(in[_vals[0]]) 
+    template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
         { return static_cast<const Derived*>(this)->integrate(in); };
     /** Integrate over grid with extra arguments provided. */
-    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...))
+    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(vals_[0],Args...))
         { return static_cast<const Derived*>(this)->integrate(in, Args...); };
     /** Make the object printable. */
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const Grid<ValType,Derived2> &gr);
 
     class exWrongIndex : public std::exception { virtual const char* what() const throw(); }; 
+
 };
 
 template <class Grid>
@@ -207,55 +216,56 @@ Grid<ValueType,Derived>::Grid()
 {};
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(const std::vector<point> &vals):_vals(vals)
+Grid<ValueType,Derived>::Grid(const std::vector<point> &vals):vals_(vals)
 {
 };
 
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals):_vals(vals)
+Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals)
 {
-    for (size_t i=0; i<_vals.size(); ++i) _vals[i]._index = i;
+    vals_.reserve(vals.size());
+    for (size_t i=0; i<vals_.size(); ++i) { vals.emplace_back(point(i, vals[i])); };
 };
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f)
+Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f):
+vals_(std::abs(max-min),point(0.,0.))
 {
     if (max<min) std::swap(min,max);
     size_t n_points = max-min;
-    _vals.resize(n_points); 
-    for (int i=0; i<n_points; ++i) _vals[i]= point(f(min+i), i) ; 
+    for (int i=0; i<n_points; ++i) vals_[i]= point(f(min+i), i) ; 
 }
 
 template <typename ValueType, class Derived>
 inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::operator[](size_t index) const
 {
-    if (index>_vals.size()) throw exWrongIndex();
-    return _vals[index];
+    if (index>vals_.size()) throw exWrongIndex();
+    return vals_[index];
 }
 
 template <typename ValueType, class Derived>
 inline const std::vector<typename Grid<ValueType,Derived>::point> & Grid<ValueType,Derived>::getPoints() const
 {
-    return _vals;
+    return vals_;
 }
 
 template <typename ValueType, class Derived>
 inline const std::vector<ValueType>& Grid<ValueType,Derived>::getPointVals() const
 {
-    return _vals;
+    return vals_;
 }
 
 template <typename ValueType, class Derived>
 inline size_t Grid<ValueType,Derived>::getSize() const
 {
-    return _vals.size();
+    return vals_.size();
 }
 
 template <typename ValueType, class Derived>
 inline bool Grid<ValueType,Derived>::checkPoint(point in, RealType tolerance) const
 {
-    return (in._index < _vals.size() && std::abs(in._val - _vals[in._index]._val) < tolerance);
+    return (in.index_ < vals_.size() && std::abs(in._val - vals_[in.index_]._val) < tolerance);
 }
 
 
@@ -267,8 +277,8 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(po
     if (std::abs(ValueType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
     out._val = in._val + ValueType(shift_arg);
     auto find_result = this->find(out._val);
-    if (std::get<0>(find_result)) { out._index = std::get<1>(find_result); return (*this)[out._index]; }
-    else { out._index = this->getSize(); 
+    if (std::get<0>(find_result)) { out.index_ = std::get<1>(find_result); return (*this)[out.index_]; }
+    else { out.index_ = this->getSize(); 
            #ifndef NDEBUG
            ERROR("Returning point with an invalid index after shift.");
            #endif
@@ -280,7 +290,7 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::findClos
 {
     auto find_result = find(in);
     if (!std::get<0>(find_result)) { ERROR("Couldn't find the closest point"); throw (exWrongIndex()); };
-    return point(_vals[std::get<1>(find_result)],std::get<1>(find_result));
+    return point(vals_[std::get<1>(find_result)],std::get<1>(find_result));
 } 
 
 template <typename ValueType, class Derived>
@@ -293,12 +303,12 @@ inline ValueType Grid<ValueType,Derived>::shift(ValueType in, ArgType shift_arg)
 template <typename ValueType, class Derived>
 inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(point in, point shift_arg) const
 {
-    size_t index = (in._index + shift_arg._index)%_vals.size();
+    size_t index = (in.index_ + shift_arg.index_)%vals_.size();
     #ifndef NDEBUG
     ValueType val = this->shift(in._val, shift_arg._val);
-    if (std::abs(val - _vals[index]._val)>1e-3) throw (exWrongIndex()); 
+    if (std::abs(val - vals_[index]._val)>1e-3) throw (exWrongIndex()); 
     #endif
-    return _vals[index];
+    return vals_[index];
 
 }
 
@@ -306,9 +316,9 @@ template <typename ValueType, class Derived>
 std::ostream& operator<<(std::ostream& lhs, const Grid<ValueType,Derived> &gr)
 { 
     lhs << "{";
-    //lhs << gr._vals;
+    //lhs << gr.vals_;
     std::ostream_iterator<ValueType> out_it (lhs,", ");
-    std::transform(gr._vals.begin(),gr._vals.end(), out_it, [](const typename Grid<ValueType,Derived>::point &x){return ValueType(x);});
+    std::transform(gr.vals_.begin(),gr.vals_.end(), out_it, [](const typename Grid<ValueType,Derived>::point &x){return ValueType(x);});
     lhs << "}";
     return lhs;
 }

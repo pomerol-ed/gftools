@@ -15,10 +15,10 @@ public:
     KMesh(const KMesh& rhs) = default;
     KMesh(KMesh &&rhs) = default;
     KMesh() = default;
-    KMesh& operator=(KMesh &&rhs) {_points = rhs._points; _domain_len = rhs._domain_len; _vals.swap(rhs._vals); return (*this);};
-    KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;_vals = rhs._vals; return (*this);};
+    KMesh& operator=(KMesh &&rhs) {_points = rhs._points; _domain_len = rhs._domain_len; vals_.swap(rhs.vals_); return (*this);};
+    KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;vals_ = rhs.vals_; return (*this);};
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
-    template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
+    template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
     template <class Obj> auto getValue(Obj &in, point x) const ->decltype(in[0]);
@@ -29,11 +29,11 @@ public:
 
 struct KMeshPatch : public KMesh 
 {
-    std::map<size_t,size_t> _map_vals;
+    std::map<size_t,size_t> mapvals_;
 public:
     const KMesh& _parent;
     size_t _npoints;
-    using KMesh::_vals;
+    using KMesh::vals_;
     KMeshPatch(const KMesh& parent, std::vector<size_t> indices);
     KMeshPatch(const KMesh& parent);
     template <class Obj> auto getValue(Obj &in, RealType x) const ->decltype(in[0]);
@@ -41,9 +41,9 @@ public:
     size_t getIndex(KMesh::point x) const;
 };
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename KMesh::point> &in){lhs << std::setprecision(in._prec) << RealType(in._v._val); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename KMesh::point> &in){lhs << std::setprecision(in._prec) << RealType(in._v.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format< typename KMesh::point> &in){RealType v; lhs >> v; in._v._val = v; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, __num_format< typename KMesh::point> &in){RealType v; lhs >> v; in._v.val_ = v; return lhs;};
 
 //
 // KMesh
@@ -56,11 +56,11 @@ _points(n_points)
 {
 }
 /*
-KMesh::KMesh(const KMesh& rhs):Grid(rhs._vals),_points(rhs._points)
+KMesh::KMesh(const KMesh& rhs):Grid(rhs.vals_),_points(rhs._points)
 {
 }
 
-KMesh::KMesh(KMesh &&rhs):Grid(rhs._vals),_points(rhs._points)
+KMesh::KMesh(KMesh &&rhs):Grid(rhs.vals_),_points(rhs._points)
 {
 }
 */
@@ -87,8 +87,8 @@ inline auto KMesh::getValue(Obj &in, RealType x) const ->decltype(in[0])
 template <class Obj>
 inline auto KMesh::getValue(Obj &in, KMesh::point x) const ->decltype(in[0]) 
 {
-    if (x._index < _vals.size() && x == _vals[x._index])
-    return in[x._index];
+    if (x.index_ < vals_.size() && x == vals_[x.index_])
+    return in[x.index_];
     else { 
         #ifndef NDEBUG
         ERROR ("Point not found"); 
@@ -98,10 +98,10 @@ inline auto KMesh::getValue(Obj &in, KMesh::point x) const ->decltype(in[0])
 }
 
 template <class Obj> 
-auto KMesh::integrate(const Obj &in) const -> decltype(in(_vals[0]))
+auto KMesh::integrate(const Obj &in) const -> decltype(in(vals_[0]))
 {
-    decltype(in(_vals[0])) R = in(RealType(_vals[0]));
-    R=std::accumulate(_vals.begin()+1, _vals.end(), R,[&](decltype(in(_vals[0]))& y,decltype(_vals[0]) & x) {return y+in(x);}); 
+    decltype(in(vals_[0])) R = in(RealType(vals_[0]));
+    R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) & x) {return y+in(x);}); 
     return R/_points;
 }
 
@@ -121,23 +121,23 @@ template <class ArgType>
 inline typename KMesh::point KMesh::shift(point in, ArgType shift_arg) const
 {
     if (std::abs(RealType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
-    point out;
-    out._val = this->shift(in._val, shift_arg);
-    auto find_result = this->find(out._val);
+    
+    double val = this->shift(in.val_, shift_arg);
+    auto find_result = this->find(val);
     if (!std::get<0>(find_result)) throw (exWrongIndex());
-    out._index = std::get<1>(find_result);
-    return (*this)[out._index];
+    size_t index = std::get<1>(find_result);
+    return (*this)[index];
 }
 
 inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
 {
-    size_t index = (in._index + shift_arg._index)%_points;
+    size_t index = (in.index_ + shift_arg.index_)%_points;
     #ifndef NDEBUG
-    RealType val = this->shift(in._val, shift_arg._val);
-    if (std::abs(val - _vals[index])>1e-3) throw (exWrongIndex()); 
+    RealType val = this->shift(in.val_, shift_arg.val_);
+    if (std::abs(val - vals_[index])>1e-3) throw (exWrongIndex()); 
     #endif
-    //out._val = _vals[out._index];
-    return _vals[index];
+    //out.val_ = vals_[out.index_];
+    return vals_[index];
 }
 
 
@@ -148,13 +148,13 @@ inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
 
 
 inline KMeshPatch::KMeshPatch(const KMesh& parent, std::vector<size_t> indices):
+    KMesh(indices.size()),
     _parent(parent),
     _npoints(indices.size())
 {
-    _vals.resize(_npoints); 
     for (size_t i=0; i<_npoints; ++i) {
-        _vals[i]=_parent[indices[i]]; 
-        _map_vals[size_t(_vals[i])] = i;
+        vals_[i]=_parent[indices[i]]; 
+        mapvals_[size_t(vals_[i])] = i;
         }
 }
 
@@ -162,9 +162,9 @@ inline KMeshPatch::KMeshPatch(const KMesh& parent):
     _parent(parent),
     _npoints(parent.getSize())
 {
-    _vals = parent.getPoints();
+    vals_ = parent.getPoints();
      for (size_t i=0; i<_npoints; ++i) {
-        _map_vals[size_t(_vals[i])] = i;
+        mapvals_[size_t(vals_[i])] = i;
         }
 }
 
@@ -184,8 +184,8 @@ inline auto KMeshPatch::getValue(Obj &in, KMesh::point x) const ->decltype(in[0]
 
 inline size_t KMeshPatch::getIndex(KMesh::point x) const
 {
-    auto f1 = _map_vals.find(size_t(x));
-    if (f1!=_map_vals.end()) { return f1->second; }
+    auto f1 = mapvals_.find(size_t(x));
+    if (f1!=mapvals_.end()) { return f1->second; }
     else throw (exWrongIndex());
 }
 
