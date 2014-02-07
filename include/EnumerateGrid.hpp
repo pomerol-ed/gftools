@@ -6,9 +6,23 @@
 namespace GFTools { 
 
 /** A grid of real values. */
-class EnumerateGrid : public Grid<int,EnumerateGrid>
+class EnumerateGrid
 {
 public:
+    struct point
+{
+    int _val;
+    size_t _index;
+    operator int() const { return _val; }
+    point(){};
+    point(int val, size_t index):_val(val),_index(index){};
+    point(const point& rhs):_val(rhs._val),_index(rhs._index){};
+    point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
+    friend std::ostream& operator<<(std::ostream&out, const point &p){out << 3; return out;}
+};
+
+    std::vector<point> _vals;
+
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
     template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
     /** Generates a uniform grid.
@@ -26,12 +40,12 @@ public:
     //template <class Obj> auto getValue(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
 };
 
-/*
+
+
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v._val); return lhs;};
 template <>
 inline std::istream& operator>>(std::istream& lhs, __num_format<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v._val = im; return lhs;};
-*/
 
 //
 // EnumerateGrid implementation

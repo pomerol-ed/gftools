@@ -13,13 +13,14 @@ using namespace GFTools;
 
 int main()
 {
-    FMatsubaraGrid::p2 p101;
-    std::cout << p101 << std::endl;
 
+    exit(0);
 
     FMatsubaraGrid n1(-100,100,10);
     FMatsubaraGrid n2(0,32,20);
-    
+
+    typename FMatsubaraGrid::point ppp;
+    std::cout << ppp << std::endl;    
 
 
     KMesh k1(32);
@@ -50,9 +51,11 @@ int main()
     INFO(n2.getValue(x,FMatsubara(10,20)));
     if (n2.getValue(x,FMatsubara(10,20))!=100) return EXIT_FAILURE;
 
+/*
     EnumerateGrid g1(3,8);
     INFO(g1);
     EnumerateGrid::point p1 = g1[0];
     std::cout << p1 << std::endl;
+*/
     return EXIT_SUCCESS;
 }

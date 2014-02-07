@@ -36,7 +36,6 @@ public:
 typedef MatsubaraGrid<1> FMatsubaraGrid;
 typedef MatsubaraGrid<0> BMatsubaraGrid;
 
-/*
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename FMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v._val); return lhs;};
 template <>
@@ -45,7 +44,6 @@ template <>
 inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename BMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v._val); return lhs;};
 template <>
 inline std::istream& operator>>(std::istream& lhs, __num_format<typename BMatsubaraGrid::point> &out){RealType im; lhs >> im; out._v._val = I*im; return lhs;};
-*/
 
 //
 // MatsubaraGrid implementations
