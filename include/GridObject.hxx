@@ -28,7 +28,7 @@ inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<Nc,CT,A
     const auto & grid=std::get<N-Nc>(grids);
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-Nc,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
     if (!grid.checkPoint(arg1)) throw (exPointMismatch());
-    auto &tmp = data[arg1._index];
+    auto &tmp = data[arg1.index_];
     return ContainerExtractor<Nc-1, decltype(tmp), ArgTypes...>::get_ref(tmp,grids,args...);
 };
 
@@ -40,7 +40,7 @@ inline ValueType& GridObject<ValueType,GridTypes...>::ContainerExtractor<1,CT,Ar
     const auto & grid=std::get<N-1>(grids);
     static_assert(std::is_same<ArgType1,typename std::tuple_element<N-1,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
     if (!grid.checkPoint(arg1)) throw (exPointMismatch());
-    auto &tmp = data[arg1._index];
+    auto &tmp = data[arg1.index_];
     return tmp;
 }
 
@@ -288,7 +288,7 @@ template <int M, typename std::enable_if<M ==0, bool>::type>
 inline typename GridObject<ValueType,GridTypes...>::ArgTupleType GridObject<ValueType,GridTypes...>::getArgsFromIndices(PointIndices in) const
 {
     ArgTupleType out;
-    auto t1 = std::get<N-1>(_grids)[in[N-1]]._val;
+    auto t1 = std::get<N-1>(_grids)[in[N-1]].val_;
     std::get<N-1>(out)=t1;
     return out;
 }
@@ -299,7 +299,7 @@ inline typename GridObject<ValueType,GridTypes...>::ArgTupleType GridObject<Valu
 {
     auto out = getArgsFromIndices<M-1>(in);
     auto t1 = std::get<N-1-M>(_grids)[in[N-1-M]];
-    std::get<N-1-M>(out) = t1._val;
+    std::get<N-1-M>(out) = t1.val_;
     return out;
 }
 
@@ -341,9 +341,9 @@ inline typename GridObject<ValueType,GridTypes...>::PointIndices GridObject<Valu
 {
     PointIndices out;
     auto t1 = std::get<N-1>(in);
-    if (std::get<N-1>(_grids).getSize()<=t1._index) throw exWrongIndex();
-    if (std::get<N-1>(_grids)[t1._index]._index != t1._index) { throw exWrongIndex(); };
-    out[N-1]=t1._index;
+    if (std::get<N-1>(_grids).getSize()<=t1.index_) throw exWrongIndex();
+    if (std::get<N-1>(_grids)[t1.index_].index_ != t1.index_) { throw exWrongIndex(); };
+    out[N-1]=t1.index_;
     return out;
 }
 
@@ -353,9 +353,9 @@ inline typename GridObject<ValueType,GridTypes...>::PointIndices GridObject<Valu
 {
     auto out = getIndicesFromPoints<M-1>(in);
     auto t1 = std::get<N-1-M>(in);
-    if (std::get<N-1-M>(_grids).getSize()<=t1._index) throw exWrongIndex();
-    if (std::get<N-1-M>(_grids)[t1._index]._index != t1._index) throw exWrongIndex();
-    out[N-1-M]=t1._index;
+    if (std::get<N-1-M>(_grids).getSize()<=t1.index_) throw exWrongIndex();
+    if (std::get<N-1-M>(_grids)[t1.index_].index_ != t1.index_) throw exWrongIndex();
+    out[N-1-M]=t1.index_;
     return out;
 }
 

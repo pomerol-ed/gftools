@@ -68,13 +68,13 @@ Grid<RealType, RealGrid>(in)
 }
 
 
-inline RealGrid::RealGrid(const std::vector<RealType>& in):
-vals_(in.size(), point(0,0))
+inline RealGrid::RealGrid(const std::vector<RealType>& in)
 {
+    vals_.reserve(in.size());
     auto in2(in);
     std::sort(in2.begin(), in2.end());
     size_t npts = in2.size();
-    for (int i=0; i<npts; ++i) vals_[i]=point(in2[i],i);
+    for (int i=0; i<npts; ++i) vals_.emplace_back(in2[i],i);
     min_ = in2[0]; max_ = in2[npts-1];
 }
 

@@ -5,26 +5,16 @@
 
 namespace GFTools { 
 
+// A wrapper around int to avoid weird gcc buf
+struct int_wrap_enumerate_grid
+{int v_; operator int() const{return v_;}; int_wrap_enumerate_grid(int i=0):v_(i) {}; };
+
 /** A grid of real values. */
-class EnumerateGrid
+class EnumerateGrid : public Grid<int_wrap_enumerate_grid, EnumerateGrid>
 {
 public:
-    struct point
-{
-    int _val;
-    size_t _index;
-    operator int() const { return _val; }
-    point(){};
-    point(int val, size_t index):_val(val),_index(index){};
-    point(const point& rhs):_val(rhs._val),_index(rhs._index){};
-    point(point&& rhs) { _val = rhs._val, _index = rhs._index; }
-    friend std::ostream& operator<<(std::ostream&out, const point &p){out << 3; return out;}
-};
-
-    std::vector<point> _vals;
-
-    template <class Obj> auto integrate(const Obj &in) const ->decltype(in(_vals[0]));
-    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(_vals[0],Args...));
+    template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
+    template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(vals_[0],Args...));
     /** Generates a uniform grid.
      * \param[in] min Minimal point
      * \param[in] max Maximal point
@@ -43,23 +33,24 @@ public:
 
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v._val); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v._val = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, __num_format<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v.val_ = im; return lhs;};
 
 //
 // EnumerateGrid implementation
 //
 
 inline EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
-    Grid<int, EnumerateGrid>(min,max+include_last,[](int n){return n;})
-{}
+Grid<int_wrap_enumerate_grid, EnumerateGrid>(min,max+include_last,[](int n){return n;})
+{
+}
 
 inline std::tuple<bool, size_t, int> EnumerateGrid::find (int in) const
 {
-    if (in<_vals[0]._val) { ERROR("out of bounds"); return std::make_tuple(0,0,0);};
-    if (in > _vals[_vals.size()-1]._val) { ERROR("out of bounds"); return std::make_tuple(0,_vals.size(),0);}; 
-    return std::make_tuple (1,in-_vals[0]._val,1);
+    if (in<vals_[0].val_) { ERROR("out of bounds"); return std::make_tuple(0,0,0);};
+    if (in > vals_[vals_.size()-1].val_) { ERROR("out of bounds"); return std::make_tuple(0,vals_.size(),0);}; 
+    return std::make_tuple (1,in-vals_[0].val_,1);
 }
 
 template <class Obj>
@@ -67,7 +58,7 @@ inline auto EnumerateGrid::getValue(Obj &in, int x) const ->
     decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0) 
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) { throw (exWrongIndex()); } 
+    if (!std::get<0>(find_result)) { throw (std::logic_error("Wrong index")); } 
     return in[std::get<1>(find_result)];
 }
 
@@ -75,8 +66,8 @@ inline auto EnumerateGrid::getValue(Obj &in, int x) const ->
 template <class Obj>
 inline auto EnumerateGrid::getValue(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]) 
 {
-    if (x._index < _vals.size() && x == _vals[x._index])
-    return in[x._index];
+    if (x.index_ < vals_.size() && x == vals_[x.index_])
+    return in[x.index_];
     else { 
         #ifndef NDEBUG
         ERROR ("Point not found"); 

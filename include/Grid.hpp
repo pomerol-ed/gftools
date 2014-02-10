@@ -24,9 +24,10 @@ struct point_base {
 
     point_base(ValueType val, size_t index):val_(val),index_(index){};
     point_base(const point_base& rhs):val_(rhs.val_),index_(rhs.index_){};
-    point_base(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; }
+    point_base(point_base&& rhs):val_(rhs.val_),index_(rhs.index_) {};
     point_base& operator=(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
     point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
+    point_base (){};
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
@@ -108,24 +109,24 @@ public:
 };
 
 template <class Grid>
-std::ostream& operator<<(std::ostream& lhs, const __num_format<typename Grid::point> &in){lhs << std::setprecision(in._prec) << in._v._val; return lhs;};
+std::ostream& operator<<(std::ostream& lhs, const __num_format<typename Grid::point> &in){lhs << std::setprecision(in._prec) << in._v.val_; return lhs;};
 template <class Grid>
 std::istream& operator>>(std::istream& lhs, __num_format<typename Grid::point> &out)
-{__num_format<decltype(std::declval<typename Grid::point>()._v)> d(0.0); lhs >> d; out._v._val = d._v; return lhs;};
+{__num_format<decltype(std::declval<typename Grid::point>()._v)> d(0.0); lhs >> d; out._v.val_ = d._v; return lhs;};
 
 /** A tool to generate a function of argtypes of grids. */
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>
 struct GridArgTypeExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
-GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::_val)>
+GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::val_)>
 {
 };
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
 struct GridArgTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::_val))> type; 
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::_val))> arg_type; 
-    typedef std::tuple<ArgTypes...,decltype(GridType1::point::_val)> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., decltype(GridType1::point::_val)> arg_function_wrapper;
+    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> type; 
+    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> arg_type; 
+    typedef std::tuple<ArgTypes...,decltype(GridType1::point::val_)> arg_tuple_type;
+    typedef __caller<ValueType, ArgTypes..., decltype(GridType1::point::val_)> arg_function_wrapper;
 };
 
 /** A tool to generate a function of argtypes of grids. */
@@ -225,16 +226,16 @@ template <typename ValueType, class Derived>
 Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals)
 {
     vals_.reserve(vals.size());
-    for (size_t i=0; i<vals_.size(); ++i) { vals.emplace_back(point(i, vals[i])); };
+    for (size_t i=0; i<vals_.size(); ++i) { vals_.emplace_back(point(i, vals[i])); };
 };
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f):
-vals_(std::abs(max-min),point(0.,0.))
+Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f)
 {
     if (max<min) std::swap(min,max);
     size_t n_points = max-min;
-    for (int i=0; i<n_points; ++i) vals_[i]= point(f(min+i), i) ; 
+    vals_.reserve(n_points);
+    for (int i=0; i<n_points; ++i) vals_.emplace_back(f(min+i), i) ; 
 }
 
 template <typename ValueType, class Derived>
@@ -265,7 +266,7 @@ inline size_t Grid<ValueType,Derived>::getSize() const
 template <typename ValueType, class Derived>
 inline bool Grid<ValueType,Derived>::checkPoint(point in, RealType tolerance) const
 {
-    return (in.index_ < vals_.size() && std::abs(in._val - vals_[in.index_]._val) < tolerance);
+    return (in.index_ < vals_.size() && std::abs(in.val_ - vals_[in.index_].val_) < tolerance);
 }
 
 
@@ -275,8 +276,8 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(po
 {
     point out;
     if (std::abs(ValueType(shift_arg))<std::numeric_limits<RealType>::epsilon()) return in;
-    out._val = in._val + ValueType(shift_arg);
-    auto find_result = this->find(out._val);
+    out.val_ = in.val_ + ValueType(shift_arg);
+    auto find_result = this->find(out.val_);
     if (std::get<0>(find_result)) { out.index_ = std::get<1>(find_result); return (*this)[out.index_]; }
     else { out.index_ = this->getSize(); 
            #ifndef NDEBUG
@@ -305,8 +306,8 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(po
 {
     size_t index = (in.index_ + shift_arg.index_)%vals_.size();
     #ifndef NDEBUG
-    ValueType val = this->shift(in._val, shift_arg._val);
-    if (std::abs(val - vals_[index]._val)>1e-3) throw (exWrongIndex()); 
+    ValueType val = this->shift(in.val_, shift_arg.val_);
+    if (std::abs(val - vals_[index].val_)>1e-3) throw (exWrongIndex()); 
     #endif
     return vals_[index];
 

@@ -3,7 +3,7 @@
 #include "Defaults.hpp"
 #include "MatsubaraGrid.hpp"
 #include "KMesh.hpp"
-//#include "EnumerateGrid.hpp"
+#include "EnumerateGrid.hpp"
 #include "RealGrid.hpp"
 
 #include <iostream>
@@ -78,10 +78,9 @@ int main()
     
  
 
-/*    EnumerateGrid g1(3,8);
+    EnumerateGrid g1(3,8);
     INFO(g1);
     EnumerateGrid::point p1 = g1[0];
     std::cout << p1 << std::endl;
-*/
     return EXIT_SUCCESS;
 }
