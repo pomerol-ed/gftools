@@ -42,7 +42,10 @@ class Grid {
 public:
     /** A point combines a point of the grid and it's index. */
     struct point : point_base<ValueType> { 
-        using point_base<ValueType>::point_base;
+        point():point_base<ValueType>::point_base(){};
+        point(ValueType val, size_t index):point_base<ValueType>::point_base(val,index){};
+        point(const point_base<ValueType> &in):point_base<ValueType>::point_base(in){};
+        point(point_base<ValueType> &&in):point_base<ValueType>::point_base(in){};
         };
     typedef ValueType value_type;
 
