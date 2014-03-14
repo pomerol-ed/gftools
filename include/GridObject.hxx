@@ -256,7 +256,7 @@ inline void GridObject<ValueType,GridTypes...>::fill(const typename GridObject<V
 */
 
 template <typename ValueType, typename ...GridTypes> 
-inline const size_t GridObject<ValueType,GridTypes...>::getTotalContainerSize() const
+inline size_t GridObject<ValueType,GridTypes...>::getTotalContainerSize() const
 {
     size_t out = 1;
     for (auto i : _dims) out*=i;

@@ -42,7 +42,7 @@ int main()
     GridObject<ComplexType,FMatsubaraGrid,KMesh,KMesh> D4(std::make_tuple(fgrid,qgrid,qgrid));
     GridObject<ComplexType,FMatsubaraGrid,KMesh,KMesh> D5(std::make_tuple(fgrid,qgrid,qgrid));
 
-    typename decltype(D4)::FunctionType f1 = [](ComplexType w, RealType k1, RealType k2){return 1.0/(w + cos(k1)+cos(k2));};
+    GridObject<ComplexType,FMatsubaraGrid,KMesh,KMesh>::FunctionType f1 = [](ComplexType w, RealType k1, RealType k2){return 1.0/(w + cos(k1)+cos(k2));};
     D4.fill(f1);
     D4.savetxt("data_in2.dat");
     D5.loadtxt("data_in2.dat");

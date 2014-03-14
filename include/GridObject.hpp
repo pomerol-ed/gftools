@@ -89,7 +89,7 @@ public:
     GridObject( GridObject<ValueType, GridTypes...>&& rhs);
 
     const std::tuple<GridTypes...> getGrids() const;
-    const size_t getTotalContainerSize() const;
+    size_t getTotalContainerSize() const;
     /** Returns an Mth grid in _grids. */
     template<size_t M> 
         auto getGrid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type& ;
