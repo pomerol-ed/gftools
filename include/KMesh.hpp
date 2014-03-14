@@ -11,10 +11,11 @@ class KMesh : public Grid<RealType, KMesh>
     mutable RealType _domain_len = 2.0*PI;
 public:
     int _points;
+    using Grid<RealType, KMesh>::vals_;
     KMesh(size_t n_points, RealType len = 2.0*PI);
-    KMesh(const KMesh& rhs) = default;
-    KMesh(KMesh &&rhs) = default;
-    KMesh() = default;
+    KMesh(const KMesh& rhs):_points(rhs._points),_domain_len(rhs._domain_len),Grid<RealType, KMesh>(rhs) {};
+    KMesh(KMesh &&rhs):_points(rhs._points),_domain_len(rhs._domain_len), Grid<RealType, KMesh>(rhs) {};
+    KMesh():_points(0){};
     KMesh& operator=(KMesh &&rhs) {_points = rhs._points; _domain_len = rhs._domain_len; vals_.swap(rhs.vals_); return (*this);};
     KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;vals_ = rhs.vals_; return (*this);};
     std::tuple <bool, size_t, RealType> find (RealType in) const ;
