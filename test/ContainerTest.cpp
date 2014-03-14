@@ -41,6 +41,8 @@ int main()
     A1 = 1.;
     A2 = 2.;
     DEBUG(A1);
+    A1+=A2;
+    DEBUG(A1);
     A3 = 3.0*(A1+0.5)*2+A2;
     DEBUG(A3);
     DEBUG(A1);
