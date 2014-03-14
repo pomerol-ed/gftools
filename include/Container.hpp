@@ -84,49 +84,49 @@ struct ContainerBase
     /** Mathematical operators. */
 
     template <typename T>
-    using BaseIfContainer = typename std::enable_if<T::_N>=1, ContainerBase<ValueType,N,BoostContainerType>&>::type;
+    using BaseRefIfContainer = typename std::enable_if<T::_N>=1, ContainerBase<ValueType,N,BoostContainerType>&>::type;
     template <typename T>
     using ContainerIfContainer = typename std::enable_if<T::_N>=1, Container<ValueType,N>>::type;
     template <typename T>
-    using BaseIfValue = typename std::enable_if<std::is_convertible<T,ValueType>::value, ContainerBase<ValueType,N,BoostContainerType>&>::type;
+    using BaseRefIfValue = typename std::enable_if<std::is_convertible<T,ValueType>::value, ContainerBase<ValueType,N,BoostContainerType>&>::type;
     template <typename T>
     using ContainerIfValue = typename std::enable_if<std::is_convertible<T,ValueType>::value, Container<ValueType,N>>::type;
 
     ContainerBase& operator=(ValueType rhs);
 
     template <typename R>
-        BaseIfContainer<R> operator+=(const R &rhs); 
+        BaseRefIfContainer<R> operator+=(const R &rhs); 
     template <typename R> 
         ContainerIfContainer<R> operator+(const R &rhs) const;
     template <typename R2>
-        BaseIfValue<R2> operator+=(const R2& rhs);
+        BaseRefIfValue<R2> operator+=(const R2& rhs);
     template <typename R2> 
         ContainerIfValue<R2> operator+(const R2& rhs) const;
 
     template <typename R>
-        BaseIfContainer<R> operator-=(const R &rhs); 
+        BaseRefIfContainer<R> operator-=(const R &rhs); 
     template <typename R> 
         ContainerIfContainer<R> operator-(const R &rhs) const;
     template <typename R2> 
-        BaseIfValue<R2> operator-=(const R2& rhs);
+        BaseRefIfValue<R2> operator-=(const R2& rhs);
     template <typename R2> 
         ContainerIfValue<R2> operator-(const R2& rhs) const;
 
     template <typename R>
-        BaseIfContainer<R> operator*=(const R &rhs); 
+        BaseRefIfContainer<R> operator*=(const R &rhs); 
     template <typename R> 
         ContainerIfContainer<R> operator*(const R &rhs) const;
     template <typename R2> 
-        BaseIfValue<R2> operator*=(const R2& rhs);
+        BaseRefIfValue<R2> operator*=(const R2& rhs);
     template <typename R2> 
         ContainerIfValue<R2> operator*(const R2& rhs) const;
 
     template <typename R>
-        BaseIfContainer<R> operator/=(const R &rhs); 
+        BaseRefIfContainer<R> operator/=(const R &rhs); 
     template <typename R> 
         ContainerIfContainer<R> operator/(const R &rhs) const;
     template <typename R2> 
-        BaseIfValue<R2> operator/=(const R2& rhs);
+        BaseRefIfValue<R2> operator/=(const R2& rhs);
     template <typename R2> 
         ContainerIfValue<R2> operator/(const R2& rhs) const;
 

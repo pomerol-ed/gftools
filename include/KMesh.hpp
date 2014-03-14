@@ -13,8 +13,8 @@ public:
     int _points;
     using Grid<RealType, KMesh>::vals_;
     KMesh(size_t n_points, RealType len = 2.0*PI);
-    KMesh(const KMesh& rhs):_points(rhs._points),_domain_len(rhs._domain_len),Grid<RealType, KMesh>(rhs) {};
-    KMesh(KMesh &&rhs):_points(rhs._points),_domain_len(rhs._domain_len), Grid<RealType, KMesh>(rhs) {};
+    KMesh(const KMesh& rhs):Grid<RealType, KMesh>(rhs),_domain_len(rhs._domain_len),_points(rhs._points){}
+    KMesh(KMesh &&rhs):Grid<RealType, KMesh>(rhs),_domain_len(rhs._domain_len),_points(rhs._points){}
     KMesh():_points(0){};
     KMesh& operator=(KMesh &&rhs) {_points = rhs._points; _domain_len = rhs._domain_len; vals_.swap(rhs.vals_); return (*this);};
     KMesh& operator=(const KMesh &rhs) {_points = rhs._points; _domain_len = rhs._domain_len;vals_ = rhs.vals_; return (*this);};
