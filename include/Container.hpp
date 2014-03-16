@@ -15,7 +15,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
-namespace GFTools { 
+namespace gftools { 
 
 template <typename ValueType, size_t N, typename BoostContainerType>
 struct ContainerBase;
@@ -76,7 +76,7 @@ struct ContainerBase
     template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> VectorType<ValueType> getAsVector() const;
  
     /** Conjugate. */
-    template <typename U = ValueType, typename = typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type> 
+    template <typename U = ValueType, typename = typename std::enable_if<std::is_same<U, complex_type>::value, int>::type> 
         ContainerBase conj();
     /** Recursively iterates and sums all values in the container. */
     ValueType sum(){return EigenMap(_data.origin(), _data.num_elements()).sum();};
@@ -190,7 +190,7 @@ struct Container : ContainerBase<ValueType,N,typename boost::multi_array<ValueTy
 };
 
 template<typename ValueType, size_t N, size_t M = N>
-using ContainerView = ContainerBase<RealType, N, typename Container<RealType, N>::boost_t::template array_view<M>::type>;
+using ContainerView = ContainerBase<real_type, N, typename Container<real_type, N>::boost_t::template array_view<M>::type>;
 
 template <typename ValueType, size_t N>
 struct _container_underlying_type
@@ -204,7 +204,7 @@ struct _container_underlying_type<ValueType,1>
     typedef ValueType type;
 };
 
-}; // end of namespace GFTools
+}; // end of namespace gftools
 #endif
 
 #include "Container.hxx"

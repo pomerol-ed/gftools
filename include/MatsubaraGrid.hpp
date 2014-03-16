@@ -4,32 +4,40 @@
 #include "Grid.hpp"
 #include <numeric>
 
-namespace GFTools { 
+namespace gftools { 
+
+template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){return PI*I/beta*complex_type(2*n+Fermion);};
+template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){return std::round((beta*imag(in)/PI-Fermion)/2.0);};
+
+inline complex_type FMatsubara(int n, real_type beta){return Matsubara<1>(n,beta);};
+inline complex_type BMatsubara(int n, real_type beta){return Matsubara<0>(n,beta);};
+inline int FMatsubaraIndex(complex_type in, real_type beta){return MatsubaraIndex<1>(in,beta);};
+inline int BMatsubaraIndex(complex_type in, real_type beta){return MatsubaraIndex<0>(in,beta);};
 
 /** A Grid of fermionic Matsubara frequencies. */
 template <bool Fermion>
-class MatsubaraGrid : public Grid<ComplexType, MatsubaraGrid<Fermion>>
+class MatsubaraGrid : public Grid<complex_type, MatsubaraGrid<Fermion>>
 {
 public:
-    using Grid<ComplexType, MatsubaraGrid<Fermion>>::vals_;
-    using typename Grid<ComplexType, MatsubaraGrid<Fermion>>::exWrongIndex;
-    //typedef typename Grid<ComplexType, MatsubaraGrid<Fermion>>::point point;
-    using typename Grid<ComplexType, MatsubaraGrid<Fermion>>::point;
+    using Grid<complex_type, MatsubaraGrid<Fermion>>::vals_;
+    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::exWrongIndex;
+    //typedef typename Grid<complex_type, MatsubaraGrid<Fermion>>::point point;
+    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::point;
     /** Inverse temperature. */
-    const RealType _beta;
+    const real_type _beta;
     /** Spacing between values. */
-    const RealType _spacing;
+    const real_type _spacing;
     /** Min and max numbers of freq. - useful for searching. */
     const int _w_min, _w_max;
-    MatsubaraGrid(int min, int max, RealType beta);
+    MatsubaraGrid(int min, int max, real_type beta);
     MatsubaraGrid(const MatsubaraGrid &rhs);
     MatsubaraGrid(MatsubaraGrid&& rhs);
-    int getNumber(ComplexType in) const;
-    std::tuple <bool, size_t, RealType> find (ComplexType in) const ;
+    int getNumber(complex_type in) const;
+    std::tuple <bool, size_t, real_type> find (complex_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
-    template <class Obj> auto getValue(Obj &in, ComplexType x) const ->decltype(in[0]);
+    template <class Obj> auto getValue(Obj &in, complex_type x) const ->decltype(in[0]);
     template <class Obj> auto getValue(Obj &in, point x) const ->decltype(in[0]);
 };
 
@@ -37,22 +45,22 @@ typedef MatsubaraGrid<1> FMatsubaraGrid;
 typedef MatsubaraGrid<0> BMatsubaraGrid;
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename FMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename FMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<typename FMatsubaraGrid::point> &out){RealType im; lhs >> im; out._v.val_ = I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename FMatsubaraGrid::point> &out){real_type im; lhs >> im; out._v.val_ = I*im; return lhs;};
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename BMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename BMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<typename BMatsubaraGrid::point> &out){RealType im; lhs >> im; out._v.val_ = I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename BMatsubaraGrid::point> &out){real_type im; lhs >> im; out._v.val_ = I*im; return lhs;};
 
 //
 // MatsubaraGrid implementations
 //
 
 template <bool F>
-MatsubaraGrid<F>::MatsubaraGrid(int min, int max, RealType beta):
-    //Grid<ComplexType, MatsubaraGrid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
-    Grid<ComplexType, MatsubaraGrid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
+MatsubaraGrid<F>::MatsubaraGrid(int min, int max, real_type beta):
+    //Grid<complex_type, MatsubaraGrid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
+    Grid<complex_type, MatsubaraGrid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     _beta(beta), 
     _spacing(PI/beta), 
     _w_min(min),
@@ -62,7 +70,7 @@ MatsubaraGrid<F>::MatsubaraGrid(int min, int max, RealType beta):
 
 template <bool F>
 MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) : 
-    Grid<ComplexType, MatsubaraGrid<F>>(rhs.vals_),
+    Grid<complex_type, MatsubaraGrid<F>>(rhs.vals_),
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
     _w_min(rhs._w_min), 
@@ -72,7 +80,7 @@ MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) :
 
 template <bool F>
 MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
-    Grid<ComplexType, MatsubaraGrid>(rhs.vals_), 
+    Grid<complex_type, MatsubaraGrid>(rhs.vals_), 
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
     _w_min(rhs._w_min), 
@@ -113,7 +121,7 @@ auto MatsubaraGrid::gridIntegrate(const std::vector<Obj> &in) const -> Obj
 */
 
 template <bool F>
-inline std::tuple <bool, size_t, RealType> MatsubaraGrid<F>::find (ComplexType in) const
+inline std::tuple <bool, size_t, real_type> MatsubaraGrid<F>::find (complex_type in) const
 {
     int n=getNumber(in);
     #ifndef NDEBUG
@@ -135,15 +143,15 @@ inline std::tuple <bool, size_t, RealType> MatsubaraGrid<F>::find (ComplexType i
 }
 
 template <bool F>
-inline int MatsubaraGrid<F>::getNumber(ComplexType in) const
+inline int MatsubaraGrid<F>::getNumber(complex_type in) const
 {
-    assert (std::abs(real(in))<std::numeric_limits<RealType>::epsilon());
+    assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
     return std::lround(imag(in)/_spacing-F)/2;
 };
 
 template <bool F>
 template <class Obj>
-inline auto MatsubaraGrid<F>::getValue(Obj &in, ComplexType x) const ->decltype(in[0]) 
+inline auto MatsubaraGrid<F>::getValue(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) { throw (exWrongIndex()); } 
@@ -161,9 +169,9 @@ inline auto MatsubaraGrid<F>::getValue(Obj &in, MatsubaraGrid::point x) const ->
         #ifndef NDEBUG
         ERROR ("Point not found"); 
         #endif
-        return this->getValue(in, ComplexType(x)); 
+        return this->getValue(in, complex_type(x)); 
          };
 }
 
-} // end of namespace GFTools
+} // end of namespace gftools
 #endif // endif # ifndef __GFTOOLS_MATSUBARAGRID_HPP_

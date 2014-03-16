@@ -5,13 +5,13 @@
 #include <numeric>
 #include <unsupported/Eigen/Splines>
 
-namespace GFTools { 
+namespace gftools { 
 
 /** A grid of real values. */
-class RealGrid : public Grid<RealType, RealGrid>
+class RealGrid : public Grid<real_type, RealGrid>
 {
-    RealType min_;
-    RealType max_;
+    real_type min_;
+    real_type max_;
 public:
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(vals_[0],Args...));
@@ -21,44 +21,44 @@ public:
      * \param[in] npoints Number of points
      * \param[in] include_last True, if the max point needs to be included
      */
-    RealGrid(RealType min, RealType max, size_t npoints, bool include_last = true);
-    RealGrid(int min, int max, const std::function<RealType(int)> &f, bool include_last = true);
-    RealGrid(std::vector<RealType>&& in);
-    RealGrid(const std::vector<RealType>& in);
-    std::tuple <bool, size_t, RealType> find (RealType in) const ;
+    RealGrid(real_type min, real_type max, size_t npoints, bool include_last = true);
+    RealGrid(int min, int max, const std::function<real_type(int)> &f, bool include_last = true);
+    RealGrid(std::vector<real_type>&& in);
+    RealGrid(const std::vector<real_type>& in);
+    std::tuple <bool, size_t, real_type> find (real_type in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
     template <class Obj> auto getValue(Obj &in, RealGrid::point x) const -> decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, RealType x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    template <class Obj> auto getValue(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
     //template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
 
-    using Grid<RealType, RealGrid>::vals_;
+    using Grid<real_type, RealGrid>::vals_;
 };
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename RealGrid::point> &in){lhs << std::setprecision(in._prec) << in._v.val_; return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename RealGrid::point> &in){lhs << std::setprecision(in._prec) << in._v.val_; return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<typename RealGrid::point> &out){RealType im; lhs >> im; out._v.val_ = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename RealGrid::point> &out){real_type im; lhs >> im; out._v.val_ = im; return lhs;};
 
 //
 // RealGrid implementation
 //
 
-inline RealGrid::RealGrid(RealType min, RealType max, size_t n_points, bool include_last):
-    Grid<RealType,RealGrid>(0,n_points,[n_points,max,min,include_last](size_t in){return (max-min)/(n_points-include_last)*in+min;}),
+inline RealGrid::RealGrid(real_type min, real_type max, size_t n_points, bool include_last):
+    Grid<real_type,RealGrid>(0,n_points,[n_points,max,min,include_last](size_t in){return (max-min)/(n_points-include_last)*in+min;}),
     min_(min),
     max_((include_last?max:vals_[n_points-1]))
 {
 }
 
-inline RealGrid::RealGrid(int min, int max, const std::function<RealType (int)> &f, bool include_last):
+inline RealGrid::RealGrid(int min, int max, const std::function<real_type (int)> &f, bool include_last):
     Grid(min,max+include_last,f),
     min_(f(min)),
     max_(f(max-include_last))
 {
 }
 
-inline RealGrid::RealGrid(std::vector<RealType>&& in):
-Grid<RealType, RealGrid>(in)
+inline RealGrid::RealGrid(std::vector<real_type>&& in):
+Grid<real_type, RealGrid>(in)
 {
     auto in2(in);
     std::sort(in2.begin(), in2.end());
@@ -68,7 +68,7 @@ Grid<RealType, RealGrid>(in)
 }
 
 
-inline RealGrid::RealGrid(const std::vector<RealType>& in)
+inline RealGrid::RealGrid(const std::vector<real_type>& in)
 {
     vals_.reserve(in.size());
     auto in2(in);
@@ -99,7 +99,7 @@ inline auto RealGrid::integrate(const Obj &in, OtherArgTypes... Args) const -> d
     return R;
 }
 
-inline std::tuple <bool, size_t, RealType> RealGrid::find (RealType in) const
+inline std::tuple <bool, size_t, real_type> RealGrid::find (real_type in) const
 {
     #ifndef NDEBUG
     DEBUG("Invoking find");
@@ -110,14 +110,14 @@ inline std::tuple <bool, size_t, RealType> RealGrid::find (RealType in) const
     size_t i = size_t(out-vals_.begin());
     i--;
     if (i==vals_.size()-1) return std::make_tuple(1,i,1.0);
-    RealType val_i = vals_[i];
-    RealType weight=(in-val_i)/(vals_[i+1] - val_i);
+    real_type val_i = vals_[i];
+    real_type weight=(in-val_i)/(vals_[i+1] - val_i);
     return std::make_tuple (1,i,weight);
 }
 
 
 template <class Obj>
-inline auto RealGrid::getValue(Obj &in, RealType x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
+inline auto RealGrid::getValue(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (exWrongIndex()); 
@@ -133,7 +133,7 @@ inline auto RealGrid::getValue(Obj &in, RealType x) const -> decltype(std::declv
     DEBUG(a1.cols());
     DEBUG(a1[0]);
     exit(0);
-    //auto SplineF = Eigen::SplineFitting<Eigen::Spline<RealType,2>>::Interpolate(a1,Eigen::Dynamic);
+    //auto SplineF = Eigen::SplineFitting<Eigen::Spline<real_type,2>>::Interpolate(a1,Eigen::Dynamic);
     //return SplineF(x)[0];
 */
 }
@@ -145,5 +145,5 @@ inline auto RealGrid::getValue(Obj &in, RealGrid::point x) const ->decltype(in[0
     else { ERROR ("Point not found"); throw exWrongIndex(); };
 }
 
-} // end of namespace GFTools
+} // end of namespace gftools
 #endif // endif :: #ifndef ___GFTOOLS_REALGRID_HPP___

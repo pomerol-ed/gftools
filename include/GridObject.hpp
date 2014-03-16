@@ -7,7 +7,7 @@
 //#include "Grid.h"
 #include "Container.hpp"
 
-namespace GFTools {
+namespace gftools {
 
 /** A GridObject is a wrapper over Container class, that stores data,
  * defined on multiple different grids.
@@ -151,13 +151,13 @@ public:
     friend GridObject operator/ (const ValueType & lhs, const GridObject & rhs) {GridObject out(rhs); out=lhs; return out/rhs;};
 
     /** Returns the complex conjugate of this object, if it's complex valued. */
-    template <typename U = ValueType, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type=0>
+    template <typename U = ValueType, typename std::enable_if<std::is_same<U, complex_type>::value, int>::type=0>
         GridObject conj();
     /** Returns a norm of difference between two objects. */
-    template <typename U = ValueType, typename std::enable_if<std::is_same<U, ComplexType>::value, int>::type = 0>
-    RealType diff(const GridObject &rhs) const; 
-    template <typename U = ValueType, typename std::enable_if<std::is_same<U, RealType>::value, int>::type = 0>
-    RealType diff(const GridObject &rhs) const;
+    template <typename U = ValueType, typename std::enable_if<std::is_same<U, complex_type>::value, int>::type = 0>
+    real_type diff(const GridObject &rhs) const; 
+    template <typename U = ValueType, typename std::enable_if<std::is_same<U, real_type>::value, int>::type = 0>
+    real_type diff(const GridObject &rhs) const;
     /** Returns the sum of all elements in the container. */
     ValueType sum();
 
@@ -169,7 +169,7 @@ public:
     /** Save the data to the txt file. */
     void savetxt(const std::string& fname) const;
     /** Loads the data to the txt file. */
-    void loadtxt(const std::string& fname, RealType tol = 1e-8);
+    void loadtxt(const std::string& fname, real_type tol = 1e-8);
     /** Dumps the object to the stream. */
     template <typename ValType, class ...GridTypes2> friend std::ostream& operator<<(std::ostream& lhs, const GridObject<ValType,GridTypes2...> &in);
     
@@ -184,7 +184,7 @@ public:
     OrigArg1 arg1 = std::get<0>(in);
     ArgType1 shift_arg1 = std::get<0>(shift_args);
     OrigArg1 out1 = std::get<sizeof...(GridTypes)-sizeof...(ArgTypes)-1>(_grids).shift(arg1,shift_arg1); 
-    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(__tuple_tail(in),__tuple_tail(shift_args)));
+    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(tuple_tail(in),tuple_tail(shift_args)));
 }
 
     /** Specialization of _shiftArgs for a tuple of 1 element. */
@@ -193,7 +193,7 @@ public:
 
 };
 
-} // end of namespace GFTools
+} // end of namespace gftools
 #endif // endif::ifndef ___GFTOOLS_GRID_OBJECT_H___
 
 #include "GridObject.hxx"

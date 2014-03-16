@@ -3,7 +3,7 @@
 
 #include "Grid.hpp"
 
-namespace GFTools { 
+namespace gftools { 
 
 // A wrapper around int to avoid weird gcc buf
 struct int_wrap_enumerate_grid
@@ -33,9 +33,9 @@ public:
 
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format< typename EnumerateGrid::point> &in){lhs << int(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename EnumerateGrid::point> &in){lhs << int(in._v.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v.val_ = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v.val_ = im; return lhs;};
 
 //
 // EnumerateGrid implementation
@@ -78,5 +78,5 @@ inline auto EnumerateGrid::getValue(Obj &in, EnumerateGrid::point x) const ->dec
 
 
 
-} // end of namespace GFTools
+} // end of namespace gftools
 #endif // endif :: #ifndef ___GFTOOLS_REALGRID_HPP___
