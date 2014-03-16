@@ -120,7 +120,7 @@ template <class Obj>
 inline auto RealGrid::getValue(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) throw (exWrongIndex()); 
+    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
 // linear spline
     auto prev_index = std::get<1>(find_result);
     auto prevval_ue = in[prev_index];
@@ -142,7 +142,7 @@ template <class Obj>
 inline auto RealGrid::getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]) 
 {
     if (checkPoint(x)) return in[x.index_];
-    else { ERROR ("Point not found"); throw exWrongIndex(); };
+    else { ERROR ("Point not found"); throw ex_wrong_index(); };
 }
 
 } // end of namespace gftools

@@ -170,7 +170,7 @@ struct ContainerBase
         return boost::make_transform_iterator(_data.end(),f1);
     };
 
-    class exWrongIndex : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
+    class ex_wrong_index : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
 };
 
 template <typename ValueType, size_t N>

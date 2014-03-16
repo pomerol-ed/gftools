@@ -80,7 +80,7 @@ template <class Obj>
 inline auto KMesh::getValue(Obj &in, real_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) throw (exWrongIndex()); 
+    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
     return in[std::get<1>(find_result)];
 }
 
@@ -125,7 +125,7 @@ inline typename KMesh::point KMesh::shift(point in, ArgType shift_arg) const
     
     double val = this->shift(in.val_, shift_arg);
     auto find_result = this->find(val);
-    if (!std::get<0>(find_result)) throw (exWrongIndex());
+    if (!std::get<0>(find_result)) throw (ex_wrong_index());
     size_t index = std::get<1>(find_result);
     return (*this)[index];
 }
@@ -135,7 +135,7 @@ inline typename KMesh::point KMesh::shift(point in, point shift_arg) const
     size_t index = (in.index_ + shift_arg.index_)%_points;
     #ifndef NDEBUG
     real_type val = this->shift(in.val_, shift_arg.val_);
-    if (std::abs(val - vals_[index])>1e-3) throw (exWrongIndex()); 
+    if (std::abs(val - vals_[index])>1e-3) throw (ex_wrong_index()); 
     #endif
     //out.val_ = vals_[out.index_];
     return vals_[index];
@@ -173,7 +173,7 @@ template <class Obj>
 inline auto KMeshPatch::getValue(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find(x);
-    if (!std::get<0>(find_result)) throw (exWrongIndex()); 
+    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
     return getValue(in, KMesh::point(std::get<1>(find_result), x));
 }
 
@@ -187,7 +187,7 @@ inline size_t KMeshPatch::getIndex(KMesh::point x) const
 {
     auto f1 = mapvals_.find(size_t(x));
     if (f1!=mapvals_.end()) { return f1->second; }
-    else throw (exWrongIndex());
+    else throw (ex_wrong_index());
 }
 
 } // end of namespace gftools

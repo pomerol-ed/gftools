@@ -20,7 +20,7 @@ class MatsubaraGrid : public Grid<complex_type, MatsubaraGrid<Fermion>>
 {
 public:
     using Grid<complex_type, MatsubaraGrid<Fermion>>::vals_;
-    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::exWrongIndex;
+    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::ex_wrong_index;
     //typedef typename Grid<complex_type, MatsubaraGrid<Fermion>>::point point;
     using typename Grid<complex_type, MatsubaraGrid<Fermion>>::point;
     /** Inverse temperature. */
@@ -154,7 +154,7 @@ template <class Obj>
 inline auto MatsubaraGrid<F>::getValue(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) { throw (exWrongIndex()); } 
+    if (!std::get<0>(find_result)) { throw (ex_wrong_index()); } 
     return in[std::get<1>(find_result)];
 }
 
