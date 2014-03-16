@@ -6,12 +6,14 @@ enable_testing()
 #add_library(gftools_extern STATIC externs.hpp externs.cpp)
 
 set (tests 
-GridTest
-ContainerTest
-GridObjectTest
-SaveLoadTest
-ShiftTest
-InterpolateTest
+num_io_test
+tuple_tools_test
+#GridTest
+#ContainerTest
+#GridObjectTest
+#SaveLoadTest
+#ShiftTest
+#InterpolateTest
 )
 
 foreach (test ${tests})

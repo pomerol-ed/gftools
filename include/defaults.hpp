@@ -1,16 +1,14 @@
-#ifndef ___GFTOOLS_COMMON_H___
-#define ___GFTOOLS_COMMON_H___
+#pragma once
+
+#define BOOST_RESULT_OF_USE_DECLTYPE
 
 #include<complex>
 #include<iostream>
 #include<utility>
 #include<Eigen/Core>
 #include<Eigen/StdVector>
-//#include "EigenIterator.h"
 
-//#define REALTYPE_DOUBLE
-
-namespace GFTools {
+namespace gftools {
 
 #define MSG_PREFIX            __FILE__ << ":" << __LINE__ << ": "
 #define DEBUG(MSG)            std::cout << MSG_PREFIX << MSG << std::endl;
@@ -21,41 +19,32 @@ namespace GFTools {
 #define INFO4(MSG)            std::cout << "\t\t\t" << MSG << std::endl;
 #define ERROR(MSG)            std::cerr << MSG_PREFIX << MSG << std::endl;
 
-#define BOOST_RESULT_OF_USE_DECLTYPE
-
-typedef double RealType;
-typedef std::complex<RealType> ComplexType;
-
-template <typename T>
-using VectorType = Eigen::Matrix<T,Eigen::Dynamic, 1>;
-
-template <typename T>
-using MatrixType = Eigen::Matrix<T,Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign|Eigen::RowMajor>;
+typedef double real_type;
+typedef std::complex<real_type> complex_type;
 
 /** A short name for imaginary unit. */
-static const ComplexType I = ComplexType(0.0,1.0);    // 'static' to prevent linking problems
+static const complex_type I = complex_type(0.0,1.0);    // 'static' to prevent linking problems
+/** A short name for pi. */
+const real_type PI = std::atan(1.0)*4;
 
-const RealType PI = std::atan(1.0)*4;
+/*
+template <typename T>
+using vector_type = Eigen::Matrix<T,Eigen::Dynamic, 1>;
+
+template <typename T>
+using matrix_type = Eigen::Matrix<T,Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign|Eigen::RowMajor>;
+*/
 /** Dense complex matrix. */
-typedef Eigen::Matrix<ComplexType,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> ComplexMatrixType;
+//typedef Eigen::Matrix<complex_type,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> ComplexMatrixType;
 /** Dense real matrix. */
-typedef Eigen::Matrix<RealType,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> RealMatrixType;
+//typedef Eigen::Matrix<real_type,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> RealMatrixType;
 
 /** Dense complex vector. */
-typedef Eigen::Matrix<ComplexType,Eigen::Dynamic,1,Eigen::AutoAlign> ComplexVectorType;
+//typedef Eigen::Matrix<complex_type,Eigen::Dynamic,1,Eigen::AutoAlign> ComplexVectorType;
 /** Dense real vector. */
-typedef Eigen::Matrix<RealType,Eigen::Dynamic,1,Eigen::AutoAlign> RealVectorType;
+//typedef Eigen::Matrix<real_type,Eigen::Dynamic,1,Eigen::AutoAlign> RealVectorType;
 /** Dense vector of integers. */
-typedef Eigen::Matrix<int,Eigen::Dynamic,1,Eigen::AutoAlign> IntVectorType;
+//typedef Eigen::Matrix<int,Eigen::Dynamic,1,Eigen::AutoAlign> IntVectorType;
 
-template <bool Fermion> inline ComplexType Matsubara(int n, RealType beta){return PI*I/beta*ComplexType(2*n+Fermion);};
-template <bool Fermion> inline int MatsubaraIndex(ComplexType in, RealType beta){return std::round((beta*imag(in)/PI-Fermion)/2.0);};
+} // end namespace gftools
 
-inline ComplexType FMatsubara(int n, RealType beta){return Matsubara<1>(n,beta);};
-inline ComplexType BMatsubara(int n, RealType beta){return Matsubara<0>(n,beta);};
-inline int FMatsubaraIndex(ComplexType in, RealType beta){return MatsubaraIndex<1>(in,beta);};
-inline int BMatsubaraIndex(ComplexType in, RealType beta){return MatsubaraIndex<0>(in,beta);};
-
-} // end namespace GFTools
-
-#endif // endif::ifndef ___GFTOOLS_COMMON_H___

@@ -1,238 +1,184 @@
 #ifndef ___GFTOOLS_TOOLS_HPP___
 #define ___GFTOOLS_TOOLS_HPP___
 
-#include<iostream>
-#include<complex>
-#include<string>
-#include<vector>
-#include<list>
-#include<map>
-#include<array>
-#include<iomanip>
-#include<fstream>
+#include <tuple>
+#include <array>
 
-#include<memory>
-#include<utility>
-#include<functional>
+#include "defaults.hpp"
+#include "num_io.hpp"
 
-namespace GFTools {
+//#include<memory>
+//#include<utility>
+//#include<functional>
 
-/** A wrapper around numbers for file output. */
-template <typename T> struct __num_format;
-template <typename T> std::ostream& operator<<(std::ostream& lhs, const __num_format<T> &in);
-template <typename T> std::istream& operator>>(std::istream& lhs, __num_format<T> &out);
-template <typename T> 
-struct __num_format {
-    static const int _prec = 12;
-    T _v;
-    __num_format(T v):_v(v){};
-    operator T(){return _v;};
-    void savetxt(const std::string& filename) { 
-        std::cout << "Saving " << typeid(*this).name() << " to " << filename << std::endl;
-        std::ofstream out; out.open(filename.c_str()); out << *this << std::endl; out.close(); 
-    }; 
-   void loadtxt(const std::string& filename) { 
-        std::cout << "Loading " << typeid(*this).name() << " from " << filename << std::endl;
-        std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
-    }; 
+namespace gftools {
+namespace tuple_tools {
 
-    friend std::ostream& operator<< <>(std::ostream& lhs, const __num_format<T> &in);
-    friend std::istream& operator>> <>(std::istream& lhs, __num_format<T> &out);
-};
+//
+// Split a tuple - a tool from http://stackoverflow.com/questions/10626856/how-to-split-a-tuple. */
+//
 
-template <typename T> 
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format<T> &in) {lhs << std::setprecision(in._prec) << in._v; return lhs;};
-template <typename T> 
-inline std::istream& operator>>(std::istream& lhs, __num_format<T> &out) {lhs >> out._v; return lhs;};
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const __num_format<ComplexType> &in){lhs << std::setprecision(in._prec) << real(in._v) << " " << imag(in._v); return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, __num_format<ComplexType> &out){RealType re,im; lhs >> re; lhs >> im; out._v = re+I*im; return lhs;};
-
-/** A tool to generate a type for an object T of D Args. */
-template <size_t N, typename ArgType1, template <typename ...> class T, typename ...ArgTypes>  
-struct ArgBackGenerator:ArgBackGenerator<N-1,ArgType1,T,ArgTypes...,ArgType1 > {};
-
-template <typename ArgType1, template <typename ...> class T, typename ...ArgTypes> 
-struct ArgBackGenerator<1, ArgType1, T, ArgTypes...> { typedef T<ArgTypes..., ArgType1> type; };
-
-/** A tool to generate a type for a function of N Args. */
-template <size_t N, typename ValueType, typename ArgType1, typename ...ArgTypes>  
-struct ArgFunGenerator : ArgFunGenerator<N-1,ValueType,ArgType1, ArgTypes...,ArgType1 >{static_assert(N>1,"");};
-
-template <typename ValueType, typename ArgType1, typename ...ArgTypes> 
-struct ArgFunGenerator<1, ValueType, ArgType1, ArgTypes...> { 
-    typedef std::function<ValueType(ArgTypes..., ArgType1)> type; };
-
-/** A tool to calc an integer power function of an int. */
-template<int base, unsigned exponent >
-struct __power {
-    enum { value = base * __power<base, exponent - 1>::value };
-};
-template< int base >
-struct __power<base,0> {
-    enum { value = 1 };
-};
-
-/** A tool to wrap a call a class method from a tuple. */
-template<int ...> struct __seq {};
-template<int N, int ...S> struct __gens : __gens<N-1, N-1, S...> {};
-template<int ...S> struct __gens<0, S...>{ typedef __seq<S...> type; };
-
-/** Caller for a function from the given tuple. */
-template <typename ReturnType, typename ...Args> struct __caller { 
-    std::tuple<Args...> _params;
-    std::function<ReturnType(Args...)> _f;
-    template<int ...S> ReturnType _callf(__seq<S...>) { return _f(std::get<S>(_params)...); };
-    ReturnType call(){ return _callf(typename __gens<sizeof...(Args)>::type()); };
-};
-
-template <typename, typename ...> struct __caller_tuple;
-template <typename ReturnType, typename ...Args> struct __caller_tuple<ReturnType,std::tuple<Args...>> { 
-    std::tuple<Args...> _params;
-    std::function<ReturnType(Args...)> _f;
-    template<int ...S> ReturnType _callf(__seq<S...>) { return _f(std::get<S>(_params)...); };
-    ReturnType call(){ return _callf(typename __gens<sizeof...(Args)>::type()); };
-};
-
-
-template <typename Arg, size_t D, typename... Extras> struct __repeater : __repeater<Arg,D-1,Arg,Extras...>  {  
-    //template <int ...S> std::array<Arg,D> _get(const std::tuple<Arg...>& in){return { std::get<S>
-    template <int ...S, typename ...ArgTypes> static std::array<Arg,D> __get_arr(__seq<S...>, std::tuple<ArgTypes...> in) { return  {{ std::get<S>(in)... }}; }
-    static std::array<Arg,D> get_array(const Arg& in){ return __get_arr(typename __gens<D>::type(), get_tuple(in)); };
-    static typename __repeater::TupleType get_tuple(const Arg& in){ return std::tuple_cat(std::forward_as_tuple(in),__repeater<Arg,D-1>::get_tuple(in)); }; 
-};
-
-template <typename Arg, typename ... Extras> struct __repeater<Arg,1,Extras...> { 
-    typedef std::tuple<Arg,Extras...> TupleType;
-    static std::array<Arg,1> get_array(const Arg& in){ return {{ in }}; };
-    static TupleType get_tuple(const Arg& in){ return std::forward_as_tuple(in); }
-};
-
-
-/** Function traits. */
-template <typename FunctionType> struct __fun_traits;
-template <typename ValType, typename ... ArgTypes> 
-struct __fun_traits<std::function<ValType(ArgTypes...)> >
-{
-    static std::function<ValType(ArgTypes...)> constant(ValType c) 
-    { return [c](ArgTypes...in){return c;};}
-    /*static std::function<ValType(ArgTypes...)> add(const std::function<ValType(ArgTypes...)> &f1, const std::function<ValType(ArgTypes...)>& f2)
-    { return [f1,f2](ArgTypes... in){return f1(in...)+f2(in...);}; }
-    static std::function<ValType(ArgTypes...)> multiply(const std::function<ValType(ArgTypes...)> &f1, const std::function<ValType(ArgTypes...)> &f2)
-    { return [f1,f2](ArgTypes... in){return f1(in...)*f2(in...);}; }
-    static std::function<ValType(ArgTypes...)> subtract(const std::function<ValType(ArgTypes...)> &f1, const std::function<ValType(ArgTypes...)> &f2)
-    { return [f1,f2](ArgTypes... in){return f1(in...)-f2(in...);}; }
-    static std::function<ValType(ArgTypes...)> divide(const std::function<ValType(ArgTypes...)> &f1, const std::function<ValType(ArgTypes...)> &f2)
-    { return [f1,f2](ArgTypes... in){return f1(in...)*f2(in...);}; }
-    */
-    static std::function<ValType(ArgTypes...)> getFromTupleF(std::function<ValType(std::tuple<ArgTypes...>)> f1)
-    { return [f1](ArgTypes...in){return f1(std::forward_as_tuple(in...));};}
-    static std::function<ValType(std::tuple<ArgTypes...>)> getTupleF(std::function<ValType(ArgTypes...)> f1)
-    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ __caller<ValType,ArgTypes...> t; t = {in, f1}; return t.call();};}
-};
-
-/** A tool to split a tuple from http://stackoverflow.com/questions/10626856/how-to-split-a-tuple. */
-template <typename Target, typename Tuple, int N, bool end >
-struct __split_tuple_struct
-{
-    template < typename ... Args >
-    static Target create(Tuple const& t, Args && ... args)
+namespace extra {
+    template <typename Target, typename Tuple, int N, bool end >
+    struct split_tuple_struct
     {
-        return __split_tuple_struct<Target,Tuple, N+1, std::tuple_size<Tuple>::value == N+1>::create(t, std::forward<Args>(args)..., std::get<N>(t));
-    }
+        template < typename ... Args >
+        static Target create(Tuple const& t, Args && ... args)
+        {
+            return split_tuple_struct<Target,Tuple, N+1, std::tuple_size<Tuple>::value == N+1>::create(t, std::forward<Args>(args)..., std::get<N>(t));
+        }
+    };
+
+    template < typename Target, typename Tuple, int N >
+    struct split_tuple_struct<Target,Tuple,N,true>
+    {
+        template < typename ... Args >
+        static Target create(Tuple const& t, Args && ... args) { return Target(std::forward<Args>(args)...); }
+    };
 };
 
-template < typename Target, typename Tuple, int N >
-struct __split_tuple_struct<Target,Tuple,N,true>
-{
-    template < typename ... Args >
-    static Target create(Tuple const& t, Args && ... args) { return Target(std::forward<Args>(args)...); }
-};
-
+/// Get the tail of the tuple
 template < typename Head, typename ... Tail >
-inline std::tuple<Tail...> __tuple_tail(std::tuple<Head,Tail...> const& tpl)
+inline std::tuple<Tail...> tuple_tail(std::tuple<Head,Tail...> const& tpl)
 {
-    return __split_tuple_struct<std::tuple<Tail...>, std::tuple<Head,Tail...>, 1, std::tuple_size<std::tuple<Head,Tail...>>::value == 1>::create(tpl);
+    return extra::split_tuple_struct<std::tuple<Tail...>, std::tuple<Head,Tail...>, 1, std::tuple_size<std::tuple<Head,Tail...>>::value == 1>::create(tpl);
 }
 
-/** Print a tuple. */
-template <class T> struct __tuple_print;
-template <typename...ArgTypes> struct __tuple_print<std::tuple<ArgTypes...>> 
-    { 
-        static void print(std::tuple<ArgTypes...> in ){std::cout << std::get<0>(in) << " " << std::flush; auto a = __tuple_tail(in); __tuple_print<decltype(a)>::print(a);};
-        static std::string serialize(std::tuple<ArgTypes...> in){ 
-            typedef typename std::tuple_element<0, std::tuple<ArgTypes...>>::type point_type; // aka Point
-            std::string out; std::stringstream b; 
-            auto v = std::get<0>(in);
-            b << __num_format<point_type>(v);
-            out = b.str();
-            auto d = __tuple_tail(in);
-            auto t_print = __tuple_print<decltype(d)>::serialize(d); 
-            out+=" "; out+=t_print;
-            return out;
+//
+// Print a tuple
+//
+
+namespace extra {
+    template <class T> struct tuple_io;
+    template <typename Arg1,typename ...ArgTypes> struct tuple_io<std::tuple<Arg1,ArgTypes...>> 
+        { 
+            typedef std::tuple<Arg1,ArgTypes...> tuple_type;
+            typedef Arg1 head_type;
+            typedef std::tuple<ArgTypes...> tail_type;
+
+            static std::string print(tuple_type in){ 
+                std::stringstream out;
+                out << std::get<0>(in) << " " << std::flush; 
+                tail_type a = tuple_tail(in); 
+                std::string t1 = tuple_io<tail_type>::print(a); 
+                out << t1;
+                return out.str();
             };
-        static std::tuple<ArgTypes...> read (std::istream &in) {
-            typedef typename std::tuple_element<0, std::tuple<ArgTypes...>>::type point_type; // aka Point
-            typedef decltype(__tuple_tail(std::declval<std::tuple<ArgTypes...>>())) tail_type;
-            point_type out; 
-            __num_format<point_type> t1(out);
-            in >> t1;
-            return std::tuple_cat(std::make_tuple(t1._v),__tuple_print<tail_type>::read(in));
-            }
-    };
-template <typename ArgType> struct __tuple_print<std::tuple<ArgType>> 
-    { static void print(std::tuple<ArgType> in ){std::cout << std::get<0>(in) << std::endl;};
-      static std::string serialize(std::tuple<ArgType> in){ 
-            std::string out; std::stringstream b; 
-            auto v = std::get<0>(in);
-            b << __num_format<decltype(v)>(v) << std::flush;
-            b >> out;
-            return out;
-        };
-      static std::tuple<ArgType> read (std::istream &in) {
-            ArgType out;
-            __num_format<ArgType> t1(out);
-            in >> t1;
-            return std::make_tuple(t1._v);
-        };
-    };
 
+            static std::string serialize(std::tuple<Arg1,ArgTypes...> in){ 
+                std::string out; std::stringstream b; 
+                auto v = std::get<0>(in);
+                b << num_io<Arg1>(v);
+                out = b.str();
+                tail_type d = tuple_tail(in);
+                std::string t_print = tuple_io<tail_type>::serialize(d); 
+                out+=" "; out+=t_print;
+                return out;
+                };
+            static std::tuple<Arg1,ArgTypes...> read (std::istream &in) {
+                head_type out; 
+                num_io<head_type> t1(out);
+                in >> t1;
+                return std::tuple_cat(std::make_tuple(t1.value_),tuple_io<tail_type>::read(in));
+                }
+        };
+    template <typename ArgType> struct tuple_io<std::tuple<ArgType>> 
+        { 
+            static std::string print(std::tuple<ArgType> in ) {
+                std::stringstream s1; s1 << std::get<0>(in); return s1.str();
+                };
+            static std::string serialize(std::tuple<ArgType> in){ 
+                std::string out; std::stringstream b; 
+                auto v = std::get<0>(in);
+                b << num_io<decltype(v)>(v) << std::flush;
+                return b.str();
+            };
+            static std::tuple<ArgType> read (std::istream &in) {
+                ArgType out;
+                num_io<ArgType> t1(out);
+                in >> t1;
+                return std::make_tuple(t1.value_);
+            };
+        };
+}; // end of namespace extra
+
+/// Serialize a tuple using num_io
 template <typename TT>
-std::string tuple_serialize(TT t1){return __tuple_print<TT>::serialize(t1);};
+std::string serialize_tuple(TT t1){
+    return extra::tuple_io<TT>::serialize(t1);};
 
-/** Set of tools to check float equality of numbers or tuples. */
+/// Get a print of tuple via stream << on all members
+template <typename TT>
+std::string print_tuple(TT t1){
+    return extra::tuple_io<TT>::print(t1);};
 
-template <typename > struct __equal_checker;
+template <typename Arg, size_t D>
+std::string print_array(const std::array<Arg,D>& t1){
+    std::stringstream out; for (auto x:t1) out << x << " " << std::flush; return out.str(); }
 
-template <typename T>
-struct __equal_checker {//<T, typename std::enable_if<std::is_convertible<T,ComplexType>::value, int>::type = 0> { 
-    typedef T type;
-    static bool is_equal(T t1, T t2, RealType tol) { 
-        return bool(std::abs(ComplexType(t1) - ComplexType(t2))<tol); };
-};
+/// Read a tuple from a stream;
+template<typename TT>
+TT read_tuple(std::istream &in){return extra::tuple_io<TT>::read(in);};
 
-template <typename Arg1, typename ... Args>
-struct __equal_checker<std::tuple<Arg1, Args...>> { 
-    typedef std::tuple<Arg1, Args...> type;
-    static bool is_equal(type t1, type t2, RealType tol) {
-        bool out = ((__equal_checker<Arg1>::is_equal(std::get<0>(t1), std::get<0>(t2), tol) && 
-               __equal_checker<std::tuple<Args...>>::is_equal(__tuple_tail(t1), __tuple_tail(t2), tol)));
-        return out;
+//
+// unfold tuple into a function
+//
+
+// helpers for unfolding
+namespace extra {
+    template<int ...> struct arg_seq {};
+    template<int N, int ...S> struct index_gen : index_gen<N-1, N-1, S...> {};
+    template<int ...S> struct index_gen<0, S...>{ typedef arg_seq<S...> type; };
+}; 
+
+/** Caller for a function from the given tuple. */
+//template <typename ReturnType, typename ...Args> struct __caller { 
+//    std::tuple<Args...> _params;
+//    std::function<ReturnType(Args...)> _f;
+//    template<int ...S> ReturnType _callf(extra::arg_seq<S...>) { return _f(std::get<S>(_params)...); };
+//    ReturnType call(){ return _callf(typename extra::index_gen<sizeof...(Args)>::type()); };
+//};
+
+namespace extra {
+    template <typename, typename > struct tuple_caller;
+    template <typename ReturnType, typename ...Args> struct tuple_caller<ReturnType,std::tuple<Args...>> { 
+        typedef std::function<ReturnType(Args...)> function_type;
+        typedef std::tuple<Args...> tuple_type;
+
+        tuple_caller(const function_type& F, tuple_type in):f_(F),params_(in){};
+        template<int ...S> ReturnType callf_(extra::arg_seq<S...>) { return f_(std::get<S>(params_)...); };
+        ReturnType call(){ return callf_(typename extra::index_gen<sizeof...(Args)>::type()); };
+
+        const function_type& f_;
+        tuple_type params_;
     };
+}
+
+template <typename Functor, typename ... Args>
+typename std::result_of<Functor(Args...)>::type unfold_tuple(Functor F, std::tuple<Args...> t) {
+    typedef typename std::result_of<Functor(Args...)>::type result_type; 
+    return extra::tuple_caller<result_type,std::tuple<Args...>>(F, t).call();
 };
 
-template <typename Arg>
-struct __equal_checker<std::tuple<Arg>> { 
-    typedef std::tuple<Arg> type;
-    static bool is_equal (std::tuple<Arg> t1, std::tuple<Arg> t2, RealType tol) {
-        return __equal_checker<Arg>::is_equal(std::get<0>(t1), std::get<0>(t2), tol);
-    }
+//
+/// create a tuple or array from by repeating an argument
+//
+
+template <typename Arg, size_t D, typename... Extras> struct repeater : repeater<Arg,D-1,Arg,Extras...>  {  
+    template <int ...S, typename ...ArgTypes> static std::array<Arg,D> get_arr_(extra::arg_seq<S...>, std::tuple<ArgTypes...> in) { return  {{ std::get<S>(in)... }}; }
+    static std::array<Arg,D> get_array(const Arg& in){ return get_arr_(typename extra::index_gen<D>::type(), get_tuple(in)); };
+    static typename repeater::tuple_type get_tuple(const Arg& in){ return std::tuple_cat(std::forward_as_tuple(in),repeater<Arg,D-1>::get_tuple(in)); }; 
 };
 
-// free function
-template <typename T> bool __is_equal(T t1, T t2, RealType tol = std::numeric_limits<RealType>::epsilon()){ return __equal_checker<T>::is_equal(t1,t2,tol); };
+template <typename Arg, typename ... Extras> struct repeater<Arg,1,Extras...> { 
+    typedef std::tuple<Arg,Extras...> tuple_type;
+    static std::array<Arg,1> get_array(const Arg& in){ return {{ in }}; };
+    static tuple_type get_tuple(const Arg& in){ return std::forward_as_tuple(in); }
+};
 
-} // end namespace GFTools
+
+} // end of namespace tuple_tools
+} // end namespace gftools
+
 
 #endif // endif::ifndef ___GFTOOLS_TOOLS_HPP___

@@ -1,9 +1,9 @@
 include_directories (.)
 
 set (base_src
-    Defaults.hpp
-    Tools.hpp
-    Grid.hpp 
+    defaults.hpp
+    tools.hpp
+    grid_base.hpp 
     MatsubaraGrid.hpp 
     RealGrid.hpp 
     KMesh.hpp 
