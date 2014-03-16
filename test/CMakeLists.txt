@@ -8,7 +8,7 @@ enable_testing()
 set (tests 
 num_io_test
 tuple_tools_test
-#GridTest
+grid_test
 #ContainerTest
 #GridObjectTest
 #SaveLoadTest

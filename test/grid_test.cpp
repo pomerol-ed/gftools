@@ -1,20 +1,45 @@
 #include <numeric>
 
-#include "Defaults.hpp"
-#include "MatsubaraGrid.hpp"
-#include "KMesh.hpp"
-#include "EnumerateGrid.hpp"
-#include "RealGrid.hpp"
+#include "grid_base.hpp"
 
-#include <iostream>
-#include <ctime>
-#include <array>
+using namespace gftools;
 
-using namespace GFTools;
+struct data1 { double x, y; data1(double z):x(z),y(z*2){}; operator double() const {return x;} };
+bool operator< (data1 x, data1 y){return x.x < y.x;};
+std::ostream& operator<<(std::ostream& out, data1 d){out << "(" << d.x << " " << d.y << ")"; return out;};
+
+struct my_grid : public grid_base<data1, my_grid> {
+    typedef grid_base<data1, my_grid> base;
+    using base::vals_;
+    my_grid() = default;
+    my_grid(std::vector<value_type> v):base(v){};
+    
+    std::tuple <bool, size_t, real_type> find (data1 in) const {
+        auto out = std::lower_bound (vals_.begin(), vals_.end(), in);
+        size_t i = size_t(out-vals_.begin());
+        i--;
+        if (i==vals_.size()-1) return std::make_tuple(1,i,1.0);
+        return std::make_tuple (1,i,1.0);
+    }
+};
 
 int main()
 {
 
+    my_grid g1;
+    
+    my_grid g2 ( { data1(1), data1(2), data1(5) });
+    std::cout << g2 << std::endl;
+    for (auto p : g2.get_points()) std::cout << p << " "; std::cout << std::endl;
+
+    typedef my_grid::point point;
+    point p1 = g2[2];
+    std::cout << p1 << std::endl;
+
+    point p2 = g2.find_closest(data1(3));
+    std::cout << p2 << " == " << g2[1] << " = " << std::boolalpha << (p2 == g2[1]) <<  std::endl;
+    if (!(p2 == g2[1])) return EXIT_FAILURE;
+/*
     FMatsubaraGrid n1(-100,100,10);
     FMatsubaraGrid n2(0,32,20);
 
@@ -56,8 +81,6 @@ int main()
     
     // New c++ feature - store a function
     std::function<RealType(int)> f1;
-    /* The right hand side of next line is called a "lambda" construction.
-     * We construct some function of integer and assign it to f1. */
     f1 = [](int n){return std::pow(3,n);};
     // f1 is now 3^n. Let's now generate a non-uniform grid and print it.
     RealGrid grid2(0,10,f1);
@@ -82,5 +105,6 @@ int main()
     INFO(g1);
     EnumerateGrid::point p1 = g1[0];
     std::cout << p1 << std::endl;
+*/
     return EXIT_SUCCESS;
 }

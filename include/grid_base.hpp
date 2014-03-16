@@ -2,6 +2,8 @@
 #define ___GFTOOLS_GRID_H___
 
 #include "defaults.hpp"
+#include "num_io.hpp"
+#include "tools.hpp"
 //#include "Tools.hpp"
 //#include <iterator>
 
@@ -42,9 +44,9 @@ public:
         point(const point_base<ValueType> &in):point_base<ValueType>::point_base(in){};
         point(point_base<ValueType> &&in):point_base<ValueType>::point_base(in){};
         };
+
     typedef ValueType value_type;
 
-    std::vector<point> vals_;
 
     grid_base(const std::vector<point> & vals);
 
@@ -61,7 +63,7 @@ public:
     /** Move constructor. */
     grid_base(grid_base&& rhs){vals_.swap(rhs.vals_);};
     /** Returns a value at given index. */
-    point& operator[](size_t in);
+    point operator[](size_t in) const;
     /** Returns all values. */
     const std::vector<point> & get_points() const;
     /** Returns values of all points. */
@@ -69,7 +71,7 @@ public:
     /** Checks if a point is present in a grid. */
     bool check_point(point in, real_type tolerance = std::numeric_limits<real_type>::epsilon()) const;
     /** Returns size of grid. */
-    size_t get_size() const;
+    size_t size() const;
 
     /** Shift a point by the given value. */
     template <class ArgType>
@@ -100,7 +102,9 @@ public:
     /** Make the object printable. */
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const grid_base<ValType,Derived2> &gr);
 
-    class exWrongIndex : public std::exception { virtual const char* what() const throw(); }; 
+
+    std::vector<point> vals_;
+    class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
 };
 
 template <class Grid>
@@ -109,123 +113,29 @@ template <class Grid>
 std::istream& operator>>(std::istream& lhs, num_io<typename Grid::point> &out)
 {num_io<decltype(std::declval<typename Grid::point>()._v)> d(0.0); lhs >> d; out._v.val_ = d._v; return lhs;};
 
-/** A tool to generate a function of argtypes of grids. */
-template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>
-struct GridArgTypeExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
-GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::val_)>
-{
-};
-
-template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
-struct GridArgTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> type; 
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> arg_type; 
-    typedef std::tuple<ArgTypes...,decltype(GridType1::point::val_)> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., decltype(GridType1::point::val_)> arg_function_wrapper;
-};
-
-/** A tool to generate a function of argtypes of grids. */
-template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>
-struct GridPointExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
-GridPointExtractor<ValueType, T<GridTypes...>, ArgTypes...,typename GridType1::point>
-{
-};
-
-template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
-struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
-    typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> point_type; 
-    typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., typename GridType1::point> point_function_wrapper;
-};
-
-
-/* A tool to generate an array of grid sizes from a given tuple of grids. */
-template <size_t N> 
-struct GetGridSizes {
-    template <typename ... GridType>
-    static inline std::array<size_t,sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
-        static_assert(N>1,"!");
-        auto out = GetGridSizes<N-1>::template TupleSizeToArray<GridType...>( in );
-        std::get<N-1>(out) = std::get<N-1>(in).getSize();
-        return out;
-    };
-};
-
-template <> 
-struct GetGridSizes<1> {
-    template <typename... GridType>
-    static inline std::array<size_t, sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
-        std::array<size_t,sizeof...(GridType)> out;
-        std::get<0>(out) = std::get<0>(in).getSize();
-        return out;
-    }
-};
-
-/** A tool to recursiverly integrate over a grid. */
-template <typename GridType, class Obj> struct RecursiveGridIntegrator;
-
-/* Integrate a function over a grid. */
-template <typename GridType, typename ValueType, typename ArgType1> 
-struct RecursiveGridIntegrator<GridType, ValueType(ArgType1)>
-{
-    inline static ValueType integrate(const GridType& grid, const std::function<ValueType(ArgType1)>& in){ 
-        //DEBUG("Using this method, N=1 with "<< sizeof...(OtherArgs) << " other args" );
-        return grid.integrate(in);
-    }
-};
-
-/** An alias for a std::function template type. */
-template <typename GridType, typename ValueType, typename ArgType1> 
-struct RecursiveGridIntegrator<GridType, std::function<ValueType(ArgType1)>>:RecursiveGridIntegrator<GridType, ValueType(ArgType1)>{};
-
-/** Multi-dimensional integration over the same grid. */
-template <typename GridType, typename ValueType, typename ArgType1, typename ...ArgTypes> 
-struct RecursiveGridIntegrator<GridType, ValueType(ArgType1, ArgTypes...)>
-{
-    typedef std::function<ValueType(ArgTypes...)> type;
-    inline static ValueType integrate(
-        const GridType& grid, 
-        const std::function<ValueType(ArgType1, ArgTypes...)>& in) 
-     {
-        //DEBUG("Using this method, N!=1");
-        auto f1 = [&](const ArgType1& arg1)->ValueType { 
-            //DEBUG(arg1);
-            std::function<ValueType(ArgTypes...)> f0 = [&](const ArgTypes&... args){return in(arg1,args...);};
-            return RecursiveGridIntegrator<GridType, ValueType(ArgTypes...)>::integrate(grid, f0);
-            };
-        //DEBUG(f1(0.0));
-        return grid.integrate(f1);
-    } 
-};
-
-/** An alias for a std::function template type. */
-template <typename GridType, typename ValueType, typename ArgType1, typename ...ArgTypes> 
-struct RecursiveGridIntegrator<GridType, std::function<ValueType(ArgType1, ArgTypes...)>>:
-    RecursiveGridIntegrator<GridType, ValueType(ArgType1, ArgTypes...)> {};
-
 //
 // Grid implementation
 //
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid()
+grid_base<ValueType,Derived>::grid_base()
 {};
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(const std::vector<point> &vals):vals_(vals)
+grid_base<ValueType,Derived>::grid_base(const std::vector<point> &vals):vals_(vals)
 {
 };
 
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(const std::vector<ValueType> &vals)
+grid_base<ValueType,Derived>::grid_base(const std::vector<ValueType> &vals)
 {
     vals_.reserve(vals.size());
-    for (size_t i=0; i<vals_.size(); ++i) { vals_.emplace_back(point(i, vals[i])); };
+    for (size_t i=0; i<vals.size(); ++i) { vals_.emplace_back(point(vals[i], i)); };
 };
 
 template <typename ValueType, class Derived>
-Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f)
+grid_base<ValueType,Derived>::grid_base(int min, int max, std::function<ValueType (int)> f)
 {
     if (max<min) std::swap(min,max);
     size_t n_points = max-min;
@@ -234,32 +144,32 @@ Grid<ValueType,Derived>::Grid(int min, int max, std::function<ValueType (int)> f
 }
 
 template <typename ValueType, class Derived>
-inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::operator[](size_t index) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::operator[](size_t index) const
 {
-    if (index>vals_.size()) throw exWrongIndex();
+    if (index>vals_.size()) throw ex_wrong_index();
     return vals_[index];
 }
 
 template <typename ValueType, class Derived>
-inline const std::vector<typename Grid<ValueType,Derived>::point> & Grid<ValueType,Derived>::getPoints() const
+inline const std::vector<typename grid_base<ValueType,Derived>::point> & grid_base<ValueType,Derived>::get_points() const
 {
     return vals_;
 }
 
 template <typename ValueType, class Derived>
-inline const std::vector<ValueType>& Grid<ValueType,Derived>::getPointVals() const
+inline const std::vector<ValueType>& grid_base<ValueType,Derived>::get_values() const
 {
     return vals_;
 }
 
 template <typename ValueType, class Derived>
-inline size_t Grid<ValueType,Derived>::getSize() const
+inline size_t grid_base<ValueType,Derived>::size() const
 {
     return vals_.size();
 }
 
 template <typename ValueType, class Derived>
-inline bool Grid<ValueType,Derived>::checkPoint(point in, real_type tolerance) const
+inline bool grid_base<ValueType,Derived>::check_point(point in, real_type tolerance) const
 {
     return (in.index_ < vals_.size() && std::abs(in.val_ - vals_[in.index_].val_) < tolerance);
 }
@@ -267,7 +177,7 @@ inline bool Grid<ValueType,Derived>::checkPoint(point in, real_type tolerance) c
 
 template <typename ValueType, class Derived>
 template <class ArgType>
-inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(point in, ArgType shift_arg) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ArgType shift_arg) const
 {
     point out;
     if (std::abs(ValueType(shift_arg))<std::numeric_limits<real_type>::epsilon()) return in;
@@ -282,48 +192,50 @@ inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(po
 }
 
 template <typename ValueType, class Derived>
-inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::findClosest(ValueType in) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::find_closest(ValueType in) const
 {
-    auto find_result = find(in);
-    if (!std::get<0>(find_result)) { ERROR("Couldn't find the closest point"); throw (exWrongIndex()); };
+    auto find_result = this->find(in);
+    if (!std::get<0>(find_result)) { ERROR("Couldn't find the closest point"); throw (ex_wrong_index()); };
     return point(vals_[std::get<1>(find_result)],std::get<1>(find_result));
 } 
 
 template <typename ValueType, class Derived>
 template <class ArgType>
-inline ValueType Grid<ValueType,Derived>::shift(ValueType in, ArgType shift_arg) const
+inline ValueType grid_base<ValueType,Derived>::shift(ValueType in, ArgType shift_arg) const
 {
     return in+ValueType(shift_arg);
 }
 
 template <typename ValueType, class Derived>
-inline typename Grid<ValueType,Derived>::point Grid<ValueType,Derived>::shift(point in, point shift_arg) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, point shift_arg) const
 {
     size_t index = (in.index_ + shift_arg.index_)%vals_.size();
     #ifndef NDEBUG
     ValueType val = this->shift(in.val_, shift_arg.val_);
-    if (std::abs(val - vals_[index].val_)>1e-3) throw (exWrongIndex()); 
+    if (std::abs(val - vals_[index].val_)>1e-3) throw (ex_wrong_index()); 
     #endif
     return vals_[index];
 
 }
 
 template <typename ValueType, class Derived>
-std::ostream& operator<<(std::ostream& lhs, const Grid<ValueType,Derived> &gr)
+std::ostream& operator<<(std::ostream& lhs, const grid_base<ValueType,Derived> &gr)
 { 
     lhs << "{";
     //lhs << gr.vals_;
     std::ostream_iterator<ValueType> out_it (lhs,", ");
-    std::transform(gr.vals_.begin(),gr.vals_.end(), out_it, [](const typename Grid<ValueType,Derived>::point &x){return ValueType(x);});
+    std::transform(gr.vals_.begin(),gr.vals_.end(), out_it, [](const typename grid_base<ValueType,Derived>::point &x){return ValueType(x);});
     lhs << "}";
     return lhs;
 }
 
 template <typename ValueType, class Derived>
-const char* Grid<ValueType,Derived>::exWrongIndex::what() const throw(){ 
+const char* grid_base<ValueType,Derived>::ex_wrong_index::what() const throw(){ 
      return "Index out of bounds";
 };
 
 } // end :: namespace gftools
+
+//#include "grid_tools.hpp"
 
 #endif // endin :: ifndef ___GFTOOLS_GRID_H___
