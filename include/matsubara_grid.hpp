@@ -1,7 +1,7 @@
 #ifndef ___GFTOOLS_MATSUBARA_GRID_HPP___
 #define ___GFTOOLS_MATSUBARA_GRID_HPP___
 
-#include "Grid.hpp"
+#include "grid_base.hpp"
 #include <numeric>
 
 namespace gftools { 
@@ -16,51 +16,53 @@ inline int BMatsubaraIndex(complex_type in, real_type beta){return MatsubaraInde
 
 /** A Grid of fermionic Matsubara frequencies. */
 template <bool Fermion>
-class MatsubaraGrid : public Grid<complex_type, MatsubaraGrid<Fermion>>
+class matsubara_grid : public grid_base<complex_type, matsubara_grid<Fermion>>
 {
 public:
-    using Grid<complex_type, MatsubaraGrid<Fermion>>::vals_;
-    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::ex_wrong_index;
-    //typedef typename Grid<complex_type, MatsubaraGrid<Fermion>>::point point;
-    using typename Grid<complex_type, MatsubaraGrid<Fermion>>::point;
+    typedef grid_base<complex_type, matsubara_grid<Fermion>> base;
+    using grid_base<complex_type, matsubara_grid<Fermion>>::vals_;
+    using typename grid_base<complex_type, matsubara_grid<Fermion>>::ex_wrong_index;
+    //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;
+    using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
     /** Inverse temperature. */
     const real_type _beta;
     /** Spacing between values. */
     const real_type _spacing;
     /** Min and max numbers of freq. - useful for searching. */
     const int _w_min, _w_max;
-    MatsubaraGrid(int min, int max, real_type beta);
-    MatsubaraGrid(const MatsubaraGrid &rhs);
-    MatsubaraGrid(MatsubaraGrid&& rhs);
+    matsubara_grid(int min, int max, real_type beta);
+    matsubara_grid(const matsubara_grid &rhs);
+    matsubara_grid(matsubara_grid&& rhs);
     int getNumber(complex_type in) const;
     std::tuple <bool, size_t, real_type> find (complex_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
-    template <class Obj> auto getValue(Obj &in, complex_type x) const ->decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, point x) const ->decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, complex_type x) const ->decltype(in[0]);
+    //template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
+    using base::evaluate;
 };
 
-typedef MatsubaraGrid<1> FMatsubaraGrid;
-typedef MatsubaraGrid<0> BMatsubaraGrid;
+typedef matsubara_grid<1> fmatsubara_grid;
+typedef matsubara_grid<0> bmatsubara_grid;
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename FMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename fmatsubara_grid::point> &in){lhs << std::setprecision(in.prec_) << imag(in.value_.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename FMatsubaraGrid::point> &out){real_type im; lhs >> im; out._v.val_ = I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename fmatsubara_grid::point> &out){real_type im; lhs >> im; out.value_.val_ = I*im; return lhs;};
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename BMatsubaraGrid::point> &in){lhs << std::setprecision(in._prec) << imag(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename bmatsubara_grid::point> &in){lhs << std::setprecision(in.prec_) << imag(in.value_.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename BMatsubaraGrid::point> &out){real_type im; lhs >> im; out._v.val_ = I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename bmatsubara_grid::point> &out){real_type im; lhs >> im; out.value_.val_ = I*im; return lhs;};
 
 //
-// MatsubaraGrid implementations
+// matsubara_grid implementations
 //
 
 template <bool F>
-MatsubaraGrid<F>::MatsubaraGrid(int min, int max, real_type beta):
-    //Grid<complex_type, MatsubaraGrid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
-    Grid<complex_type, MatsubaraGrid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
+matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
+    //grid_base<complex_type, matsubara_grid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
+    grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     _beta(beta), 
     _spacing(PI/beta), 
     _w_min(min),
@@ -69,8 +71,8 @@ MatsubaraGrid<F>::MatsubaraGrid(int min, int max, real_type beta):
 }
 
 template <bool F>
-MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) : 
-    Grid<complex_type, MatsubaraGrid<F>>(rhs.vals_),
+matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) : 
+    grid_base<complex_type, matsubara_grid<F>>(rhs.vals_),
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
     _w_min(rhs._w_min), 
@@ -79,8 +81,8 @@ MatsubaraGrid<F>::MatsubaraGrid(const MatsubaraGrid<F> &rhs) :
 }
 
 template <bool F>
-MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
-    Grid<complex_type, MatsubaraGrid>(rhs.vals_), 
+matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
+    grid_base<complex_type, matsubara_grid>(rhs.vals_), 
     _beta(rhs._beta), 
     _spacing(rhs._spacing), 
     _w_min(rhs._w_min), 
@@ -90,7 +92,7 @@ MatsubaraGrid<F>::MatsubaraGrid(MatsubaraGrid<F>&& rhs):
 
 template <bool F>
 template <class Obj> 
-auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(vals_[0]))
+auto matsubara_grid<F>::integrate(const Obj &in) const -> decltype(in(vals_[0]))
 {
     decltype(in(this->vals_[0])) R = in(this->vals_[0]);
     R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {return y+in(x);}); 
@@ -99,7 +101,7 @@ auto MatsubaraGrid<F>::integrate(const Obj &in) const -> decltype(in(vals_[0]))
 
 template <bool F>
 template <class Obj> 
-auto MatsubaraGrid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
+auto matsubara_grid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
 {
     decltype(in(vals_[0])) R = in(vals_[0]);
     R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {return y*in(x);}); 
@@ -109,19 +111,8 @@ auto MatsubaraGrid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
     return R;
 }
 
-
-/*
-template <class Obj> 
-auto MatsubaraGrid::gridIntegrate(const std::vector<Obj> &in) const -> Obj
-{
-    decltype(in[0]) R = in[0];
-    R=std::accumulate(vals_.begin()+1, vals_.end(),R,[&](decltype(in[0])& y, decltype(in[0]) &x) {return y+x;}); 
-    return R/_beta;
-}
-*/
-
 template <bool F>
-inline std::tuple <bool, size_t, real_type> MatsubaraGrid<F>::find (complex_type in) const
+inline std::tuple <bool, size_t, real_type> matsubara_grid<F>::find (complex_type in) const
 {
     int n=getNumber(in);
     #ifndef NDEBUG
@@ -143,7 +134,7 @@ inline std::tuple <bool, size_t, real_type> MatsubaraGrid<F>::find (complex_type
 }
 
 template <bool F>
-inline int MatsubaraGrid<F>::getNumber(complex_type in) const
+inline int matsubara_grid<F>::getNumber(complex_type in) const
 {
     assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
     return std::lround(imag(in)/_spacing-F)/2;
@@ -151,7 +142,7 @@ inline int MatsubaraGrid<F>::getNumber(complex_type in) const
 
 template <bool F>
 template <class Obj>
-inline auto MatsubaraGrid<F>::getValue(Obj &in, complex_type x) const ->decltype(in[0]) 
+inline auto matsubara_grid<F>::evaluate(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) { throw (ex_wrong_index()); } 
@@ -159,19 +150,6 @@ inline auto MatsubaraGrid<F>::getValue(Obj &in, complex_type x) const ->decltype
 }
 
 
-template <bool F>
-template <class Obj>
-inline auto MatsubaraGrid<F>::getValue(Obj &in, MatsubaraGrid::point x) const ->decltype(in[0]) 
-{
-    if (x.index_ < vals_.size() && x == vals_[x.index_])
-    return in[x.index_];
-    else { 
-        #ifndef NDEBUG
-        ERROR ("Point not found"); 
-        #endif
-        return this->getValue(in, complex_type(x)); 
-         };
-}
 
 } // end of namespace gftools
 #endif // endif # ifndef __GFTOOLS_MATSUBARAGRID_HPP_

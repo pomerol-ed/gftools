@@ -109,10 +109,10 @@ public:
 };
 
 template <class Grid>
-std::ostream& operator<<(std::ostream& lhs, const num_io<typename Grid::point> &in){lhs << std::setprecision(in._prec) << in._v.val_; return lhs;};
+std::ostream& operator<<(std::ostream& lhs, const num_io<typename Grid::point> &in){lhs << std::setprecision(in.prec_) << in.value_.val_; return lhs;};
 template <class Grid>
 std::istream& operator>>(std::istream& lhs, num_io<typename Grid::point> &out)
-{num_io<decltype(std::declval<typename Grid::point>()._v)> d(0.0); lhs >> d; out._v.val_ = d._v; return lhs;};
+{num_io<decltype(std::declval<typename Grid::point>().value_)> d(0.0); lhs >> d; out.value_.val_ = d.value_; return lhs;};
 
 //
 // Grid implementation

@@ -4,7 +4,7 @@ set (base_src
     defaults.hpp
     tools.hpp
     grid_base.hpp 
-    MatsubaraGrid.hpp 
+    matsubara_grid.hpp 
     RealGrid.hpp 
     KMesh.hpp 
     Container.hpp Container.hxx
