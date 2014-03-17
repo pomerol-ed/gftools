@@ -9,6 +9,7 @@ set (tests
 num_io_test
 tuple_tools_test
 grid_test
+kmesh_test
 #ContainerTest
 #GridObjectTest
 #SaveLoadTest
