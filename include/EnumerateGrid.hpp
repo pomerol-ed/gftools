@@ -25,17 +25,17 @@ public:
     EnumerateGrid(const std::vector<int>& in);
     std::tuple <bool, size_t, int> find (int in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
-    template <class Obj> auto getValue(Obj &in, EnumerateGrid::point x) const -> decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, int x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
-    //template <class Obj> auto getValue(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, EnumerateGrid::point x) const -> decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, int x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    //template <class Obj> auto evaluate(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
 };
 
 
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename EnumerateGrid::point> &in){lhs << int(in._v.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename EnumerateGrid::point> &in){lhs << int(in.value_.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename EnumerateGrid::point> &out){int im; lhs >> im; out._v.val_ = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename EnumerateGrid::point> &out){int im; lhs >> im; out.value_.val_ = im; return lhs;};
 
 //
 // EnumerateGrid implementation
@@ -54,7 +54,7 @@ inline std::tuple<bool, size_t, int> EnumerateGrid::find (int in) const
 }
 
 template <class Obj>
-inline auto EnumerateGrid::getValue(Obj &in, int x) const -> 
+inline auto EnumerateGrid::evaluate(Obj &in, int x) const -> 
     decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0) 
 {
     const auto find_result=this->find(x);
@@ -64,7 +64,7 @@ inline auto EnumerateGrid::getValue(Obj &in, int x) const ->
 
 
 template <class Obj>
-inline auto EnumerateGrid::getValue(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]) 
+inline auto EnumerateGrid::evaluate(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]) 
 {
     if (x.index_ < vals_.size() && x == vals_[x.index_])
     return in[x.index_];
@@ -72,7 +72,7 @@ inline auto EnumerateGrid::getValue(Obj &in, EnumerateGrid::point x) const ->dec
         #ifndef NDEBUG
         ERROR ("Point not found"); 
         #endif
-        return this->getValue(in, int(x)); 
+        return this->evaluate(in, int(x)); 
          };
 }
 

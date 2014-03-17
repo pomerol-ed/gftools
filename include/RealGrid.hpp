@@ -27,17 +27,17 @@ public:
     RealGrid(const std::vector<real_type>& in);
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
-    template <class Obj> auto getValue(Obj &in, RealGrid::point x) const -> decltype(in[0]);
-    template <class Obj> auto getValue(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
-    //template <class Obj> auto getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, RealGrid::point x) const -> decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    //template <class Obj> auto evaluate(Obj &in, RealGrid::point x) const ->decltype(in[0]);
 
     using Grid<real_type, RealGrid>::vals_;
 };
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename RealGrid::point> &in){lhs << std::setprecision(in._prec) << in._v.val_; return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename RealGrid::point> &in){lhs << std::setprecision(in.prec_) << in.value_.val_; return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename RealGrid::point> &out){real_type im; lhs >> im; out._v.val_ = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename RealGrid::point> &out){real_type im; lhs >> im; out.value_.val_ = im; return lhs;};
 
 //
 // RealGrid implementation
@@ -117,7 +117,7 @@ inline std::tuple <bool, size_t, real_type> RealGrid::find (real_type in) const
 
 
 template <class Obj>
-inline auto RealGrid::getValue(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
+inline auto RealGrid::evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
@@ -139,7 +139,7 @@ inline auto RealGrid::getValue(Obj &in, real_type x) const -> decltype(std::decl
 }
 
 template <class Obj>
-inline auto RealGrid::getValue(Obj &in, RealGrid::point x) const ->decltype(in[0]) 
+inline auto RealGrid::evaluate(Obj &in, RealGrid::point x) const ->decltype(in[0]) 
 {
     if (checkPoint(x)) return in[x.index_];
     else { ERROR ("Point not found"); throw ex_wrong_index(); };
