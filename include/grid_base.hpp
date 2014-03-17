@@ -26,6 +26,7 @@ struct point_base {
     point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
     point_base (){};
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
+    bool operator!=(const point_base &rhs) const {return !(*this == rhs); }
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
     ValueType val_;
@@ -73,6 +74,9 @@ public:
     /** Returns size of grid. */
     size_t size() const;
 
+    /** Get a value of an object at the given point, which is defined on a grid. */
+    template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
+
     /** Shift a point by the given value. */
     template <class ArgType>
         point shift(point in, ArgType shift_arg) const;
@@ -81,13 +85,10 @@ public:
     point shift (point in, point shift_arg) const;
 
     // CFTP forwards
-    /** Get a value of an object at the given point, which is defined on a grid. */
-    template <class Obj> auto get_value(Obj &in, point x) const ->decltype(in[0])
-        { return static_cast<const Derived*>(this)->getValue(in,x); };
     /** Get a value of an object at the given coordinate, which is defined on a grid. */
-    template <class Obj> 
-        auto getValue(Obj &in, ValueType x) const ->decltype(in[0])
-        { return static_cast<const Derived*>(this)->getValue(in,x); };
+    //template <class Obj> 
+    //    auto evaluate(Obj &in, ValueType x) const ->decltype(in[0])
+    //    { return static_cast<const Derived*>(this)->evaluate(in,x); };
     /** Returns a tuple of left closest index, weight, right closest index and weight, which are the closest to input value. */
     std::tuple <bool, size_t, real_type> find (ValueType in) const 
         { return static_cast<const Derived*>(this)->find(in); };
@@ -172,6 +173,14 @@ template <typename ValueType, class Derived>
 inline bool grid_base<ValueType,Derived>::check_point(point in, real_type tolerance) const
 {
     return (in.index_ < vals_.size() && std::abs(in.val_ - vals_[in.index_].val_) < tolerance);
+}
+
+template <typename ValueType, class Derived>
+template <class Obj>
+inline auto grid_base<ValueType,Derived>::evaluate(Obj &in, point x) const ->decltype(in[0]) 
+{
+    if (check_point(x)) return in[x.index_];
+    else { ERROR ("Point not found"); throw ex_wrong_index(); };
 }
 
 
