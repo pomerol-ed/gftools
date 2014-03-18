@@ -1,11 +1,8 @@
-#ifndef ___GFTOOLS_GRID_H___
-#define ___GFTOOLS_GRID_H___
+#pragma once 
 
 #include "defaults.hpp"
 #include "num_io.hpp"
 #include "tools.hpp"
-//#include "Tools.hpp"
-//#include <iterator>
 
 namespace gftools { 
 
@@ -68,20 +65,20 @@ public:
     /** Returns all values. */
     const std::vector<point> & get_points() const;
     /** Returns values of all points. */
-    const std::vector<ValueType> & get_values() const;
+    const std::vector<ValueType> &get_values() const;
     /** Checks if a point is present in a grid. */
     bool check_point(point in, real_type tolerance = std::numeric_limits<real_type>::epsilon()) const;
     /** Returns size of grid. */
     size_t size() const;
 
+    /** Returns the closest point to the given value. */
+    point find_nearest(ValueType in) const;
     /** Get a value of an object at the given point, which is defined on a grid. */
     template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
 
     /** Shift a point by the given value. */
-    template <class ArgType>
-        point shift(point in, ArgType shift_arg) const;
-    template <class ArgType>
-        ValueType shift(ValueType in, ArgType shift_arg) const;
+    point shift(point in, ValueType shift_arg) const;
+    ValueType shift(ValueType in, ValueType shift_arg) const;
     point shift (point in, point shift_arg) const;
 
     // CFTP forwards
@@ -90,10 +87,6 @@ public:
     //    auto evaluate(Obj &in, ValueType x) const ->decltype(in[0])
     //    { return static_cast<const Derived*>(this)->evaluate(in,x); };
     /** Returns a tuple of left closest index, weight, right closest index and weight, which are the closest to input value. */
-    std::tuple <bool, size_t, real_type> find (ValueType in) const 
-        { return static_cast<const Derived*>(this)->find(in); };
-    /** Returns the closest point to the given value. */
-    point find_closest(ValueType in) const;
     /** Integrate over grid. */
     //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
     //    { return static_cast<const Derived*>(this)->integrate(in); };
@@ -183,36 +176,35 @@ inline auto grid_base<ValueType,Derived>::evaluate(Obj &in, point x) const ->dec
     else { ERROR ("Point not found"); throw ex_wrong_index(); };
 }
 
-
 template <typename ValueType, class Derived>
-template <class ArgType>
-inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ArgType shift_arg) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::find_nearest(ValueType in) const
 {
-    point out;
-    if (std::abs(ValueType(shift_arg))<std::numeric_limits<real_type>::epsilon()) return in;
-    out.val_ = in.val_ + ValueType(shift_arg);
-    auto find_result = this->find(out.val_);
-    if (std::get<0>(find_result)) { out.index_ = std::get<1>(find_result); return (*this)[out.index_]; }
-    else { out.index_ = this->getSize(); 
-           #ifndef NDEBUG
-           ERROR("Returning point with an invalid index after shift.");
-           #endif
-           return out; };
-}
-
-template <typename ValueType, class Derived>
-inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::find_closest(ValueType in) const
-{
-    auto find_result = this->find(in);
-    if (!std::get<0>(find_result)) { ERROR("Couldn't find the closest point"); throw (ex_wrong_index()); };
-    return point(vals_[std::get<1>(find_result)],std::get<1>(find_result));
+    static_assert(std::is_same<bool,decltype(std::declval<ValueType>() < std::declval<ValueType>())>::value, 
+        "Default find_nearest is written only for less-comparable types");
+    auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in);
+    size_t dist = std::distance(vals_.begin(), nearest_iter);
+    if (dist > 0 && vals_[dist].val_>in) dist--;
+    return vals_[dist];
 } 
 
 template <typename ValueType, class Derived>
-template <class ArgType>
-inline ValueType grid_base<ValueType,Derived>::shift(ValueType in, ArgType shift_arg) const
+inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ValueType shift_arg) const
 {
-    return in+ValueType(shift_arg);
+    point out;
+    if (tools::is_float_equal(shift_arg, 0.0)) return in;
+    out.val_ = in.val_ + ValueType(shift_arg);
+    point p1 = this->find_nearest(out.val_);
+    if (!tools::is_float_equal(p1.val_, out.val_)) { 
+        std::cerr << "Couldn't shift point" << std::endl; 
+        throw (ex_wrong_index());
+        }
+    else return p1;
+}
+
+template <typename ValueType, class Derived>
+inline ValueType grid_base<ValueType,Derived>::shift(ValueType in, ValueType shift_arg) const
+{
+    return in+shift_arg;
 }
 
 template <typename ValueType, class Derived>
@@ -221,7 +213,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index_ + shift_arg.index_)%vals_.size();
     #ifndef NDEBUG
     ValueType val = this->shift(in.val_, shift_arg.val_);
-    if (std::abs(val - vals_[index].val_)>1e-3) throw (ex_wrong_index()); 
+    if (!tools::is_float_equal(val, vals_[index].val_)) throw (ex_wrong_index()); 
     #endif
     return vals_[index];
 
@@ -247,4 +239,3 @@ const char* grid_base<ValueType,Derived>::ex_wrong_index::what() const throw(){
 
 //#include "grid_tools.hpp"
 
-#endif // endin :: ifndef ___GFTOOLS_GRID_H___

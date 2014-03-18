@@ -25,9 +25,7 @@ public:
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
     //template <class Obj> auto evaluate(Obj &in, real_type x) const ->decltype(in[0]);
     //template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
-    point shift(point in, point shift_arg) const;
-    template <class ArgType> point shift(point in, ArgType shift_arg) const;
-    template <class ArgType> real_type shift(real_type in, ArgType shift_arg) const;
+    real_type shift(real_type in,real_type shift_arg) const;
 };
 
 struct kmesh_patch : public kmesh 
@@ -96,8 +94,7 @@ auto kmesh::integrate(const Obj &in) const -> decltype(in(vals_[0]))
     return R/npoints_;
 }
 
-template <class ArgType>
-inline real_type kmesh::shift(real_type in, ArgType shift_arg) const
+inline real_type kmesh::shift(real_type in, real_type shift_arg) const
 {
     assert (in>=0 && in < domain_len_);
     //if (std::abs(real_type(shift_arg))<std::numeric_limits<real_type>::epsilon()) return in;
@@ -106,31 +103,6 @@ inline real_type kmesh::shift(real_type in, ArgType shift_arg) const
     out-= std::floor(out/domain_len_)*domain_len_;
     return out;
 }
-
-
-template <class ArgType>
-inline typename kmesh::point kmesh::shift(point in, ArgType shift_arg) const
-{
-    if (std::abs(real_type(shift_arg))<std::numeric_limits<real_type>::epsilon()) return in;
-    
-    double val = this->shift(in.val_, shift_arg);
-    auto find_result = this->find(val);
-    if (!std::get<0>(find_result)) throw (ex_wrong_index());
-    size_t index = std::get<1>(find_result);
-    return (*this)[index];
-}
-
-inline typename kmesh::point kmesh::shift(point in, point shift_arg) const
-{
-    size_t index = (in.index_ + shift_arg.index_)%npoints_;
-    #ifndef NDEBUG
-    real_type val = this->shift(in.val_, shift_arg.val_);
-    if (std::abs(val - vals_[index])>1e-3) throw (ex_wrong_index()); 
-    #endif
-    //out.val_ = vals_[out.index_];
-    return vals_[index];
-}
-
 
 
 //
@@ -162,9 +134,9 @@ inline kmesh_patch::kmesh_patch(const kmesh& parent):
 template <class Obj> 
 inline auto kmesh_patch::evaluate(Obj &in, real_type x) const ->decltype(in[0])
 {
-    const auto find_result=_parent.find(x);
-    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
-    return evaluate(in, kmesh::point(std::get<1>(find_result), x));
+    const auto find_result=_parent.find_nearest(x);
+    if (!tools::is_float_equal(find_result.val_, x)) { ERROR("Can't evaluate point out of bounds."); throw (ex_wrong_index()); };
+    return _parent.evaluate(in, find_result);
 }
 
 template <class Obj> 

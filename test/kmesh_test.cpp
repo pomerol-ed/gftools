@@ -13,7 +13,7 @@ int main()
     if (!tools::is_float_equal(outF1,0.,1e-8)) return EXIT_FAILURE;
 
     typedef typename kmesh::point point;
-    point p1 = k1.find_closest(PI);
+    point p1 = k1.find_nearest(PI);
     std::cout << "PI == " << p1 << std::endl;
     if (!tools::is_float_equal(PI,double(p1),1e-8)) return EXIT_FAILURE;
 

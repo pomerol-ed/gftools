@@ -72,7 +72,7 @@ struct equality_checker<std::tuple<Arg>> {
 // free function
 /** Returns true, if two objects are equal up to a certain tolerance. */
 template <typename T> 
-    bool is_float_equal(T t1, T t2, real_type tol = std::numeric_limits<real_type>::epsilon()){ return equality_checker<T>::is_equal(t1,t2,tol); };
+    bool is_float_equal(T t1, T t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T>::is_equal(t1,t2,tol); };
 
 //
 /** A tool to calc an integer power function of an int. */

@@ -35,7 +35,7 @@ int main()
     point p1 = g2[2];
     std::cout << p1 << std::endl;
 
-    point p2 = g2.find_closest(my_data(3));
+    point p2 = g2.find_nearest(my_data(3));
     std::cout << p2 << " == " << g2[1] << " = " << std::boolalpha << (p2 == g2[1]) <<  std::endl;
     if (!(p2 == g2[1])) return EXIT_FAILURE;
 
