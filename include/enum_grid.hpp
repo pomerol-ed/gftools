@@ -1,7 +1,7 @@
 #ifndef ___GFTOOLS_ENUMERATEGRID_HPP___
 #define ___GFTOOLS_ENUMERATEGRID_HPP___
 
-#include "Grid.hpp"
+#include "grid_base.hpp"
 
 namespace gftools { 
 
@@ -10,7 +10,7 @@ struct int_wrap_enumerate_grid
 {int v_; operator int() const{return v_;}; int_wrap_enumerate_grid(int i=0):v_(i) {}; };
 
 /** A grid of real values. */
-class EnumerateGrid : public Grid<int_wrap_enumerate_grid, EnumerateGrid>
+class enum_grid : public grid_base<int_wrap_enumerate_grid, enum_grid>
 {
 public:
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
@@ -21,11 +21,11 @@ public:
      * \param[in] npoints Number of points
      * \param[in] include_last True, if the max point needs to be included
      */
-    EnumerateGrid(int min, int max, bool include_last = false);
-    EnumerateGrid(const std::vector<int>& in);
+    enum_grid(int min, int max, bool include_last = false);
+    enum_grid(const std::vector<int>& in);
     std::tuple <bool, size_t, int> find (int in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
-    template <class Obj> auto evaluate(Obj &in, EnumerateGrid::point x) const -> decltype(in[0]);
+    template <class Obj> auto evaluate(Obj &in, enum_grid::point x) const -> decltype(in[0]);
     template <class Obj> auto evaluate(Obj &in, int x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
     //template <class Obj> auto evaluate(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
 };
@@ -33,20 +33,20 @@ public:
 
 
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename EnumerateGrid::point> &in){lhs << int(in.value_.val_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename enum_grid::point> &in){lhs << int(in.value_.val_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename EnumerateGrid::point> &out){int im; lhs >> im; out.value_.val_ = im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<typename enum_grid::point> &out){int im; lhs >> im; out.value_.val_ = im; return lhs;};
 
 //
-// EnumerateGrid implementation
+// enum_grid implementation
 //
 
-inline EnumerateGrid::EnumerateGrid(int min, int max, bool include_last):
-Grid<int_wrap_enumerate_grid, EnumerateGrid>(min,max+include_last,[](int n){return n;})
+inline enum_grid::enum_grid(int min, int max, bool include_last):
+grid_base<int_wrap_enumerate_grid, enum_grid>(min,max+include_last,[](int n){return n;})
 {
 }
 
-inline std::tuple<bool, size_t, int> EnumerateGrid::find (int in) const
+inline std::tuple<bool, size_t, int> enum_grid::find (int in) const
 {
     if (in<vals_[0].val_) { ERROR("out of bounds"); return std::make_tuple(0,0,0);};
     if (in > vals_[vals_.size()-1].val_) { ERROR("out of bounds"); return std::make_tuple(0,vals_.size(),0);}; 
@@ -54,7 +54,7 @@ inline std::tuple<bool, size_t, int> EnumerateGrid::find (int in) const
 }
 
 template <class Obj>
-inline auto EnumerateGrid::evaluate(Obj &in, int x) const -> 
+inline auto enum_grid::evaluate(Obj &in, int x) const -> 
     decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0) 
 {
     const auto find_result=this->find(x);
@@ -64,7 +64,7 @@ inline auto EnumerateGrid::evaluate(Obj &in, int x) const ->
 
 
 template <class Obj>
-inline auto EnumerateGrid::evaluate(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]) 
+inline auto enum_grid::evaluate(Obj &in, enum_grid::point x) const ->decltype(in[0]) 
 {
     if (x.index_ < vals_.size() && x == vals_[x.index_])
     return in[x.index_];
