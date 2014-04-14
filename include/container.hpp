@@ -12,6 +12,8 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
+#include "tuple_tools.hpp"
+
 namespace gftools { 
 
 template <typename ValueType, size_t N, typename BoostContainerType>
@@ -20,28 +22,41 @@ struct container_base;
 template <typename ValueType, size_t N>
 struct container;
 
-template<typename ValueType, size_t N, size_t M = N>
-using container_view = container_base<real_type, N, typename container<real_type, N>::boost_t::template array_view<M>::type>;
+template<typename ContainerType, size_t M = ContainerType::N_>
+using container_view = container_base<typename ContainerType::value_type, ContainerType::N_, typename ContainerType::boost_t::template array_view<M>::type>;
+
+namespace extra {
+template <typename, bool View=false> struct container_traits; 
 
 template <typename ValueType, size_t N, typename BoostContainerType>
-struct container_traits
+struct container_traits<container_base<ValueType,N,BoostContainerType>,false>
 {
     typedef BoostContainerType boost_t;
-    typedef decltype(std::declval<boost_t>()[0]) boost_under_type;
+    typedef typename boost_t::reference boost_under_type;
     typedef container_base<ValueType,N-1,boost_under_type> type;
     typedef container_base<ValueType,N-1,boost_under_type> ref_type;
 };
 
 template <typename ValueType, typename BoostContainerType>
-struct container_traits<ValueType,1,BoostContainerType>
+struct container_traits<container_base<ValueType,1,BoostContainerType>,false>
 {
-
     typedef BoostContainerType boost_t;
-    typedef decltype(std::declval<boost_t>()[0]) boost_under_type;
+    typedef typename boost_t::reference boost_under_type;
     typedef ValueType type;
     typedef ValueType& ref_type;
 };
 
+
+template <typename ValueType, size_t N, typename BoostViewType>
+struct container_traits<container_base<ValueType,N,BoostViewType>,true>
+{
+    typedef BoostViewType boost_t;
+    typedef typename boost_t::reference boost_under_type;
+    typedef ValueType type;
+    typedef ValueType& ref_type;
+};
+
+}; // end of namespace extra
 
 // ================================================================== //
 
@@ -49,42 +64,45 @@ template <typename ValueType, size_t N, typename BoostContainerType>
 struct container_base 
 {
     constexpr static size_t N_ = N;
+    constexpr static bool is_view_ = (N != BoostContainerType::dimensionality);
 
-    typedef ValueType value_t;
+    typedef ValueType value_type;
+    typedef typename extra::container_traits<container_base, is_view_>::type under_type;
+    typedef typename extra::container_traits<container_base, is_view_>::ref_type under_ref_type;
+    typedef typename extra::container_traits<container_base, is_view_>::boost_under_type boost_under_type;
+
     typedef BoostContainerType boost_t;
     typedef Eigen::Array<ValueType, Eigen::Dynamic, 1> EigenArray;
     typedef Eigen::Map<EigenArray> EigenMap;
     typedef Eigen::Matrix<ValueType,Eigen::Dynamic, Eigen::Dynamic> MatrixType;
     typedef Eigen::Matrix<ValueType,Eigen::Dynamic, 1> VectorType;
 
-    typedef typename container_traits<ValueType,N, BoostContainerType>::type under_type;
-    typedef typename container_traits<ValueType,N, BoostContainerType>::ref_type under_ref_type;
-    typedef typename container_traits<ValueType,N, BoostContainerType>::boost_under_type boost_under_type;
-
     typedef std::function<under_type(boost_under_type)> action_type;
     typedef boost::transform_iterator<action_type,typename boost_t::iterator> iterator; 
     typedef boost::transform_iterator<action_type,typename boost_t::iterator> const_iterator; 
 
-    container_base(const boost_t &in):data_(in){};
-    /** Copy constructor. */
-    container_base(const container_base<ValueType,N,boost_t> &rhs):data_(rhs.data_){};
-    container_base& operator=(const container_base<ValueType,N,boost_t> &rhs){data_ = rhs.data_; return (*this);};
-    template <class B2> container_base& operator=(const container_base<ValueType,N,B2> &rhs){data_ = rhs.data_; return (*this);};
-    /** Move constructor. */
-    container_base(container_base<ValueType,N,boost_t> &&rhs):data_(rhs.data_){};
-    container_base& operator=(container_base<ValueType,N,boost_t> &&rhs){std::swap(data_,rhs.data_); return (*this);};
 
-    template <size_t N2 = N, typename DT = boost_t>
-    using Is1d = typename std::enable_if<N2==1,DT>::type;
-    template <size_t N2 = N, typename DT = boost_t>
-    using IsNot1d = typename std::enable_if<N2!=1,DT>::type;
-    template <size_t N2 = N, typename DT = boost_t>
-    using Is2d = typename std::enable_if<N2==2,DT>::type;
+    container_base(const boost_t &in):storage_(in){};
+    /** Copy constructor. */
+    container_base(const container_base<ValueType,N,boost_t> &rhs):storage_(rhs.storage_){};
+    container_base& operator=(const container_base<ValueType,N,boost_t> &rhs){storage_ = rhs.storage_; return (*this);};
+    template <class B2> container_base& operator=(const container_base<ValueType,N,B2> &rhs){storage_ = rhs.storage_; return (*this);};
+    /** Move constructor. */
+    container_base(container_base<ValueType,N,boost_t> &&rhs):storage_(rhs.storage_){};
+    container_base& operator=(container_base<ValueType,N,boost_t> &&rhs){std::swap(storage_,rhs.storage_); return (*this);};
 
     /** Access operators. */
-    auto operator[](size_t i) -> under_ref_type { return under_ref_type(data_[i]); }
-    auto operator[](size_t i) const -> under_ref_type const { return under_ref_type(data_[i]); }
+    auto operator[](size_t i) -> under_ref_type { return under_ref_type(storage_[i]); }
+    auto operator[](size_t i) const -> under_ref_type const { return under_ref_type(storage_[i]); }
 
+    boost_t& boost_container_() const {return storage_; }
+    ValueType& operator()(std::array<size_t, N> indices){return storage_(indices);}
+
+    container_base<ValueType,1,boost::multi_array_ref<ValueType,1>> flatten();
+// TODO : put views
+
+    template <size_t N2 = N, typename DT = boost_t>
+    using Is2d = typename std::enable_if<N2==2,DT>::type;
     /** Return operators. */
     template<size_t N2 = N, typename U = Is2d<N2>>
     container_base<ValueType,N,boost_t>& operator=(MatrixType rhs);
@@ -99,7 +117,9 @@ struct container_base
     template <typename T = ValueType, typename U = typename std::enable_if<std::is_convertible<T, complex_type>::value, int>::type> 
         container<ValueType,N> conj();
     /** Sum of all values in the container. */
-    ValueType sum(){return EigenMap(data_.origin(), data_.num_elements()).sum();};
+    ValueType sum() const; 
+    int size() const;
+    std::array<size_t,N> shape() const;
 
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>
@@ -168,22 +188,34 @@ struct container_base
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
     
 //-----------------------------//    
-    mutable boost_t data_;
+    protected:
+    mutable boost_t storage_;
+
+    friend struct container<ValueType,N>;
 };
 
 template <typename ValueType, size_t N>
 struct container : container_base<ValueType,N,typename boost::multi_array<ValueType, N>> {
     typedef boost::multi_array<ValueType, N> boost_t;
     typedef container_base<ValueType,N,boost_t> Base;
-    using Base::data_;
+    using Base::storage_;
     typedef typename Base::MatrixType MatrixType;
 
+    template <typename T>
+    using IsNotContainer = typename std::enable_if<!(T::N_>=1)>::type;
+
+    container(std::array<int,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
     container(std::array<size_t,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
+    container(std::initializer_list<int> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
 
     template <typename CT>
-        container(container_base<ValueType,N,CT> in) : container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(in.data_) {};
+        container(container_base<ValueType,N,CT> in) : container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(in.storage_) {};
 
-    template<typename ...ShapeArgs>
+    template<typename ...ShapeArgs,
+        typename = typename std::enable_if<sizeof...(ShapeArgs) == N 
+               && (std::is_same<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<int,N>::tuple_type>::value // Arguments have to be strictly ints
+               || std::is_same<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<size_t,N>::tuple_type>::value) // or size_t
+        ,int>::type>
         container(ShapeArgs...in):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(std::array<int,N>({{in...}}))) {
             static_assert(sizeof...(in) == N,"arg mismatch");
         };

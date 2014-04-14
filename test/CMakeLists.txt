@@ -1,4 +1,4 @@
-include_directories (. ../include)
+include_directories (. ../include ${GTEST_DIR}/include)
 
 enable_testing()
 
@@ -23,6 +23,6 @@ grid_object_test
 foreach (test ${tests})
     set(test_src ${test}.cpp)
     add_executable(${test} ${test_src} $<TARGET_OBJECTS:libgftools>)
-#    target_link_libraries(${test} gftools_extern)
+    target_link_libraries(${test} gtest_main)
     add_test(${test} ${test})
 endforeach(test)

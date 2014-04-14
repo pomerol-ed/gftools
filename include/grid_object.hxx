@@ -145,7 +145,7 @@ template <typename ValueType, typename ...GridTypes>
 inline ValueType& grid_object<ValueType,GridTypes...>::get(const PointTupleType& in)
 {
         auto indices = getIndicesFromPoints(in);
-        return data_.data_(indices);
+        return data_(indices);
 }
 
 
@@ -180,7 +180,7 @@ inline ValueType grid_object<ValueType,GridTypes...>::operator()(const PointTupl
 {
     try {
         auto indices = getIndicesFromPoints(in);
-        return data_.data_(indices);
+        return data_(indices);
         }
     catch (ex_wrong_index) {
         return this->operator()(ArgTupleType(in));
@@ -344,7 +344,7 @@ void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueTy
         auto pts_index = _getPointsIndices(i);
         ArgTupleType args = this->getArgsFromIndices(pts_index);
         auto val = in(args);
-        data_.data_(pts_index) = val;
+        data_(pts_index) = val;
         };
     _f = tools::fun_traits<FunctionType>::getFromTupleF(in); 
 
@@ -358,7 +358,7 @@ void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueT
         auto pts_index = _getPointsIndices(i);
         ArgTupleType args = this->getArgsFromIndices(pts_index);
         auto val = tuple_tools::unfold_tuple(in, args);
-        data_.data_(pts_index) = val;
+        data_(pts_index) = val;
         };
     _f = in;
 }
@@ -371,7 +371,7 @@ void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueT
         auto pts_index = _getPointsIndices(i);
         PointTupleType args = this->getPointsFromIndices(pts_index);
         auto val = tuple_tools::unfold_tuple(in, args);
-        data_.data_(pts_index) = val;
+        data_(pts_index) = val;
         };
 }
 
@@ -383,7 +383,7 @@ void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueTy
         auto pts_index = _getPointsIndices(i);
         PointTupleType args = this->getPointsFromIndices(pts_index);
         auto val = in(args);
-        data_.data_(pts_index) = val;
+        data_(pts_index) = val;
         };
     //_f = tools::fun_traits<FunctionType>::getFromTupleF(std::function<ValueType(ArgTupleType)>(in)); 
 }

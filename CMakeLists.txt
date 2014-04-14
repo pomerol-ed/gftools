@@ -57,6 +57,10 @@ add_subdirectory(include)
 option(Testing "Enable testing" OFF)
 if (Testing)
     message(STATUS "Building tests")
+
+    set (GTEST_DIR ${CMAKE_SOURCE_DIR}/gtest-1.7.0)
+    add_subdirectory(${GTEST_DIR})
+
     add_subdirectory(test)
     enable_testing()
 endif (Testing)
