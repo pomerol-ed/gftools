@@ -8,7 +8,7 @@ set (base_src
     matsubara_grid.hpp 
     real_grid.hpp 
     kmesh.hpp 
-    Container.hpp # Container.hxx
+    container.hpp container.hxx
     #GridObject.hpp GridObject.hxx
     )
 
