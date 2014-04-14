@@ -47,6 +47,7 @@ find_package (Boost)
 
 include_directories(
     ${EIGEN3_INCLUDE_DIR}
+    #${EIGEN3_INCLUDE_DIR}/unsupported
     ${Boost_INCLUDE_DIRS}
     ./include
 )

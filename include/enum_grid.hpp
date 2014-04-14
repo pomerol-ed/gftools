@@ -76,7 +76,5 @@ inline auto enum_grid::evaluate(Obj &in, enum_grid::point x) const ->decltype(in
          };
 }
 
-
-
 } // end of namespace gftools
 #endif // endif :: #ifndef ___GFTOOLS_REALGRID_HPP___

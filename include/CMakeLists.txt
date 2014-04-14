@@ -8,8 +8,8 @@ set (base_src
     matsubara_grid.hpp 
     real_grid.hpp 
     kmesh.hpp 
-    Container.hpp Container.hxx
-    GridObject.hpp GridObject.hxx
+    Container.hpp # Container.hxx
+    #GridObject.hpp GridObject.hxx
     )
 
 add_library(libgftools OBJECT ${base_src})
