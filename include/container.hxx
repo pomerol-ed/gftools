@@ -1,5 +1,4 @@
-#ifndef ___GFTOOLS_CONTAINER_HPP___
-#define ___GFTOOLS_CONTAINER_HPP___
+#pragma once
 
 #include "container.hpp"
 #include <fstream>
@@ -26,7 +25,7 @@ template<size_t N2, typename U>
 }
 
 template <typename ValueType, size_t N> 
-template <size_t, typename>
+template <size_t N2, typename U>
 container<ValueType,N>::container(MatrixType rhs):
     container<ValueType,N>(std::array<size_t,2>({{static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }}))
 {
@@ -252,4 +251,3 @@ container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_
 }
 
 } // end of namespace GFTools
-#endif

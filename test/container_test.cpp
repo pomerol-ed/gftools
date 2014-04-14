@@ -148,7 +148,6 @@ int main()
     INFO(Vals_1d.as_vector());
     INFO(Vals_1d.as_diagonal_matrix());
 
-/*
     INFO("View test");
     container<double, 3> C1(std::array<size_t,3>({{2,1,3}}));
     C1[0][0][1] = 1.0; C1[0][0][2] = 2.0; C1[1][0][0] = 3.0; C1[1][0][2] = 4.0;
@@ -157,17 +156,16 @@ int main()
     typedef boost::multi_array<double, 3>::array_view<3>::type myview_3_t;
     typedef boost::multi_array_types::index_range range;
     myview_3_t boost_view1 = C1.data_[boost::indices[range(0,1)][range(0,1)][range(0,2)]]; 
-    containerView<double, 3, 3> C1_v2(myview_3_t(C1.data_[boost::indices[range().stride(2)][range()][range().stride(1)]]));
-    ContainerView<double, 3, 3> C1_v3(C1_v2);
+    container_view<double, 3, 3> C1_v2(myview_3_t(C1.data_[boost::indices[range().stride(2)][range()][range().stride(1)]]));
+    container_view<double, 3, 3> C1_v3(C1_v2);
     INFO(C1_v2);
     DEBUG(C1_v2*C1_v3);
     DEBUG(C1);
     C1_v2 *= C1_v3;
     DEBUG(C1_v2);
     DEBUG(C1);
-    ContainerView<double, 3> C1_v(C1.data_[boost::indices[range()][range()][range().stride(3)]]);
+    container_view<double, 3> C1_v(C1.data_[boost::indices[range()][range()][range().stride(3)]]);
     INFO("Container view : " << C1_v);
-*/
 
     return EXIT_SUCCESS;
 }

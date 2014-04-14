@@ -2,6 +2,7 @@
 
 //#define BOOST_RESULT_OF_USE_DECLTYPE
 #include <type_traits>
+#include <array>
 
 #ifdef NDEBUG
 #define BOOST_DISABLE_ASSERTS
@@ -18,6 +19,9 @@ struct container_base;
 
 template <typename ValueType, size_t N>
 struct container;
+
+template<typename ValueType, size_t N, size_t M = N>
+using container_view = container_base<real_type, N, typename container<real_type, N>::boost_t::template array_view<M>::type>;
 
 template <typename ValueType, size_t N, typename BoostContainerType>
 struct container_traits
@@ -173,16 +177,19 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     typedef container_base<ValueType,N,boost_t> Base;
     using Base::data_;
     typedef typename Base::MatrixType MatrixType;
+
     container(std::array<size_t,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
+
     template <typename CT>
-    container(container_base<ValueType,N,CT> in) : container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(in.data_) {};
+        container(container_base<ValueType,N,CT> in) : container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(in.data_) {};
 
     template<typename ...ShapeArgs>
-    container(ShapeArgs...in):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(std::array<int,N>({{in...}}))) {
-        static_assert(sizeof...(in) == N,"arg mismatch");
-    };
+        container(ShapeArgs...in):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(std::array<int,N>({{in...}}))) {
+            static_assert(sizeof...(in) == N,"arg mismatch");
+        };
 
-    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> container<ValueType,N> (MatrixType rhs);
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> 
+        container<ValueType,N> (MatrixType rhs);
     using Base::operator+=;
     using Base::operator-=;
     using Base::operator*=;
@@ -192,10 +199,7 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
         typename std::add_lvalue_reference<Base>::type(*this) = rhs; return (*this);}
 };
 
-/*
-template<typename ValueType, size_t N, size_t M = N>
-using ContainerView = container_base<real_type, N, typename Container<real_type, N>::boost_t::template array_view<M>::type>;
-*/
+
 }; // end of namespace gftools
 
 #include "container.hxx"
