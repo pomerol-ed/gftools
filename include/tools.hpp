@@ -15,7 +15,8 @@ template <typename T>
 struct is_number : std::integral_constant<
     bool,
     std::is_arithmetic<typename std::remove_cv<T>::type>::value ||
-    std::is_convertible<typename std::remove_cv<T>::type,complex_type>::value
+    std::is_convertible<typename std::remove_cv<T>::type,complex_type>::value ||
+    std::is_convertible<typename std::remove_cv<T>::type,double>::value
     >{};
 
 //
@@ -88,19 +89,17 @@ struct __power<base,0> {
 */
 
 /** Function traits. */
-/*
-template <typename FunctionType> struct __fun_traits;
+template <typename FunctionType> struct fun_traits;
 template <typename ValType, typename ... ArgTypes> 
-struct __fun_traits<std::function<ValType(ArgTypes...)> >
+struct fun_traits<std::function<ValType(ArgTypes...)> >
 {
     static std::function<ValType(ArgTypes...)> constant(ValType c) 
     { return [c](ArgTypes...in){return c;};}
     static std::function<ValType(ArgTypes...)> getFromTupleF(std::function<ValType(std::tuple<ArgTypes...>)> f1)
     { return [f1](ArgTypes...in){return f1(std::forward_as_tuple(in...));};}
     static std::function<ValType(std::tuple<ArgTypes...>)> getTupleF(std::function<ValType(ArgTypes...)> f1)
-    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ __caller<ValType,ArgTypes...> t; t = {in, f1}; return t.call();};}
+    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ tuple_tools::extra::tuple_caller<ValType,ArgTypes...> t; t = {in, f1}; return t.call();};}
 };
-*/
 
 
 

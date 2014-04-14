@@ -4,19 +4,22 @@
 
 namespace gftools {
 
+template <typename ValueType, typename ... > struct GridArgTypeExtractor;
+template <typename ValueType, typename ... > struct GridPointExtractor;
+
 /** A tool to generate a function of argtypes of grids. */
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>
 struct GridArgTypeExtractor<ValueType, T<GridType1, GridTypes...>, ArgTypes...> : 
-GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes...,decltype(GridType1::point::val_)>
+GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes..., typename GridType1::point::value_type>
 {
 };
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
 struct GridArgTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> type; 
-    typedef std::function<ValueType(ArgTypes...,decltype(GridType1::point::val_))> arg_type; 
-    typedef std::tuple<ArgTypes...,decltype(GridType1::point::val_)> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., decltype(GridType1::point::val_)> arg_function_wrapper;
+    typedef std::function<ValueType(ArgTypes...,typename GridType1::point::value_type)> type; 
+    typedef std::function<ValueType(ArgTypes...,typename GridType1::point::value_type)> arg_type; 
+    typedef std::tuple<ArgTypes...,typename GridType1::point::value_type> arg_tuple_type;
+    typedef tuple_tools::extra::tuple_caller<ValueType, std::tuple<ArgTypes..., typename GridType1::point::value_type>> arg_function_wrapper;
 };
 
 /** A tool to generate a function of argtypes of grids. */
@@ -30,7 +33,7 @@ template <typename ValueType, template <typename ...> class T, typename GridType
 struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
     typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> point_type; 
     typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple_type;
-    typedef __caller<ValueType, ArgTypes..., typename GridType1::point> point_function_wrapper;
+    typedef tuple_tools::extra::tuple_caller<ValueType, std::tuple<ArgTypes..., typename GridType1::point>> point_function_wrapper;
 };
 
 
@@ -41,7 +44,7 @@ struct GetGridSizes {
     static inline std::array<size_t,sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
         static_assert(N>1,"!");
         auto out = GetGridSizes<N-1>::template TupleSizeToArray<GridType...>( in );
-        std::get<N-1>(out) = std::get<N-1>(in).getSize();
+        std::get<N-1>(out) = std::get<N-1>(in).size();
         return out;
     };
 };
@@ -51,7 +54,7 @@ struct GetGridSizes<1> {
     template <typename... GridType>
     static inline std::array<size_t, sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
         std::array<size_t,sizeof...(GridType)> out;
-        std::get<0>(out) = std::get<0>(in).getSize();
+        std::get<0>(out) = std::get<0>(in).size();
         return out;
     }
 };

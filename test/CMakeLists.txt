@@ -14,8 +14,7 @@ matsubara_grid_test
 real_grid_test
 enum_grid_test
 container_test
-#ContainerTest
-#GridObjectTest
+grid_object_test
 #SaveLoadTest
 #ShiftTest
 #InterpolateTest

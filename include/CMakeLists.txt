@@ -9,7 +9,7 @@ set (base_src
     real_grid.hpp 
     kmesh.hpp 
     container.hpp container.hxx
-    #GridObject.hpp GridObject.hxx
+    grid_object.hpp grid_object.hxx
     )
 
 add_library(libgftools OBJECT ${base_src})

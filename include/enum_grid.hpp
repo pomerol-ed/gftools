@@ -5,9 +5,17 @@
 
 namespace gftools { 
 
-// A wrapper around int to avoid weird gcc buf
+// A wrapper around int to avoid weird gcc bug
 struct int_wrap_enumerate_grid
-{int v_; operator int() const{return v_;}; int_wrap_enumerate_grid(int i=0):v_(i) {}; };
+{
+    int v_; 
+    operator int() const{return v_;}; 
+    explicit operator double() { return double(v_);};
+    operator int&(){return v_;}; 
+    int_wrap_enumerate_grid(int i=0):v_(i) {}; 
+};
+
+
 
 /** A grid of real values. */
 class enum_grid : public grid_base<int_wrap_enumerate_grid, enum_grid>
@@ -36,6 +44,7 @@ template <>
 inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename enum_grid::point> &in){lhs << int(in.value_.val_); return lhs;};
 template <>
 inline std::istream& operator>>(std::istream& lhs, num_io<typename enum_grid::point> &out){int im; lhs >> im; out.value_.val_ = im; return lhs;};
+
 
 //
 // enum_grid implementation
