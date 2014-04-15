@@ -72,7 +72,7 @@ grid_object<ValueType,GridTypes...>::grid_object( const std::tuple<GridTypes...>
     grids_(grids),
     dims_(GetGridSizes<N>::TupleSizeToArray(grids_)),
     data_(data),
-    _f(tools::fun_traits<FunctionType>::constant(0.0)) 
+    _f(tools::fun_traits<function_type>::constant(0.0)) 
 {
 };
 
@@ -81,7 +81,7 @@ grid_object<ValueType,GridTypes...>::grid_object( const std::tuple<GridTypes...>
     grids_(in),
     dims_(GetGridSizes<N>::TupleSizeToArray(grids_)),
     data_(dims_),
-    _f(tools::fun_traits<FunctionType>::constant(0.0))
+    _f(tools::fun_traits<function_type>::constant(0.0))
 {
 }
 
@@ -142,7 +142,7 @@ inline ValueType& grid_object<ValueType,GridTypes...>::get(const std::tuple<ArgT
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline ValueType& grid_object<ValueType,GridTypes...>::get(const PointTupleType& in)
+inline ValueType& grid_object<ValueType,GridTypes...>::get(const point_tuple& in)
 {
         auto indices = getIndicesFromPoints(in);
         return data_(indices);
@@ -176,14 +176,14 @@ inline ValueType grid_object<ValueType,GridTypes...>::operator()(const std::tupl
 }
 
 template <typename ValueType, typename ...GridTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::operator()(const PointTupleType& in) const
+inline ValueType grid_object<ValueType,GridTypes...>::operator()(const point_tuple& in) const
 {
     try {
         auto indices = getIndicesFromPoints(in);
         return data_(indices);
         }
     catch (ex_wrong_index) {
-        return this->operator()(ArgTupleType(in));
+        return this->operator()(arg_tuple(in));
         };
 }
 
@@ -216,18 +216,18 @@ template <typename ValueType, typename ...GridTypes>
 template <typename ...ArgTypes> 
 void grid_object<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
 {
-    this->fill(FunctionType(in));
+    this->fill(function_type(in));
 }
 
 /*
 template <typename ValueType, typename ...GridTypes> 
-inline void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::PointFunctionType& in)
+inline void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::point_function_type& in)
 {
 
     __gencontainerExtractor<sizeof...(GridTypes), containerExtractor, std::tuple<GridTypes...>>::type::set(data_,grids_,in);
 
     //containerExtractor<sizeof...(GridTypes), ArgTypes...>::set(data_,grids_,in);
-    //_f = in;
+    //f_ = in;
 }
 */
 
@@ -256,55 +256,55 @@ inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<Va
 
 
 template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(ArgTupleType)>& in)
+void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(arg_tuple)>& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
-        ArgTupleType args = this->getArgsFromIndices(pts_index);
+        arg_tuple args = this->getArgsFromIndices(pts_index);
         auto val = in(args);
         data_(pts_index) = val;
         };
-    _f = tools::fun_traits<FunctionType>::getFromTupleF(in); 
+    f_ = tools::fun_traits<function_type>::getFromTupleF(in); 
 
 }
 
 template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::FunctionType& in)
+void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::function_type& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
-        ArgTupleType args = this->getArgsFromIndices(pts_index);
+        arg_tuple args = this->getArgsFromIndices(pts_index);
         auto val = tuple_tools::unfold_tuple(in, args);
         data_(pts_index) = val;
         };
-    _f = in;
+    f_ = in;
 }
 
 template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::PointFunctionType& in)
+void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::point_function_type& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
-        PointTupleType args = this->getPointsFromIndices(pts_index);
+        point_tuple args = this->getPointsFromIndices(pts_index);
         auto val = tuple_tools::unfold_tuple(in, args);
         data_(pts_index) = val;
         };
 }
 
 template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(PointTupleType)>& in)
+void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(point_tuple)>& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
-        PointTupleType args = this->getPointsFromIndices(pts_index);
+        point_tuple args = this->getPointsFromIndices(pts_index);
         auto val = in(args);
         data_(pts_index) = val;
         };
-    //_f = tools::fun_traits<FunctionType>::getFromTupleF(std::function<ValueType(ArgTupleType)>(in)); 
+    //f_ = tools::fun_traits<function_type>::getFromTupleF(std::function<ValueType(arg_tuple)>(in)); 
 }
 
 template <typename ValueType, typename ...GridTypes> 
@@ -312,8 +312,8 @@ template <typename U, typename std::enable_if<std::is_same<U, complex_type>::val
 real_type grid_object<ValueType,GridTypes...>::diff(const grid_object<ValueType,GridTypes...>& rhs) const
 {
     grid_object outObj(grids_);
-    auto f1 = [&](PointTupleType in){return std::abs((*this)(in) - rhs(in));};
-    PointFunctionType f = tools::fun_traits<PointFunctionType>::getFromTupleF(f1); 
+    auto f1 = [&](point_tuple in){return std::abs((*this)(in) - rhs(in));};
+    point_function_type f = tools::fun_traits<point_function_type>::getFromTupleF(f1); 
     outObj.fill(f);
     real_type norm = 1.0;
     for (auto v : dims_) { norm*=v; };
@@ -325,8 +325,8 @@ template <typename U, typename std::enable_if<std::is_same<U, real_type>::value,
 real_type grid_object<ValueType,GridTypes...>::diff(const grid_object<ValueType,GridTypes...>& rhs) const
 {
     grid_object outObj(grids_);
-    auto f1 = [&](PointTupleType in){return std::abs((*this)(in) - rhs(in));};
-    PointFunctionType f = tools::fun_traits<PointFunctionType>::getFromTupleF(f1); 
+    auto f1 = [&](point_tuple in){return std::abs((*this)(in) - rhs(in));};
+    point_function_type f = tools::fun_traits<point_function_type>::getFromTupleF(f1); 
     outObj.fill(f);
     real_type norm = 1.0;
     for (auto v : dims_) { norm*=v; };
@@ -373,25 +373,25 @@ template <typename ...ArgTypes>
 inline grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::shift(const std::tuple<ArgTypes...>& shift_args) const
 {
     grid_object<ValueType,GridTypes...> out(grids_);
-    std::function<ValueType(PointTupleType)> ShiftFunction = [&](PointTupleType args1)->ValueType { 
-        PointTupleType out_args = this->_shiftArgs(args1, shift_args);
-    //    __tuple_print<PointTupleType>::print(args1); 
+    std::function<ValueType(point_tuple)> ShiftFunction = [&](point_tuple args1)->ValueType { 
+        point_tuple out_args = this->_shiftArgs(args1, shift_args);
+    //    __tuple_print<point_tuple>::print(args1); 
     //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
-    //    INFO_NONEWLINE("-->");__tuple_print<PointTupleType>::print(out_args);
+    //    INFO_NONEWLINE("-->");__tuple_print<point_tuple>::print(out_args);
         return (*this)(out_args);
         };
-    PointFunctionType fillF = tools::fun_traits<PointFunctionType>::getFromTupleF(ShiftFunction);
+    point_function_type fillF = tools::fun_traits<point_function_type>::getFromTupleF(ShiftFunction);
     //out.fill(fillF);
     out.fill_tuple(ShiftFunction);
     
-    static std::function<ValueType(ArgTupleType)> ShiftAnalyticF;
-    ShiftAnalyticF = [this, shift_args](const ArgTupleType& in)->ValueType {
-        ArgTupleType out_args = _shiftArgs(in,shift_args); 
+    static std::function<ValueType(arg_tuple)> ShiftAnalyticF;
+    ShiftAnalyticF = [this, shift_args](const arg_tuple& in)->ValueType {
+        arg_tuple out_args = _shiftArgs(in,shift_args); 
         return __get_f(out_args);
     };
     
-    FunctionType tailF = tools::fun_traits<FunctionType>::getFromTupleF(ShiftAnalyticF);
-    out._f = tailF;
+    function_type tailF = tools::fun_traits<function_type>::getFromTupleF(ShiftAnalyticF);
+    out.f_ = tailF;
     
     return out;
 }
@@ -440,8 +440,8 @@ void grid_object<ValueType,GridTypes...>::savetxt(const std::string& fname) cons
     size_t last_grid_size = std::get<N-1>(grids_).size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
-        //ArgTupleType args = this->getArgsFromIndices(pts_index);
-        PointTupleType pts = this->getPointsFromIndices(pts_index);
+        //arg_tuple args = this->getArgsFromIndices(pts_index);
+        point_tuple pts = this->getPointsFromIndices(pts_index);
         auto val = (*this)(pts);
         out << std::scientific << tuple_tools::serialize_tuple(pts) << "    " << num_io<ValueType>(val) << std::endl;
         if (N > 1 && i && (i+1)%last_grid_size==0) out << std::endl;
@@ -460,10 +460,10 @@ void grid_object<ValueType,GridTypes...>::loadtxt(const std::string& fname, real
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
 
-        PointTupleType pts = this->getPointsFromIndices(pts_index);
-        //ArgTupleType args = this->getArgsFromIndices(pts_index);
-        ArgTupleType pts2 = tuple_tools::read_tuple<ArgTupleType>(in);
-        if (!tools::is_float_equal<ArgTupleType>(pts,pts2,tol)) throw (exIOProblem());
+        point_tuple pts = this->getPointsFromIndices(pts_index);
+        //arg_tuple args = this->getArgsFromIndices(pts_index);
+        arg_tuple pts2 = tuple_tools::read_tuple<arg_tuple>(in);
+        if (!tools::is_float_equal<arg_tuple>(pts,pts2,tol)) throw (exIOProblem());
 
         num_io<ValueType> tmp2(this->get(pts));
         in >> tmp2;
@@ -479,8 +479,8 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::copyIn
     const grid_object<ValueType,GridTypes...>& rhs)
 {
     //data_=rhs.data_;
-    _f = rhs._f;
-    const std::function<ValueType(ArgTupleType)> bindf = [&](ArgTupleType in){return rhs(in);};
+    f_ = rhs.f_;
+    const std::function<ValueType(arg_tuple)> bindf = [&](arg_tuple in){return rhs(in);};
     this->fill_tuple(bindf);
 
     return *this;
@@ -508,7 +508,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_=rhs.data_;
-    _f = rhs._f;
+    f_ = rhs.f_;
     return *this;
 }
 
@@ -518,7 +518,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_=rhs;
-    _f = tools::fun_traits<FunctionType>::constant(rhs);
+    f_ = tools::fun_traits<function_type>::constant(rhs);
     return *this;
 }
 
@@ -530,7 +530,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_+=rhs.data_;
-    //_f=tools::fun_traits<FunctionType>::add(_f, rhs._f);
+    //_f=tools::fun_traits<function_type>::add(_f, rhs._f);
     return *this;
 }
 
@@ -539,7 +539,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
     const ValueType & rhs)
 {
     data_+=rhs;
-    //_f=tools::fun_traits<FunctionType>::add(_f, tools::fun_traits<FunctionType>::constant(rhs));
+    //_f=tools::fun_traits<function_type>::add(_f, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
@@ -550,7 +550,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_*=rhs.data_;
-    //_f=tools::fun_traits<FunctionType>::multiply(_f, rhs._f);
+    //_f=tools::fun_traits<function_type>::multiply(_f, rhs._f);
     return *this;
 }
 
@@ -559,7 +559,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
     const ValueType & rhs)
 {
     data_*=rhs;
-    //_f=tools::fun_traits<FunctionType>::multiply(_f, tools::fun_traits<FunctionType>::constant(rhs));
+    //_f=tools::fun_traits<function_type>::multiply(_f, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
@@ -570,7 +570,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_/=rhs.data_;
-    //_f=tools::fun_traits<FunctionType>::divide(_f, rhs._f);
+    //_f=tools::fun_traits<function_type>::divide(_f, rhs._f);
     return *this;
 }
 
@@ -579,7 +579,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
     const ValueType & rhs)
 {
     data_/=rhs;
-    //_f=tools::fun_traits<FunctionType>::divide(_f, tools::fun_traits<FunctionType>::constant(rhs));
+    //_f=tools::fun_traits<function_type>::divide(_f, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
@@ -590,7 +590,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_-=rhs.data_;
-    //_f=tools::fun_traits<FunctionType>::subtract(_f, rhs._f);
+    //_f=tools::fun_traits<function_type>::subtract(_f, rhs._f);
     return *this;
 }
 
@@ -599,7 +599,7 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
     const ValueType & rhs)
 {
     data_-=rhs;
-    //_f=tools::fun_traits<FunctionType>::subtract(_f, tools::fun_traits<FunctionType>::constant(rhs));
+    //_f=tools::fun_traits<function_type>::subtract(_f, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 

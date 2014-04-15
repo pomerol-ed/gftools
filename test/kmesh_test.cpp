@@ -23,5 +23,7 @@ int main()
     std::cout << "y[" << k1[2] << "]=" << patch1.evaluate(data_y,k1[2]) << std::endl;
     if (patch1.evaluate(data_y,k1[2]) != 1) return EXIT_FAILURE;
 
+
+    std::cout << k1.shift(p1,2.0*PI*31./32.) << std::endl;
     return EXIT_SUCCESS;
 }

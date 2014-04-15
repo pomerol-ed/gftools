@@ -17,27 +17,33 @@ template< typename ValueType, typename ...GridTypes>
 class grid_object 
 {
 public:
-    /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
-    typedef typename GridArgTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_type FunctionType;
-    /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
-    typedef typename GridPointExtractor<ValueType, std::tuple<GridTypes...> >::point_type PointFunctionType;
-    /** A typedef for a tuple of grids. */
-    typedef std::tuple<GridTypes...> GridTupleType;
-    /** A typedef for a tuple of grid points. */
-    typedef typename GridPointExtractor<ValueType, std::tuple<GridTypes...> >::arg_tuple_type PointTupleType;
-    /** A typedef for a tuple of grid point values. */
-    typedef typename GridArgTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_tuple_type ArgTupleType;
     /** A typedef for the values stored in the container. */
     typedef ValueType value_type;
+    /** A typedef for a tuple of grids. */
+    typedef std::tuple<GridTypes...> grid_tuple;
+    /** Tuple of grids traits. */
+    typedef tools::grid_tuple_traits<grid_tuple> trs;
+    /** Total number of grids. */
     static constexpr size_t N = sizeof...(GridTypes);
-    typedef std::array<size_t, N> PointIndices;
+
+    /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
+    typedef typename tools::GridArgTypeExtractor<ValueType, std::tuple<GridTypes...> >::arg_type function_type;
+    /** A typedef for a function that gives the analytical value of the object, when it's not stored. */
+    typedef typename tools::GridPointExtractor<ValueType, std::tuple<GridTypes...> >::point_type point_function_type;
+    /** A typedef for a tuple of grid points. */
+    typedef typename trs::point_tuple point_tuple;
+    /** A typedef for a tuple of grid point values. */
+    typedef typename trs::arg_tuple arg_tuple;
+    /** A typedef for an array of grid indices. */
+    typedef typename trs::indices indices_t;
+
     class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
 protected:
     /** Grids on which the data is defined. */
     mutable std::tuple<GridTypes...> grids_;
 public:
     /** The dimensions of the container - deduced from grids. */
-    PointIndices dims_;
+    indices_t dims_;
     /** A pointer to the container. A pointer is used as there exist no default 
      * constructor for the container.
      */
@@ -45,17 +51,11 @@ public:
     mutable container<ValueType, N> data_;
 
 protected:
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointTupleType getPointsFromIndices(PointIndices in) const;
-    PointTupleType getPointsFromIndices(PointIndices in) const;
+    point_tuple getPointsFromIndices(indices_t in) const;
 
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in) const;
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> ArgTupleType getArgsFromIndices(PointIndices in) const;
-    ArgTupleType getArgsFromIndices(PointIndices in) const;
+    arg_tuple getArgsFromIndices(indices_t in) const;
 
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> PointIndices getIndicesFromPoints(PointTupleType in) const;
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointIndices getIndicesFromPoints(PointTupleType in) const;
-    PointIndices getIndicesFromPoints(PointTupleType in) const;
+    indices_t getIndicesFromPoints(point_tuple in) const;
 
 
     /** A helper recursive template utility to extract and set data from the container. */
@@ -73,13 +73,13 @@ protected:
         static ValueType& get_ref(CT &data, const std::tuple<GridTypes...> &grids, const std::tuple<ArgType1>& arg1); 
         };
 
-    /** Returns _f(in). */
+    /** Returns f_(in). */
     template <typename ...ArgTypes> ValueType __get_f(const std::tuple<ArgTypes...>& in) const;
-    PointIndices _getPointsIndices(const size_t index) const;
+    indices_t _getPointsIndices(const size_t index) const;
 
 public:
     /** This function returns the value of the object when the point is not in container. */
-    FunctionType _f;
+    function_type f_;
     /** Constructs a grid object out of a tuple containing various grids. */
     grid_object( const std::tuple<GridTypes...> &grids);
     template <int M = N, typename std::enable_if<M == 1, bool>::type = 0>  grid_object( GridTypes... grids):grid_object(std::forward_as_tuple(grids...)){};
@@ -94,7 +94,7 @@ public:
     size_t size() const;
     /** Returns an Mth grid in grids_. */
     template<size_t M = 0> 
-        auto grid() const -> const typename std::add_lvalue_restd::tuple_element<M, std::tuple<GridTypes...>>::type& ;
+        auto grid() const -> const typename std::add_lvalue_reference<typename std::tuple_element<M, std::tuple<GridTypes...>>::type>::type ;
     /** Returns element number i, which corresponds to (*_grid)[i]. */
     auto operator[](size_t i)->decltype(data_[i]);
     /** Const operator[]. */
@@ -104,22 +104,22 @@ public:
     container<ValueType, sizeof...(GridTypes)>& getData(){return data_;};
     /** Fills the container with a provided function. */
     template <typename ...ArgTypes> void fill(const std::function<ValueType(ArgTypes...)> &);
-    void fill(const FunctionType &in);
-    void fill(const PointFunctionType &in);
+    void fill(const function_type &in);
+    void fill(const point_function_type &in);
     //template <typename ...ArgTypes> void fill_tuple(const std::function<ValueType(const std::tuple<ArgTypes...>)> &);
-    void fill_tuple(const std::function<ValueType(ArgTupleType)>& in);
-    void fill_tuple(const std::function<ValueType(PointTupleType)>& in);
+    void fill_tuple(const std::function<ValueType(arg_tuple)>& in);
+    void fill_tuple(const std::function<ValueType(point_tuple)>& in);
     /** Fills the container with any proper class with call operator. Untested */
     //template <template <typename, class> class Filler, typename ...ArgTypes> void fill(const Filler<ValueType,ArgTypes...> &);
 
     /** Return the value by grid values. */
     template <typename ...ArgTypes> ValueType& get(const ArgTypes&... in);
     template <typename ...ArgTypes> ValueType& get(const std::tuple<ArgTypes...>& in);
-    ValueType& get(const PointTupleType& in);
+    ValueType& get(const point_tuple& in);
     template <typename ...ArgTypes> ValueType operator()(const ArgTypes&... in) const;
     template <typename ...ArgTypes> ValueType operator()(const std::tuple<ArgTypes...>& in) const;
-    ValueType operator()(const PointTupleType& in) const;
-    //ValueType operator()(const ArgTupleType& in) const;
+    ValueType operator()(const point_tuple& in) const;
+    //ValueType operator()(const arg_tuple& in) const;
     //template <typename ...ArgTypes> auto operator()(const ArgType1& in)->decltype() const;
 
     /** A shortcut for fill method. */

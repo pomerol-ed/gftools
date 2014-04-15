@@ -12,7 +12,8 @@ template <typename ValueType, typename ... > struct GridArgTypeExtractor;
 /** A tool to extract point types from a tuple of grids. */
 template <typename ValueType, typename ... > struct GridPointExtractor;
 
-/** A tuple of grids type traits. */
+/** A tuple of grids type traits. Allows to deduce underlying types of grids (points, values) 
+    and convert between tuples of points, values and arrays of indices. */
 template <typename> struct grid_tuple_traits;
 
 template <typename ... GridTypes>
@@ -20,129 +21,96 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
 {
     constexpr static size_t N = sizeof...(GridTypes);
     typedef std::tuple<GridTypes...> grid_tuple_type;
+    /// Static sequence N-1, N-2, ... 1,0
+    typedef typename tuple_tools::extra::index_gen<N>::type index_gen; 
 
-    /** A typedef for a tuple of grid points. */
+    /// A typedef for a tuple of grid points.
     typedef typename GridPointExtractor<std::true_type, std::tuple<GridTypes...> >::arg_tuple point_tuple;
-    /** A typedef for a tuple of grid point values. */
+    /// A typedef for a tuple of grid point values.
     typedef typename GridArgTypeExtractor<std::true_type, std::tuple<GridTypes...> >::arg_tuple arg_tuple;
-    /** A typedef for a set of indices. */
+    /// A typedef for a set of indices. 
     typedef std::array<size_t, N> indices;
 
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> 
-        static point_tuple get_points(indices in, const grid_tuple_type& grids);
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> 
-        static point_tuple get_points(indices in, const grid_tuple_type& grids);
+    /// Convert indices to points.
     static point_tuple get_points(indices in, const grid_tuple_type& grids);
-
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> 
-        static arg_tuple get_args(indices in, const grid_tuple_type& grids);
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> 
-        static arg_tuple get_args(indices in, const grid_tuple_type& grids);
+    /// Convert indices to args.
     static arg_tuple get_args(indices in, const grid_tuple_type& grids);
-
-    template <int M = N-1, typename std::enable_if<M >= 1, bool>::type = 0> 
-        static indices get_indices(point_tuple in, const grid_tuple_type& grids);
-    template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> 
-        static indices get_indices(point_tuple in, const grid_tuple_type& grids);
+    /// Convert points to indices.
     static indices get_indices(point_tuple in, const grid_tuple_type& grids);
+    /// Get an array of dimensions of grids.
+    static indices get_dimensions(const grid_tuple_type& grids) {return dims_(index_gen(), grids); }
+    /// Get a product of all dimensions of gris.
+    static int get_total_size(const grid_tuple_type& grids){auto d = get_dimensions(grids); return std::accumulate(d.begin(),d.end(),1,std::multiplies<int>()); }
+    //template <class F> evaluate(F &&f, arg_tuple in, const grid_tuple_type& grids); 
+
+protected:
+    template <int...S> 
+        static point_tuple get_points_(tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids);
+    template <int...S> 
+        static arg_tuple get_args_(tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids);
+    template <int...S> 
+        static indices get_indices_(tuple_tools::extra::arg_seq<S...>, point_tuple in, const grid_tuple_type& grids);
+    template <int...S> 
+        static indices dims_(tuple_tools::extra::arg_seq<S...>, const grid_tuple_type& grids) {return {{ (std::get<S>(grids).size())... }};};
 };
 
-
 template <typename ...GridTypes>
+template <int...S> 
 inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_args(indices in, const grid_tuple_type& grids)
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_args_(typename tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids)
 {
-    return get_args<N-1>(in,grids);
-}
-
-template <typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_args(indices in, const grid_tuple_type& grids)
-{
-    arg_tuple out;
-    auto t1 = std::get<N-1>(grids)[in[N-1]].val_;
-    std::get<N-1>(out)=t1;
-    return out;
-}
-
-template <typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_args(indices in, const grid_tuple_type& grids)
-{
-    auto out = get_args<M-1>(in,grids);
-    auto t1 = std::get<N-1-M>(grids)[in[N-1-M]];
-    std::get<N-1-M>(out) = t1.val_;
-    return out;
-}
-
-template <typename ...GridTypes>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_points(indices in, const grid_tuple_type& grids)
-{
-    return get_points<N-1>(in,grids);
-}
-
-template <typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_points(indices in, const grid_tuple_type& grids)
-{
-    point_tuple out;
-    auto t1 = std::get<N-1>(grids)[in[N-1]];
-    std::get<N-1>(out)=t1;
-    return out;
-}
-
-template <typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_points(indices in, const grid_tuple_type& grids)
-{
-    auto out = get_points<M-1>(in,grids);
-    auto t1 = std::get<N-1-M>(grids)[in[N-1-M]];
-    std::get<N-1-M>(out) = t1;
-    return out;
-}
-
-template <typename ...GridTypes>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_indices(point_tuple in, const grid_tuple_type& grids)
-{
-    return get_indices<N-1>(in,grids);
-}
-
-template <typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_indices(point_tuple in, const grid_tuple_type& grids)
-{
-    indices out;
-    auto t1 = std::get<N-1>(in);
     #ifndef NDEBUG
-    {
-        if (std::get<N-1>(grids).size()<=t1.index_) throw std::logic_error("index mismatch");
-        if (std::get<N-1>(grids)[t1.index_].index_ != t1.index_) { throw std::logic_error("index mismatch"); };
-    }
+    if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in))... }})) 
+        throw std::logic_error("indices are out of grid bounds");
     #endif
-    out[N-1]=t1.index_;
-    return out;
+    return std::make_tuple((std::get<S>(grids)[std::get<S>(in)].val_)...);
 }
 
 template <typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_args(indices in, const grid_tuple_type& grids)
+{
+    return get_args_(index_gen(),in,grids);
+}
+
+template <typename ...GridTypes>
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_points_(typename tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids)
+{
+    #ifndef NDEBUG
+    if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in))... }})) 
+        throw std::logic_error("indices are out of grid bounds");
+    #endif
+    return std::make_tuple((std::get<S>(grids)[std::get<S>(in)])...);
+}
+
+template <typename ...GridTypes>
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_points(indices in, const grid_tuple_type& grids)
+{
+    return get_points_(index_gen(),in,grids);
+}
+
+template <typename ...GridTypes>
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices 
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_indices_(typename tuple_tools::extra::arg_seq<S...>, point_tuple in, const grid_tuple_type& grids)
+{
+    #ifndef NDEBUG
+    if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in).index_)... }})) 
+        throw std::logic_error("indices are out of grid bounds");
+    if ( indices({{ (std::get<S>(grids)[std::get<S>(in).index_].index_) ... }}) != indices({{ (std::get<S>(in).index_)... }})) 
+        throw std::logic_error("index mismatch");
+    #endif
+    return {{ (std::get<S>(in).index_)... }};
+};
+
+template <typename ...GridTypes>
 inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices 
     grid_tuple_traits<std::tuple<GridTypes...>>::get_indices(point_tuple in, const grid_tuple_type& grids)
 {
-    auto out = get_indices<M-1>(in,grids);
-    auto t1 = std::get<N-1-M>(in);
-    #ifndef NDEBUG
-    if (std::get<N-1-M>(grids).size()<=t1.index_) throw std::logic_error("index mismatch");
-    if (std::get<N-1-M>(grids)[t1.index_].index_ != t1.index_) { throw std::logic_error("index mismatch"); };
-    #endif
-    out[N-1-M]=t1.index_;
-    return out;
+    return get_indices_(index_gen(),in,grids);
 }
 
 //impl
@@ -173,34 +141,7 @@ struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
     typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple;
 };
 
-
-/* A tool to generate an array of grid sizes from a given tuple of grids. */
-template <size_t N> 
-struct GetGridSizes {
-    template <typename ... GridType>
-    static inline std::array<size_t,sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
-        static_assert(N>1,"!");
-        auto out = GetGridSizes<N-1>::template TupleSizeToArray<GridType...>( in );
-        std::get<N-1>(out) = std::get<N-1>(in).size();
-        return out;
-    };
-};
-
-template <> 
-struct GetGridSizes<1> {
-    template <typename... GridType>
-    static inline std::array<size_t, sizeof...(GridType)> TupleSizeToArray( const std::tuple<GridType...>& in ) {
-        std::array<size_t,sizeof...(GridType)> out;
-        std::get<0>(out) = std::get<0>(in).size();
-        return out;
-    }
-};
-
-/* A tool to convert a tuple of grid points to an array of indices */ 
-template <typename ... Args> struct PointTupleToIndex {
-
-};
-
+// obsolete
 
 /** A tool to recursiverly integrate over a grid. */
 template <typename GridType, class Obj> struct RecursiveGridIntegrator;
