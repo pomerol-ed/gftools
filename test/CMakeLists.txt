@@ -1,4 +1,4 @@
-include_directories (. ../include ${GTEST_DIR}/include)
+include_directories (. ../include ${gtest_ROOT}/include)
 
 enable_testing()
 
