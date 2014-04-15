@@ -21,6 +21,7 @@ struct int_wrap_enumerate_grid
 class enum_grid : public grid_base<int_wrap_enumerate_grid, enum_grid>
 {
 public:
+    typedef grid_base<int_wrap_enumerate_grid, enum_grid> base; 
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(vals_[0],Args...));
     /** Generates a uniform grid.
@@ -31,6 +32,8 @@ public:
      */
     enum_grid(int min, int max, bool include_last = false);
     enum_grid(const std::vector<int>& in);
+    enum_grid(enum_grid&& rhs);
+    enum_grid& operator=(enum_grid &&rhs);
     std::tuple <bool, size_t, int> find (int in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
     template <class Obj> auto evaluate(Obj &in, enum_grid::point x) const -> decltype(in[0]);
@@ -54,6 +57,17 @@ inline enum_grid::enum_grid(int min, int max, bool include_last):
 grid_base<int_wrap_enumerate_grid, enum_grid>(min,max+include_last,[](int n){return n;})
 {
 }
+
+enum_grid::enum_grid(enum_grid&& rhs):
+    base(rhs)
+{
+};
+
+enum_grid& enum_grid::operator=(enum_grid &&rhs) 
+{
+    base(*this) = base(rhs); 
+    return (*this);
+}; 
 
 inline std::tuple<bool, size_t, int> enum_grid::find (int in) const
 {

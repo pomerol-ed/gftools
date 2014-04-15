@@ -60,6 +60,8 @@ public:
     grid_base(const grid_base& rhs):vals_(rhs.vals_){};
     /** Move constructor. */
     grid_base(grid_base&& rhs){vals_.swap(rhs.vals_);};
+    /** rvalue assignment. */
+    grid_base& operator=(grid_base &&rhs){vals_.swap(rhs.vals_); return (*this);};
     /** Returns a value at given index. */
     point operator[](size_t in) const;
     /** Returns all values. */

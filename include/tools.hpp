@@ -98,7 +98,7 @@ struct fun_traits<std::function<ValType(ArgTypes...)> >
     static std::function<ValType(ArgTypes...)> getFromTupleF(std::function<ValType(std::tuple<ArgTypes...>)> f1)
     { return [f1](ArgTypes...in){return f1(std::forward_as_tuple(in...));};}
     static std::function<ValType(std::tuple<ArgTypes...>)> getTupleF(std::function<ValType(ArgTypes...)> f1)
-    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ tuple_tools::extra::tuple_caller<ValType,ArgTypes...> t; t = {in, f1}; return t.call();};}
+    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ tuple_tools::unfold_tuple(f1,in);};}
 };
 
 

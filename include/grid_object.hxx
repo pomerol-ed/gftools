@@ -104,7 +104,7 @@ grid_object<ValueType,GridTypes...>::grid_object( grid_object<ValueType,GridType
 }
 
 template <typename ValueType, typename ...GridTypes> 
-const std::tuple<GridTypes...> grid_object<ValueType,GridTypes...>::getGrids() const 
+const std::tuple<GridTypes...> grid_object<ValueType,GridTypes...>::grids() const 
 { 
     return grids_; 
 };
@@ -232,7 +232,7 @@ inline void grid_object<ValueType,GridTypes...>::fill(const typename grid_object
 */
 
 template <typename ValueType, typename ...GridTypes> 
-inline size_t grid_object<ValueType,GridTypes...>::getTotalcontainerSize() const
+inline size_t grid_object<ValueType,GridTypes...>::size() const
 {
     size_t out = 1;
     for (auto i : dims_) out*=i;
@@ -253,93 +253,12 @@ inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<Va
 }
 
 
-template <typename ValueType, typename ...GridTypes>
-inline typename grid_object<ValueType,GridTypes...>::ArgTupleType grid_object<ValueType,GridTypes...>::getArgsFromIndices(PointIndices in) const
-{
-    return this->getArgsFromIndices<N-1>(in);
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_object<ValueType,GridTypes...>::ArgTupleType grid_object<ValueType,GridTypes...>::getArgsFromIndices(PointIndices in) const
-{
-    ArgTupleType out;
-    auto t1 = std::get<N-1>(grids_)[in[N-1]].val_;
-    std::get<N-1>(out)=t1;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
-inline typename grid_object<ValueType,GridTypes...>::ArgTupleType grid_object<ValueType,GridTypes...>::getArgsFromIndices(PointIndices in) const
-{
-    auto out = getArgsFromIndices<M-1>(in);
-    auto t1 = std::get<N-1-M>(grids_)[in[N-1-M]];
-    std::get<N-1-M>(out) = t1.val_;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-inline typename grid_object<ValueType,GridTypes...>::PointTupleType grid_object<ValueType,GridTypes...>::getPointsFromIndices(PointIndices in) const
-{
-    return this->getPointsFromIndices<N-1>(in);
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_object<ValueType,GridTypes...>::PointTupleType grid_object<ValueType,GridTypes...>::getPointsFromIndices(PointIndices in) const
-{
-    PointTupleType out;
-    auto t1 = std::get<N-1>(grids_)[in[N-1]];
-    std::get<N-1>(out)=t1;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
-inline typename grid_object<ValueType,GridTypes...>::PointTupleType grid_object<ValueType,GridTypes...>::getPointsFromIndices(PointIndices in) const
-{
-    auto out = getPointsFromIndices<M-1>(in);
-    auto t1 = std::get<N-1-M>(grids_)[in[N-1-M]];
-    std::get<N-1-M>(out) = t1;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<ValueType,GridTypes...>::getIndicesFromPoints(PointTupleType in) const
-{
-    return this->getIndicesFromPoints<N-1>(in);
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M ==0, bool>::type>
-inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<ValueType,GridTypes...>::getIndicesFromPoints(PointTupleType in) const
-{
-    PointIndices out;
-    auto t1 = std::get<N-1>(in);
-    if (std::get<N-1>(grids_).size()<=t1.index_) throw ex_wrong_index();
-    if (std::get<N-1>(grids_)[t1.index_].index_ != t1.index_) { throw ex_wrong_index(); };
-    out[N-1]=t1.index_;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-template <int M, typename std::enable_if<M >= 1, bool>::type >
-inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<ValueType,GridTypes...>::getIndicesFromPoints(PointTupleType in) const
-{
-    auto out = getIndicesFromPoints<M-1>(in);
-    auto t1 = std::get<N-1-M>(in);
-    if (std::get<N-1-M>(grids_).size()<=t1.index_) throw ex_wrong_index();
-    if (std::get<N-1-M>(grids_)[t1.index_].index_ != t1.index_) throw ex_wrong_index();
-    out[N-1-M]=t1.index_;
-    return out;
-}
 
 
 template <typename ValueType, typename ...GridTypes> 
 void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(ArgTupleType)>& in)
 {
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
         ArgTupleType args = this->getArgsFromIndices(pts_index);
@@ -353,7 +272,7 @@ void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueTy
 template <typename ValueType, typename ...GridTypes> 
 void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::FunctionType& in)
 {
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
         ArgTupleType args = this->getArgsFromIndices(pts_index);
@@ -366,7 +285,7 @@ void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueT
 template <typename ValueType, typename ...GridTypes> 
 void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::PointFunctionType& in)
 {
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
         PointTupleType args = this->getPointsFromIndices(pts_index);
@@ -378,7 +297,7 @@ void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueT
 template <typename ValueType, typename ...GridTypes> 
 void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(PointTupleType)>& in)
 {
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
         PointTupleType args = this->getPointsFromIndices(pts_index);
@@ -517,7 +436,7 @@ void grid_object<ValueType,GridTypes...>::savetxt(const std::string& fname) cons
     INFO("Saving " << typeid(*this).name() << " to " << fname);
     std::ofstream out;
     out.open(fname.c_str());
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     size_t last_grid_size = std::get<N-1>(grids_).size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
@@ -537,7 +456,7 @@ void grid_object<ValueType,GridTypes...>::loadtxt(const std::string& fname, real
     std::ifstream in;
     in.open(fname.c_str());
     if (in.fail()) { ERROR("Couldn't open file " << fname); throw exIOProblem(); };
-    size_t total_size = this->getTotalcontainerSize();
+    size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = _getPointsIndices(i);
 

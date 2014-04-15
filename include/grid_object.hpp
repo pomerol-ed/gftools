@@ -57,6 +57,7 @@ protected:
     template <int M = 0,   typename std::enable_if<M == 0, bool>::type = 0> PointIndices getIndicesFromPoints(PointTupleType in) const;
     PointIndices getIndicesFromPoints(PointTupleType in) const;
 
+
     /** A helper recursive template utility to extract and set data from the container. */
     template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes> struct containerExtractor { 
         /** Gets the data by values. */
@@ -89,13 +90,11 @@ public:
     /** Move constructor. */
     grid_object( grid_object<ValueType, GridTypes...>&& rhs);
 
-    const std::tuple<GridTypes...> getGrids() const;
-    size_t getTotalcontainerSize() const;
+    const std::tuple<GridTypes...> grids() const;
+    size_t size() const;
     /** Returns an Mth grid in grids_. */
-    template<size_t M> 
-        auto getGrid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type& ;
-    /** Returns the top level grid. */
-    auto getGrid() const -> const typename std::tuple_element<0, std::tuple<GridTypes...>>::type& ;
+    template<size_t M = 0> 
+        auto grid() const -> const typename std::add_lvalue_restd::tuple_element<M, std::tuple<GridTypes...>>::type& ;
     /** Returns element number i, which corresponds to (*_grid)[i]. */
     auto operator[](size_t i)->decltype(data_[i]);
     /** Const operator[]. */

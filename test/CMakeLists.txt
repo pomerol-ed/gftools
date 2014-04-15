@@ -13,6 +13,7 @@ kmesh_test
 matsubara_grid_test
 real_grid_test
 enum_grid_test
+grid_tools_test
 container_test
 grid_object_test
 #SaveLoadTest

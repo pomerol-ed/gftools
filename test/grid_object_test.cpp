@@ -14,6 +14,7 @@ using namespace gftools;
 
 int main()
 {
+/*
     typedef grid_object<complex_type,fmatsubara_grid> GF;
     fmatsubara_grid n1(0,2,10);
     fmatsubara_grid n2(0,5,20);
@@ -102,4 +103,5 @@ int main()
     g1.savetxt("g1.dat");
     g2.loadtxt("g1.dat");
     return EXIT_SUCCESS;
+*/
 }
