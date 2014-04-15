@@ -117,7 +117,7 @@ inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (comple
 {
     int n=getNumber(in);
     #ifndef NDEBUG
-    DEBUG("Invoking matsubara find");
+    //DEBUG("Invoking matsubara find");
     #endif
     if (n>=w_min_ && n<w_max_) { return vals_[n-w_min_]; }
     else { 

@@ -25,6 +25,10 @@ public:
     real_grid(int min, int max, const std::function<real_type(int)> &f, bool include_last = true);
     real_grid(std::vector<real_type>&& in);
     real_grid(const std::vector<real_type>& in);
+
+    real_type max() const { return max_; }
+    real_type min() const { return min_; }
+
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
     template <class Obj> auto evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);

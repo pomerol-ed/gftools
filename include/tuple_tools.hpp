@@ -12,6 +12,12 @@
 //#include<functional>
 
 namespace gftools {
+
+namespace tools { 
+template <typename ... Args>
+bool is_float_equal (const std::tuple<Args...>& l, const std::tuple<Args...>& r, real_type tol = 10.*std::numeric_limits<real_type>::epsilon());
+}
+
 namespace tuple_tools {
 
 //
@@ -175,9 +181,8 @@ template <typename Arg, typename ... Extras> struct repeater<Arg,1,Extras...> {
     static std::array<Arg,1> get_array(const Arg& in){ return {{ in }}; };
     static tuple_type get_tuple(const Arg& in){ return std::forward_as_tuple(in); }
 };
-
-
 } // end of namespace tuple_tools
+
 } // end namespace gftools
 
 

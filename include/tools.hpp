@@ -52,28 +52,31 @@ struct equality_checker {
         return bool(std::abs(complex_type(t1) - complex_type(t2))<tol); };
 };
 
-template <typename Arg1, typename ... Args>
-struct equality_checker<std::tuple<Arg1, Args...>> { 
-    typedef std::tuple<Arg1, Args...> type;
-    static bool is_equal(type t1, type t2, real_type tol) {
-        bool out = ((equality_checker<Arg1>::is_equal(std::get<0>(t1), std::get<0>(t2), tol) && 
-               equality_checker<std::tuple<Args...>>::is_equal(tuple_tools::tuple_tail(t1), tuple_tools::tuple_tail(t2), tol)));
-        return out;
-    };
-};
-
-template <typename Arg>
-struct equality_checker<std::tuple<Arg>> { 
-    typedef std::tuple<Arg> type;
-    static bool is_equal (std::tuple<Arg> t1, std::tuple<Arg> t2, real_type tol) {
-        return equality_checker<Arg>::is_equal(std::get<0>(t1), std::get<0>(t2), tol);
-    }
-};
-
 // free function
 /** Returns true, if two objects are equal up to a certain tolerance. */
-template <typename T> 
+template <typename T, typename = typename std::enable_if<is_number<T>::value, bool>::type> 
     bool is_float_equal(T t1, T t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T>::is_equal(t1,t2,tol); };
+
+template <typename T1, typename T2, typename = typename std::enable_if<is_number<T1>::value, bool>::type, typename = typename std::enable_if<is_number<T2>::value, bool>::type> 
+    bool is_float_equal(T1 t1, T2 t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T1>::is_equal(t1,t2,tol); };
+} // end of namespace tools 
+
+namespace tuple_tools { 
+template <int ... S, typename ... Args>
+bool is_float_equal_(extra::arg_seq<S...>, const  std::tuple<Args...>& l, const std::tuple<Args...>& r, double tol)
+{
+    std::array<bool,sizeof...(Args)> res = {{ (tools::is_float_equal(std::get<S>(l), std::get<S>(r), tol))... }};
+    return std::all_of(res.begin(), res.end(), [](bool x){return x;});
+}
+}
+
+namespace tools { 
+template <typename ... Args>
+bool is_float_equal (const std::tuple<Args...>& l, const std::tuple<Args...>& r, double tol)
+{
+    return tuple_tools::is_float_equal_(typename tuple_tools::extra::index_gen<sizeof...(Args)>::type(), l, r, tol);
+}
+
 
 //
 /** A tool to calc an integer power function of an int. */

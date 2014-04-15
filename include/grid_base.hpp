@@ -183,9 +183,9 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 {
     static_assert(std::is_same<bool,decltype(std::declval<ValueType>() < std::declval<ValueType>())>::value, 
         "Default find_nearest is written only for less-comparable types");
-    auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in);
+    auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in, [](ValueType x, ValueType y){return x<y;});
     size_t dist = std::distance(vals_.begin(), nearest_iter);
-    if (dist > 0 && vals_[dist].val_>in) dist--;
+    if (dist > 0 && std::abs(vals_[dist].val_ - in) > std::abs(vals_[dist-1].val_ - in) ) dist--;
     return vals_[dist];
 } 
 
@@ -194,8 +194,8 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 {
     point out;
     if (tools::is_float_equal(shift_arg, 0.0)) return in;
-    out.val_ = in.val_ + ValueType(shift_arg);
-    point p1 = this->find_nearest(out.val_);
+    out.val_ = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
+    point p1 = static_cast<const Derived*>(this)->find_nearest(out.val_);
     if (!tools::is_float_equal(p1.val_, out.val_)) { 
         std::cerr << "Couldn't shift point" << std::endl; 
         throw (ex_wrong_index());
@@ -214,7 +214,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 {
     size_t index = (in.index_ + shift_arg.index_)%vals_.size();
     #ifndef NDEBUG
-    ValueType val = this->shift(in.val_, shift_arg.val_);
+    ValueType val = static_cast<const Derived*>(this)->shift(in.val_, shift_arg.val_);
     if (!tools::is_float_equal(val, vals_[index].val_)) throw (ex_wrong_index()); 
     #endif
     return vals_[index];

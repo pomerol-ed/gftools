@@ -13,6 +13,7 @@ class kmesh : public grid_base<real_type, kmesh>
     mutable real_type domain_len_ = 2.0*PI;
 public:
     int npoints_;
+    typedef grid_base<real_type, kmesh> base;
     using grid_base<real_type, kmesh>::vals_;
     kmesh(size_t n_points, real_type len = 2.0*PI);
     kmesh(const kmesh& rhs):grid_base<real_type, kmesh>(rhs),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
@@ -26,6 +27,8 @@ public:
     //template <class Obj> auto evaluate(Obj &in, real_type x) const ->decltype(in[0]);
     //template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
     real_type shift(real_type in,real_type shift_arg) const;
+    point shift(point in, real_type shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
+    point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
 };
 
 struct kmesh_patch : public kmesh 
@@ -103,7 +106,33 @@ inline real_type kmesh::shift(real_type in, real_type shift_arg) const
     out-= std::floor(out/domain_len_)*domain_len_;
     return out;
 }
-
+/*
+inline typename kmesh::point kmesh::shift(point in, real_type shift_arg) const
+{
+    DEBUG(in);
+    point out;
+    if (tools::is_float_equal(shift_arg, 0.0)) return in;
+    out.val_ = this->shift(real_type(in),shift_arg);
+    DEBUG(out.val_);
+    point p1 = this->find_nearest(out.val_);
+    if (!tools::is_float_equal(p1.val_, out.val_)) { 
+        std::cerr << "Couldn't shift point" << std::endl; 
+        throw (ex_wrong_index());
+        }
+    else return p1;
+}
+*/
+/*
+inline typename kmesh::point kmesh::shift(point in, point shift_arg) const
+{
+    size_t index = (in.index_ + shift_arg.index_)%vals_.size();
+    #ifndef NDEBUG
+    real_type val = this->shift(in.val_, shift_arg.val_);
+    if (!tools::is_float_equal(val, vals_[index].val_)) throw (ex_wrong_index()); 
+    #endif
+    return vals_[index];
+}
+*/
 
 //
 // kmesh_patch

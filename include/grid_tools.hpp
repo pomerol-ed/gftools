@@ -25,23 +25,31 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
     typedef typename tuple_tools::extra::index_gen<N>::type index_gen; 
 
     /// A typedef for a tuple of grid points.
-    typedef typename GridPointExtractor<std::true_type, std::tuple<GridTypes...> >::arg_tuple point_tuple;
+    typedef typename GridPointExtractor<std::true_type, std::tuple<GridTypes...> >::point_tuple point_tuple;
     /// A typedef for a tuple of grid point values.
     typedef typename GridArgTypeExtractor<std::true_type, std::tuple<GridTypes...> >::arg_tuple arg_tuple;
     /// A typedef for a set of indices. 
     typedef std::array<size_t, N> indices;
 
     /// Convert indices to points.
-    static point_tuple get_points(indices in, const grid_tuple_type& grids);
+    static point_tuple get_points(indices in, const grid_tuple_type& grids) { return get_points_(index_gen(),in,grids); }
     /// Convert indices to args.
-    static arg_tuple get_args(indices in, const grid_tuple_type& grids);
-    /// Convert points to indices.
-    static indices get_indices(point_tuple in, const grid_tuple_type& grids);
+    static arg_tuple get_args(indices in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
+    /// Convert points to indices. grids argument is only for checking
+    static indices get_indices(point_tuple in, const grid_tuple_type& grids) { return get_indices_(index_gen(),in,grids); }
+    /// Convert points to args. grids argument is only for checking
+    static arg_tuple get_args(point_tuple in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
     /// Get an array of dimensions of grids.
     static indices get_dimensions(const grid_tuple_type& grids) {return dims_(index_gen(), grids); }
     /// Get a product of all dimensions of gris.
     static int get_total_size(const grid_tuple_type& grids){auto d = get_dimensions(grids); return std::accumulate(d.begin(),d.end(),1,std::multiplies<int>()); }
     //template <class F> evaluate(F &&f, arg_tuple in, const grid_tuple_type& grids); 
+
+    static point_tuple find_nearest(arg_tuple in, const grid_tuple_type& grids) { return find_nearest_(index_gen(),in,grids); }
+
+    static point_tuple shift(point_tuple in, point_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+    static point_tuple shift(point_tuple in, arg_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+    static arg_tuple shift(arg_tuple in, arg_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
 
 protected:
     template <int...S> 
@@ -51,7 +59,17 @@ protected:
     template <int...S> 
         static indices get_indices_(tuple_tools::extra::arg_seq<S...>, point_tuple in, const grid_tuple_type& grids);
     template <int...S> 
+        static arg_tuple get_args_(tuple_tools::extra::arg_seq<S...>, point_tuple in, const grid_tuple_type& grids);
+    template <int...S> 
         static indices dims_(tuple_tools::extra::arg_seq<S...>, const grid_tuple_type& grids) {return {{ (std::get<S>(grids).size())... }};};
+    template <int...S> 
+        static point_tuple find_nearest_(tuple_tools::extra::arg_seq<S...>, arg_tuple in, const grid_tuple_type& grids);
+    template <int...S> 
+        static point_tuple shift_(tuple_tools::extra::arg_seq<S...>, point_tuple in, point_tuple shift, const grid_tuple_type&grids);
+    template <int...S> 
+        static point_tuple shift_(tuple_tools::extra::arg_seq<S...>, point_tuple in, arg_tuple shift, const grid_tuple_type&grids);
+    template <int...S> 
+        static arg_tuple shift_(tuple_tools::extra::arg_seq<S...>, arg_tuple in, arg_tuple shift, const grid_tuple_type&grids);
 };
 
 template <typename ...GridTypes>
@@ -67,11 +85,17 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple
 }
 
 template <typename ...GridTypes>
+template <int...S> 
 inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_args(indices in, const grid_tuple_type& grids)
+    grid_tuple_traits<std::tuple<GridTypes...>>::get_args_(typename tuple_tools::extra::arg_seq<S...>, point_tuple in, const grid_tuple_type& grids)
 {
-    return get_args_(index_gen(),in,grids);
+    #ifndef NDEBUG
+    if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in).index_)... }})) 
+        throw std::logic_error("indices are out of grid bounds");
+    #endif
+    return std::make_tuple((std::get<S>(in).val_)...);
 }
+
 
 template <typename ...GridTypes>
 template <int...S> 
@@ -83,13 +107,6 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple
         throw std::logic_error("indices are out of grid bounds");
     #endif
     return std::make_tuple((std::get<S>(grids)[std::get<S>(in)])...);
-}
-
-template <typename ...GridTypes>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_points(indices in, const grid_tuple_type& grids)
-{
-    return get_points_(index_gen(),in,grids);
 }
 
 template <typename ...GridTypes>
@@ -107,10 +124,39 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices
 };
 
 template <typename ...GridTypes>
-inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_indices(point_tuple in, const grid_tuple_type& grids)
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::find_nearest_(typename tuple_tools::extra::arg_seq<S...>, arg_tuple in, const grid_tuple_type& grids)
 {
-    return get_indices_(index_gen(),in,grids);
+    point_tuple out = std::make_tuple( (std::get<S>(grids).find_nearest(std::get<S>(in)))... ); 
+    return out; 
+}
+
+template <typename ...GridTypes>
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::shift_(tuple_tools::extra::arg_seq<S...>, point_tuple in, point_tuple shift, const grid_tuple_type&grids)
+{
+    point_tuple out = std::make_tuple( (std::get<S>(grids).shift(std::get<S>(in),std::get<S>(shift)))... );
+    return out;
+}
+
+template <typename ...GridTypes>
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::shift_(tuple_tools::extra::arg_seq<S...>, point_tuple in, arg_tuple shift, const grid_tuple_type&grids)
+{
+    point_tuple out = std::make_tuple( (std::get<S>(grids).shift(std::get<S>(in),std::get<S>(shift)))... );
+    return out;
+}
+
+template <typename ...GridTypes>
+template <int...S> 
+inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple 
+    grid_tuple_traits<std::tuple<GridTypes...>>::shift_(tuple_tools::extra::arg_seq<S...>, arg_tuple in, arg_tuple shift, const grid_tuple_type&grids)
+{
+    arg_tuple out = std::make_tuple( (std::get<S>(grids).shift(std::get<S>(in),std::get<S>(shift)))... );
+    return out;
 }
 
 //impl
@@ -123,8 +169,7 @@ GridArgTypeExtractor<ValueType, T<GridTypes...>, ArgTypes..., typename GridType1
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
 struct GridArgTypeExtractor<ValueType, T<GridType1>, ArgTypes...> {
-    typedef std::function<ValueType(ArgTypes...,typename GridType1::point::value_type)> type; 
-    typedef std::function<ValueType(ArgTypes...,typename GridType1::point::value_type)> arg_type; 
+    typedef std::function<ValueType(ArgTypes...,typename GridType1::point::value_type)> f_type; 
     typedef std::tuple<ArgTypes...,typename GridType1::point::value_type> arg_tuple;
 };
 
@@ -137,8 +182,7 @@ GridPointExtractor<ValueType, T<GridTypes...>, ArgTypes...,typename GridType1::p
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
 struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
- //   typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> point_type; 
-    typedef std::tuple<ArgTypes...,typename GridType1::point> arg_tuple;
+    typedef std::tuple<ArgTypes...,typename GridType1::point> point_tuple;
 };
 
 // obsolete
