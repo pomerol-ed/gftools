@@ -74,6 +74,7 @@ TEST_F(cont_test, Assignment) {
     container<double,2> t1(shape2);
     t1 = -1.;
     EXPECT_EQ(a1.sum(), t1.sum());
+
 }
 
 TEST_F(cont_test, Math) {
@@ -87,6 +88,8 @@ TEST_F(cont_test, Math) {
     (*cd2) = 3.0+ 4.0*I;
     (*cd2)*=cd2->conj();
     EXPECT_DOUBLE_EQ(std::abs((*cd2)[0][0]), 25); 
+
+    EXPECT_DOUBLE_EQ((*cd2).diff(cd2->conj().conj()), 0);
 }
 
 TEST_F(cont_test, Iterators) {

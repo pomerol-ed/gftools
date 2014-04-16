@@ -25,6 +25,9 @@ struct container;
 template<typename ContainerType, size_t M = ContainerType::N_>
 using container_view = container_base<typename ContainerType::value_type, ContainerType::N_, typename ContainerType::boost_t::template array_view<M>::type>;
 
+template <typename ValueType, size_t N>
+using container_ref = container_base<ValueType, N, boost::multi_array_ref<ValueType,N>>;
+
 namespace extra {
 template <typename, bool View=false> struct container_traits; 
 
@@ -85,10 +88,13 @@ struct container_base
     container_base(const boost_t &in):storage_(in){};
     /** Copy constructor. */
     container_base(const container_base<ValueType,N,boost_t> &rhs):storage_(rhs.storage_){};
+    template <typename BT2>
+        container_base(const container_base<ValueType,N,BT2> &rhs):storage_(rhs.boost_container_()){};
+    template <typename BT2>
+        container_base& operator=(const container_base<ValueType,N,BT2> &rhs){storage_ = rhs.boost_container_(); return (*this);};
     container_base& operator=(const container_base<ValueType,N,boost_t> &rhs){storage_ = rhs.storage_; return (*this);};
-    template <class B2> container_base& operator=(const container_base<ValueType,N,B2> &rhs){storage_ = rhs.storage_; return (*this);};
     /** Move constructor. */
-    container_base(container_base<ValueType,N,boost_t> &&rhs):storage_(rhs.storage_){};
+    container_base(container_base<ValueType,N,boost_t> &&rhs):storage_(std::forward<boost_t>(rhs.storage_)){ }
     container_base& operator=(container_base<ValueType,N,boost_t> &&rhs){std::swap(storage_,rhs.storage_); return (*this);};
 
     /** Access operators. */
@@ -114,12 +120,19 @@ struct container_base
     VectorType as_vector() const;
  
     /** Conjugate. */
-    template <typename T = ValueType, typename U = typename std::enable_if<std::is_convertible<T, complex_type>::value, int>::type> 
-        container<ValueType,N> conj();
+    //container<ValueType,N>&& conj();
+    template<typename T=ValueType> typename std::enable_if< std::is_same<T, complex_type>::value, container<ValueType,N>>::type conj() const;
+    template<typename T=ValueType> typename std::enable_if<!std::is_same<T, complex_type>::value, container<ValueType,N>>::type conj() const;
+    //typename std::enable_if<!std::is_convertible<ValueType, complex_type>::value, container<ValueType,N>&&>::type conj_d();
+    //container<ValueType,N>&& conj();
     /** Sum of all values in the container. */
     ValueType sum() const; 
+    ValueType* data() { return storage_.origin(); }
     int size() const;
     std::array<size_t,N> shape() const;
+    template <typename V2, typename DT>
+    double diff(const container_base<V2,N,DT>& r) const 
+        { return std::sqrt(std::abs( ((*this)*(*this).conj()).sum() + (r*r.conj()).sum() - ((*this)*r.conj()).sum() - ((*this).conj()*r).sum())); }
 
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>
@@ -189,9 +202,9 @@ struct container_base
     
 //-----------------------------//    
     protected:
-    mutable boost_t storage_;
-
     friend struct container<ValueType,N>;
+    
+    mutable boost_t storage_;
 };
 
 template <typename ValueType, size_t N>

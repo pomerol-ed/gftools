@@ -93,13 +93,23 @@ typename container_base<ValueType,N, BoostCType>::VectorType container_base<Valu
 
 
 template <typename ValueType, size_t N, typename BoostCType> 
-template <typename T, typename U>
-container<ValueType,N> container_base<ValueType,N, BoostCType>::conj()
+template<typename T> typename std::enable_if< std::is_same<T, complex_type>::value, container<ValueType,N>>::type 
+    container_base<ValueType,N,BoostCType>::conj() const
 {
     container <ValueType,N> out(*this);
-    std::transform(out.storage_.data(), out.storage_.data() + out.storage_.size(), out.storage_.data(), [](ValueType in){return std::conj(in);});
+    std::transform(out.storage_.origin(), out.storage_.origin() + out.size(), out.storage_.origin(), [](ValueType in){return std::conj(in);});
     return out;
 }
+
+template <typename ValueType, size_t N, typename BoostCType> 
+template<typename T> typename std::enable_if<!std::is_same<T, complex_type>::value, container<ValueType,N>>::type 
+    container_base<ValueType,N,BoostCType>::conj() const
+{
+    container <ValueType,N> out(*this);
+    return out;
+}
+
+
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename T> 
