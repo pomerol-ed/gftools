@@ -78,6 +78,8 @@ protected:
     }
 public:
     typedef grid_object<double,enum_grid,fmatsubara_grid,kmesh> gf_t;
+    typedef typename gf_t::point_tuple point_tuple;
+    typedef typename gf_t::arg_tuple arg_tuple;
     double beta = 10.;
     std::unique_ptr<gf_t> gf_ptr;
 };
@@ -106,7 +108,7 @@ TEST_F(gridobject_test1, Reductions)
 
     gf_t gf2(gf);
     gf2[0][0][0] = 0.5;
-    EXPECT_EQ(gf2.diff(gf), 0.5);
+    EXPECT_DOUBLE_EQ(gf2.diff(gf), 0.5);
 }
 
 TEST_F(gridobject_test1, IO)
@@ -119,6 +121,37 @@ TEST_F(gridobject_test1, IO)
     gf.savetxt("g1.dat");
     gf_t g2(gf.grids());
     g2.loadtxt("g1.dat");
+    EXPECT_DOUBLE_EQ(g2.diff(gf),0.0);
+}
+
+
+TEST_F(gridobject_test1, fill)
+{
+    gf_t& gf = *gf_ptr;
+    gf_t gf2(gf.grids());
+
+    typename gf_t::function_type f1  = []  (int i, complex_type p, double k){return i*std::abs(p) + k;};
+    gf.fill(f1);
+
+    typename gf_t::point_function_type f2 = [f1](typename enum_grid::point i, typename fmatsubara_grid::point p, typename kmesh::point k){return f1(i,p,k);};
+    gf2.fill(f2);
+    EXPECT_DOUBLE_EQ(gf2.diff(gf),0.0);
+
+    std::function<double(point_tuple)> f3 = [&](point_tuple in){return unfold_tuple(f2,in);};
+    gf2.fill(f3);
+    EXPECT_DOUBLE_EQ(gf2.diff(gf),0.0);
+
+    gf2 = 0.0;
+    //gf2.copy_interpolate(gf);
+}
+
+TEST_F(gridobject_test1, shift)
+{
+    gf_t& gf = *gf_ptr;
+    gf = 1.0;
+
+    //gf_t gf2 = gf.shift(0,0.*I,0.);
+    
 }
 
 

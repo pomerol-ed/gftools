@@ -109,8 +109,14 @@ public:
     /// Returns the sum of all elements in the container. 
     value_type sum() { return data_.sum(); };
     /// Returns an object with arguments, shifted by the given values.
-    template <typename ...ArgTypes> grid_object_base<ContainerType, GridTypes...> shift(ArgTypes... args) const;
-    template <typename ...ArgTypes> grid_object_base<ContainerType, GridTypes...> shift(const std::tuple<ArgTypes...>& arg_tuple) const;
+    template <typename ...ArgTypes> 
+        typename std::enable_if<
+            (std::is_convertible<std::tuple<typename std::remove_reference<ArgTypes>::type...>, arg_tuple>::value || std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value), 
+            grid_object<value_type, GridTypes...>>::type shift(ArgTypes... args) const { return this->shift(std::forward_as_tuple(args...)); }
+    template <typename ...ArgTypes> 
+        typename std::enable_if<
+            (std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value || std::is_same<std::tuple<ArgTypes...>, point_tuple>::value), 
+            grid_object<value_type, GridTypes...>>::type shift(const std::tuple<ArgTypes...>& arg_tuple) const ; 
 
 // IO
     /// Save the data to the txt file. 
@@ -129,8 +135,9 @@ public:
     template <typename ... ArgTypes>
         typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value, value_type> tail(ArgTypes...in) { return tail_(in...); };
     /// Return the value by grid values. 
-    value_type& get(const point_tuple& in);
-    value_type& operator()(const point_tuple& in) const;
+    value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
+    value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
+    const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
 
     template <typename ...ArgTypes> value_type operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
     /// Return value of grid_object. evaluate methods of grids are used, so interpolation is done if provided with grids
@@ -140,14 +147,15 @@ public:
     /// Fills the container with a provided function. 
     void fill(const function_type &in);
     void fill(const point_function_type &in);
-    void fill(const std::function<value_type(arg_tuple)>& in);
-    void fill(const std::function<value_type(point_tuple)>& in);
+    void fill(const std::function<value_type(arg_tuple)>& in) { this->fill(tools::extract_tuple_f(in)); }
+    void fill(const std::function<value_type(point_tuple)>& in) { this->fill(tools::extract_tuple_f(in)); }
     /// A shortcut for fill method. 
     //template <typename ...ArgTypes> grid_object_base& operator= (const std::function<value_type(ArgTypes...)> &);
     /// Same as operator=, but allows for non-equal grids. Slow. Uses analytic function to provide missing values. 
-    grid_object_base& copy_interpolate(const grid_object_base &rhs);
+    template <typename CType2>
+    grid_object_base& copy_interpolate(const grid_object_base<CType2, GridTypes...> &rhs);
 
-    // Math (should be removed to an external algebra class). 
+// Math (should be removed to an external algebra class). 
     grid_object_base& operator*= (const grid_object_base & rhs);
     grid_object_base& operator*= (const value_type& rhs);
     grid_object_base operator* (const grid_object_base & rhs) const;
@@ -168,23 +176,6 @@ public:
     friend grid_object_base operator+ (const value_type & lhs, const grid_object_base & rhs) {return rhs+lhs;};
     friend grid_object_base operator- (const value_type & lhs, const grid_object_base & rhs) {return rhs*(-1.0)+lhs;};
     friend grid_object_base operator/ (const value_type & lhs, const grid_object_base & rhs) {grid_object_base out(rhs); out=lhs; return out/rhs;};
-
-    
-/// Returns a tuple of input args shifted by values from another tuple. 
-    template <typename OrigArg1, typename ...OrigArgs, typename ArgType1, typename ...ArgTypes, 
-        typename std::enable_if<sizeof...(OrigArgs)==sizeof...(ArgTypes), int>::type = 0,  
-        typename std::enable_if<sizeof...(OrigArgs)!=0, int>::type = 0 > 
-        std::tuple<OrigArg1, OrigArgs...> _shiftArgs(const std::tuple<OrigArg1, OrigArgs...>&in, const std::tuple<ArgType1, ArgTypes...>& shift_args) const {
-    OrigArg1 arg1 = std::get<0>(in);
-    ArgType1 shift_arg1 = std::get<0>(shift_args);
-    OrigArg1 out1 = std::get<sizeof...(GridTypes)-sizeof...(ArgTypes)-1>(grids_).shift(arg1,shift_arg1); 
-    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(tuple_tail(in),tuple_tail(shift_args)));
-}
-
-    /// Specialization of _shiftArgs for a tuple of 1 element. 
-    template <typename OrigArg1, typename ArgType1>
-        std::tuple<OrigArg1> _shiftArgs(const std::tuple<OrigArg1>&in, const std::tuple<ArgType1>& shift_args) const;
-
 };
 
 /*

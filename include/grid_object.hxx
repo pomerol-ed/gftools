@@ -106,6 +106,37 @@ grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,Gri
     return *this;
 }
 
+
+template <typename ContainerType, typename ...GridTypes> 
+template <typename ...ArgTypes> 
+typename std::enable_if<
+    (std::is_convertible<std::tuple<ArgTypes...>, typename grid_object_base<ContainerType,GridTypes...>::arg_tuple>::value || 
+     std::is_same<std::tuple<ArgTypes...>, typename grid_object_base<ContainerType,GridTypes...>::point_tuple>::value), 
+    grid_object<typename grid_object_base<ContainerType,GridTypes...>::value_type, GridTypes...>>::type 
+        grid_object_base<ContainerType,GridTypes...>::shift (const std::tuple<ArgTypes...>& shift_args) const 
+{
+    grid_object_base<ContainerType,GridTypes...> out(grids_);
+    std::function<value_type(point_tuple)> ShiftFunction = [&](point_tuple args1)->value_type { 
+        point_tuple out_args = trs::shift(args1, shift_args);
+    //    __tuple_print<point_tuple>::print(args1); 
+    //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
+    //    INFO_NONEWLINE("-->");__tuple_print<point_tuple>::print(out_args);
+        return (*this)(out_args);
+        };
+    out.fill(ShiftFunction);
+    
+    static std::function<value_type(arg_tuple)> ShiftAnalyticF;
+    ShiftAnalyticF = [this, shift_args](const arg_tuple& in)->value_type {
+        arg_tuple out_args = trs::shift(in,shift_args); 
+        return this->tail(out_args);
+    };
+    
+    function_type tailF = tools::extract_tuple_f(ShiftAnalyticF);
+    out.tail_ = tailF;
+    
+    return out;
+} 
+
 //
 // IO
 //
@@ -124,6 +155,14 @@ inline std::array<size_t, D> enumerate_indices_(const size_t index, const std::a
     return indices;
 }
 } // end of namespace extra
+
+template <typename ContainerType, typename ...GridTypes> 
+std::ostream& operator<<(std::ostream& lhs, const grid_object_base<ContainerType,GridTypes...> &in)
+{
+    lhs << (in.data_);
+    return lhs;
+}
+
 
 
 template <typename ContainerType, typename ...GridTypes> 
@@ -156,7 +195,6 @@ void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fn
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = extra::enumerate_indices_(i, dims_);
         point_tuple pts = this->get_points(pts_index);
-        //arg_tuple args = this->getArgsFromIndices(pts_index);
         arg_tuple pts2 = tuple_tools::read_tuple<point_tuple>(in); // ensure serialize_tuple in savetxt has the same type. Dropping here indices - they're wrong anyway.
         if (!tools::is_float_equal<arg_tuple>(pts,pts2,tol)) throw (exIOProblem());
 
@@ -168,6 +206,47 @@ void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fn
 
     in.close();
 }
+
+//
+// Fill values
+//
+
+template <typename ContainerType, typename ...GridTypes> 
+void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_object_base<ContainerType,GridTypes...>::point_function_type& in)
+{
+    size_t total_size = this->size();
+    for (size_t i=0; i<total_size; ++i) {
+        auto pts_index = extra::enumerate_indices_(i, dims_);
+        point_tuple args = trs::get_points(pts_index,grids_);
+        auto val = tuple_tools::unfold_tuple(in, args);
+        data_(pts_index) = val;
+        };
+}
+
+template <typename ContainerType, typename ...GridTypes> 
+void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_object_base<ContainerType,GridTypes...>::function_type& in)
+{
+    size_t total_size = this->size();
+    for (size_t i=0; i<total_size; ++i) {
+        auto pts_index = extra::enumerate_indices_(i, dims_);
+        arg_tuple args = trs::get_args(pts_index,grids_);
+        auto val = tuple_tools::unfold_tuple(in, args);
+        data_(pts_index) = val;
+        };
+    tail_ = in;
+}
+
+template <typename ContainerType, typename ...GridTypes> 
+template <typename CType2>
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::copy_interpolate (
+    const grid_object_base<CType2,GridTypes...>& rhs)
+{
+    tail_ = rhs.tail_;
+    const std::function<value_type(arg_tuple)> bindf = [&](arg_tuple in){return rhs(in);};
+    this->fill(bindf);
+    return (*this);
+}
+
 
 
 

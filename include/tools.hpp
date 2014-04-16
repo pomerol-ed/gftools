@@ -98,13 +98,15 @@ struct fun_traits<std::function<ValType(ArgTypes...)> >
 {
     static std::function<ValType(ArgTypes...)> constant(ValType c) 
     { return [c](ArgTypes...in){return c;};}
-    static std::function<ValType(ArgTypes...)> getFromTupleF(std::function<ValType(std::tuple<ArgTypes...>)> f1)
-    { return [f1](ArgTypes...in){return f1(std::forward_as_tuple(in...));};}
-    static std::function<ValType(std::tuple<ArgTypes...>)> getTupleF(std::function<ValType(ArgTypes...)> f1)
-    { return [f1](const std::tuple<ArgTypes...> &in)->ValType{ tuple_tools::unfold_tuple(f1,in);};}
 };
 
+template <typename V, typename ...Args>
+inline std::function<V(Args...)> extract_tuple_f(const std::function<V(std::tuple<Args...>)>& f1)
+    { return [f1](Args...in){return f1(std::forward_as_tuple(in...));};}
 
+template <typename V, typename ...Args>
+static std::function<V(std::tuple<Args...>)> tuple_f(const std::function<V(Args...)>& f1)
+    { return [f1](const std::tuple<Args...> &in)->V{ tuple_tools::unfold_tuple(f1,in);};}
 
 } // end of namespace tools
 } // end of namespace gftools
