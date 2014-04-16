@@ -13,11 +13,6 @@
 
 namespace gftools {
 
-namespace tools { 
-template <typename ... Args>
-bool is_float_equal (const std::tuple<Args...>& l, const std::tuple<Args...>& r, real_type tol = 10.*std::numeric_limits<real_type>::epsilon());
-}
-
 namespace tuple_tools {
 
 //

@@ -182,6 +182,7 @@ GridPointExtractor<ValueType, T<GridTypes...>, ArgTypes...,typename GridType1::p
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...ArgTypes>
 struct GridPointExtractor<ValueType, T<GridType1>, ArgTypes...> {
+    typedef std::function<ValueType(ArgTypes...,typename GridType1::point)> f_type; 
     typedef std::tuple<ArgTypes...,typename GridType1::point> point_tuple;
 };
 

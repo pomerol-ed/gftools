@@ -1,437 +1,133 @@
-#ifndef ___GFTOOLS_GRIDOBJECT_HXX___
-#define ___GFTOOLS_GRIDOBJECT_HXX___
+#pragma once
 
 #include "grid_object.hpp"
-#include <iomanip>
-//#include <boost/foreach.hpp>
-//#include <boost/fusion/algorithm/iteration/for_each.hpp>
-//#include <boost/fusion/include/for_each.hpp>
 
 namespace gftools {
 
 //
-// grid_object::containerExtractor
-//
-
-// containerExtactor::get_ref
-
-template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
-inline ValueType& grid_object<ValueType,GridTypes...>::containerExtractor<Nc,CT,ArgType1,ArgTypes...>::get_ref(
-    CT &data, const std::tuple<GridTypes...> &grids, 
-    const ArgType1& arg1, const ArgTypes&... args) 
-{
-    const auto & grid=std::get<N-Nc>(grids);
-    static_assert(std::is_same<ArgType1,typename std::tuple_element<N-Nc,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
-    if (!grid.checkPoint(arg1)) throw (exPointMismatch());
-    auto &tmp = data[arg1.index_];
-    return containerExtractor<Nc-1, decltype(tmp), ArgTypes...>::get_ref(tmp,grids,args...);
-};
-
-template< typename ValueType, typename ...GridTypes>
-template <typename CT, typename ArgType1> 
-inline ValueType& grid_object<ValueType,GridTypes...>::containerExtractor<1,CT,ArgType1>::get_ref(
-    CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
-{
-    const auto & grid=std::get<N-1>(grids);
-    static_assert(std::is_same<ArgType1,typename std::tuple_element<N-1,std::tuple<GridTypes...>>::type::point>::value,"Argument to a reference operator is not a point");
-    if (!grid.checkPoint(arg1)) throw (exPointMismatch());
-    auto &tmp = data[arg1.index_];
-    return tmp;
-}
-
-// containerExtactor::get
-
-template< typename ValueType, typename ...GridTypes> 
-template <size_t Nc, typename CT, typename ArgType1, typename ...ArgTypes>
-inline ValueType grid_object<ValueType,GridTypes...>::containerExtractor<Nc,CT,ArgType1,ArgTypes...>::get(
-    CT &data, const std::tuple<GridTypes...> &grids, 
-    const ArgType1& arg1, const ArgTypes&... args) 
-{
-    const auto & grid=std::get<N-Nc>(grids);
-    auto tmp = grid.evaluate(data, arg1);
-    return containerExtractor<Nc-1, decltype(tmp), ArgTypes...>::get(tmp,grids,args...);
-};
-
-template< typename ValueType, typename ...GridTypes>
-template <typename CT, typename ArgType1> 
-inline ValueType grid_object<ValueType,GridTypes...>::containerExtractor<1,CT,ArgType1>::get(
-    CT &data, const std::tuple<GridTypes...> &grids, const ArgType1& arg1)
-{
-    const auto & grid=std::get<N-1>(grids);
-    auto tmp = grid.evaluate(data, arg1);
-    return tmp;
-}
-
-//
-// grid_object
+// grid_object_base
 //
     
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>::grid_object( const std::tuple<GridTypes...> &grids, const container<ValueType, sizeof...(GridTypes)>& data):
-    grids_(grids),
-    dims_(GetGridSizes<N>::TupleSizeToArray(grids_)),
-    data_(data),
-    _f(tools::fun_traits<function_type>::constant(0.0)) 
-{
-};
+//
+// constructors
+//
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>::grid_object( const std::tuple<GridTypes...> &in):
-    grids_(in),
-    dims_(GetGridSizes<N>::TupleSizeToArray(grids_)),
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple<GridTypes...> &grids):
+    grids_(grids),
+    dims_(trs::get_dimensions(grids)),
     data_(dims_),
-    _f(tools::fun_traits<function_type>::constant(0.0))
+    tail_(tools::fun_traits<function_type>::constant(0.0))
 {
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>::grid_object( const grid_object<ValueType, GridTypes...>& rhs):
+template <typename ContainerType, typename ...GridTypes> 
+template <typename CType>
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple<GridTypes...> &grids, CType& data):
+    grids_(grids),
+    dims_(trs::get_dimensions(grids)),
+    data_(data),
+    tail_(tools::fun_traits<function_type>::constant(0.0)) 
+{
+    if (dims_ != data.shape()) throw std::logic_error("Dimensions mismatch when creating grid_object from existing data");
+};
+
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple<GridTypes...> &grids, ContainerType&& data):
+    grids_(grids),
+    dims_(trs::get_dimensions(grids)),
+    data_(std::forward<ContainerType>(data)),
+    tail_(tools::fun_traits<function_type>::constant(0.0)) 
+{
+    if (dims_ != data.shape()) throw std::logic_error("Dimensions mismatch when creating grid_object from existing data");
+};
+
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( grid_object_base<ContainerType,GridTypes...> && rhs):
+    grids_(rhs.grids_),
+    data_(std::forward<ContainerType>(rhs.data_))
+{
+    dims_.swap(rhs.dims_);
+    tail_.swap(rhs.tail_);
+}
+
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( const grid_object_base<ContainerType, GridTypes...>& rhs):
     grids_(rhs.grids_), 
     dims_(rhs.dims_),
     data_(rhs.data_),
-    _f(rhs._f)
+    tail_(rhs.tail_)
 {
 }; 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>::grid_object( grid_object<ValueType,GridTypes...> && rhs):
-    grids_(rhs.grids_),
-    data_(rhs.data_)
+
+template <typename ContainerType, typename ...GridTypes> 
+template <typename CType>
+grid_object_base<ContainerType,GridTypes...>::grid_object_base( const grid_object_base<CType, GridTypes...>& rhs):
+    grids_(rhs.grids_), 
+    dims_(rhs.dims_),
+    data_(rhs.data_),
+    tail_(rhs.tail_)
 {
-    dims_.swap(rhs.dims_);
-    _f.swap(rhs._f);
 }
+//
+// Assignment
+//
 
-template <typename ValueType, typename ...GridTypes> 
-const std::tuple<GridTypes...> grid_object<ValueType,GridTypes...>::grids() const 
-{ 
-    return grids_; 
-};
-
-template <typename ValueType, typename ...GridTypes> 
-inline auto grid_object<ValueType,GridTypes...>::operator[](size_t i)->decltype(data_[i])
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
+    const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
-    return data_[i];
-}
-
-/*
-template <typename ValueType, typename ...GridTypes> 
-template <int M> 
-ValueType& grid_object<ValueType,GridTypes...>::operator[](const std::array<size_t,M>& in)
-{
-}*/
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline ValueType& grid_object<ValueType,GridTypes...>::get(const ArgTypes&... in)
-{
-    static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "grid_object call, number of input parameters mismatch."); 
-    return containerExtractor<sizeof...(GridTypes), container<ValueType, N>, ArgTypes...>::get_ref(data_,grids_,in...);
-}
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline ValueType& grid_object<ValueType,GridTypes...>::get(const std::tuple<ArgTypes...> &in)
-{
-    static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "grid_object call, number of input parameters mismatch."); 
-    std::function<ValueType&(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType&{return this->get<ArgTypes...>(in1...); };// containerExtractor<sizeof...(GridTypes), ArgTypes...>::get(data_,grids_,in...);};
-    tuple_tools::extra::tuple_caller<ValueType&,ArgTypes...> t = {in,f1};
-    return t.call();
-//containerExtractor<sizeof...(GridTypes), container<ValueType, N>, ArgTypes...>::get_ref(data_,grids_,in);
-}
-
-template <typename ValueType, typename ...GridTypes> 
-inline ValueType& grid_object<ValueType,GridTypes...>::get(const point_tuple& in)
-{
-        auto indices = getIndicesFromPoints(in);
-        return data_(indices);
+    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
+    data_=rhs.data_;
+    tail_ = rhs.tail_;
+    return *this;
 }
 
 
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::operator()(const ArgTypes&... in) const
+template <typename ContainerType, typename ...GridTypes> 
+    template <typename CType>
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
+    const grid_object_base<CType,GridTypes...>& rhs)
 {
-    static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "grid_object call, number of input parameters mismatch."); 
-    try { return containerExtractor<sizeof...(GridTypes), container<ValueType, N>, ArgTypes...>::get(data_,grids_,in...); }
-    //catch (std::exception &e) { 
-    catch (...) { 
-        #ifndef NDEBUG
-        DEBUG("Using analytical expression");
-        #endif
-        return _f(in...);
-     };
-
+    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
+    data_=rhs.data_;
+    tail_ = rhs.tail_;
+    return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::operator()(const std::tuple<ArgTypes...>& in) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
+    const value_type& rhs)
 {
-    static_assert(sizeof...(ArgTypes) == sizeof...(GridTypes), "grid_object call, number of input parameters mismatch."); 
-    std::function<ValueType(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType{return this->template operator()<ArgTypes...>(in1...); };
-    return tuple_tools::unfold_tuple(f1,in);
+    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
+    data_=rhs;
+    tail_ = tools::fun_traits<function_type>::constant(rhs);
+    return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::operator()(const point_tuple& in) const
+//
+// IO
+//
+
+namespace extra { 
+template <size_t D>
+inline std::array<size_t, D> enumerate_indices_(const size_t index, const std::array<size_t, D> dims)
 {
-    try {
-        auto indices = getIndicesFromPoints(in);
-        return data_(indices);
-        }
-    catch (ex_wrong_index) {
-        return this->operator()(arg_tuple(in));
-        };
-}
-
-
-
-template <typename ValueType, typename ...GridTypes> 
-std::ostream& operator<<(std::ostream& lhs, const grid_object<ValueType,GridTypes...> &in)
-{
-    lhs << (in.data_);
-    return lhs;
-}
-
-template <typename ValueType, typename ...GridTypes> 
-template <size_t M>
-auto grid_object<ValueType,GridTypes...>::getGrid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type& 
-{
-    return std::get<M>(grids_);
-}
-
-
-
-template <typename ValueType, typename ...GridTypes> 
-auto grid_object<ValueType,GridTypes...>::getGrid() const -> const typename std::tuple_element<0, std::tuple<GridTypes...>>::type&
-{
-    return std::get<0>(grids_);
-}
-
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-void grid_object<ValueType,GridTypes...>::fill(const std::function<ValueType(ArgTypes...)> & in)
-{
-    this->fill(function_type(in));
-}
-
-/*
-template <typename ValueType, typename ...GridTypes> 
-inline void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::point_function_type& in)
-{
-
-    __gencontainerExtractor<sizeof...(GridTypes), containerExtractor, std::tuple<GridTypes...>>::type::set(data_,grids_,in);
-
-    //containerExtractor<sizeof...(GridTypes), ArgTypes...>::set(data_,grids_,in);
-    //f_ = in;
-}
-*/
-
-template <typename ValueType, typename ...GridTypes> 
-inline size_t grid_object<ValueType,GridTypes...>::size() const
-{
-    size_t out = 1;
-    for (auto i : dims_) out*=i;
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes>
-inline typename grid_object<ValueType,GridTypes...>::PointIndices grid_object<ValueType,GridTypes...>::_getPointsIndices(const size_t index) const
-{
-    PointIndices indices;
+    std::array<size_t, D> indices;
     size_t t = index;
-    for (int i=N-1; i>=0; i--) { 
-        indices[i]=t%dims_[i];
+    for (int i=D-1; i>=0; i--) { 
+        indices[i]=t%dims[i];
         t-=indices[i];
-        t/=dims_[i];
+        t/=dims[i];
         }
     return indices;
 }
+} // end of namespace extra
 
 
-
-
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(arg_tuple)>& in)
-{
-    size_t total_size = this->size();
-    for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
-        arg_tuple args = this->getArgsFromIndices(pts_index);
-        auto val = in(args);
-        data_(pts_index) = val;
-        };
-    f_ = tools::fun_traits<function_type>::getFromTupleF(in); 
-
-}
-
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::function_type& in)
-{
-    size_t total_size = this->size();
-    for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
-        arg_tuple args = this->getArgsFromIndices(pts_index);
-        auto val = tuple_tools::unfold_tuple(in, args);
-        data_(pts_index) = val;
-        };
-    f_ = in;
-}
-
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill(const typename grid_object<ValueType,GridTypes...>::point_function_type& in)
-{
-    size_t total_size = this->size();
-    for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
-        point_tuple args = this->getPointsFromIndices(pts_index);
-        auto val = tuple_tools::unfold_tuple(in, args);
-        data_(pts_index) = val;
-        };
-}
-
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::fill_tuple(const std::function<ValueType(point_tuple)>& in)
-{
-    size_t total_size = this->size();
-    for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
-        point_tuple args = this->getPointsFromIndices(pts_index);
-        auto val = in(args);
-        data_(pts_index) = val;
-        };
-    //f_ = tools::fun_traits<function_type>::getFromTupleF(std::function<ValueType(arg_tuple)>(in)); 
-}
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename U, typename std::enable_if<std::is_same<U, complex_type>::value, int>::type>
-real_type grid_object<ValueType,GridTypes...>::diff(const grid_object<ValueType,GridTypes...>& rhs) const
-{
-    grid_object outObj(grids_);
-    auto f1 = [&](point_tuple in){return std::abs((*this)(in) - rhs(in));};
-    point_function_type f = tools::fun_traits<point_function_type>::getFromTupleF(f1); 
-    outObj.fill(f);
-    real_type norm = 1.0;
-    for (auto v : dims_) { norm*=v; };
-    return std::real(outObj.sum())/norm;
-}
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename U, typename std::enable_if<std::is_same<U, real_type>::value, int>::type>
-real_type grid_object<ValueType,GridTypes...>::diff(const grid_object<ValueType,GridTypes...>& rhs) const
-{
-    grid_object outObj(grids_);
-    auto f1 = [&](point_tuple in){return std::abs((*this)(in) - rhs(in));};
-    point_function_type f = tools::fun_traits<point_function_type>::getFromTupleF(f1); 
-    outObj.fill(f);
-    real_type norm = 1.0;
-    for (auto v : dims_) { norm*=v; };
-    return std::real(outObj.sum())/norm;
-}
-
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename U, typename std::enable_if<std::is_convertible<U, complex_type>::value, int>::type>
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::conj()
-{
-    grid_object<ValueType,GridTypes...> out(*this);
-    (out.data_) = out.data_.conj();
-    return out;
-}
-
-template <typename ValueType, typename ...GridTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::sum()
-{
-    return data_.sum();
-}
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline ValueType grid_object<ValueType,GridTypes...>::__get_f(const std::tuple<ArgTypes...>& in) const
-{
-    std::function<ValueType(ArgTypes...)> f1 = [&](ArgTypes... in1)->ValueType{return this->_f(in1...); };
-    tuple_tools::extra::tuple_caller<ValueType,ArgTypes...> t = {in,f1};
-    return t.call();
-}
-
-
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::shift(ArgTypes... args) const
-{
-    return this->shift(std::forward_as_tuple(args...));
-}
-
-
-template <typename ValueType, typename ...GridTypes> 
-template <typename ...ArgTypes> 
-inline grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::shift(const std::tuple<ArgTypes...>& shift_args) const
-{
-    grid_object<ValueType,GridTypes...> out(grids_);
-    std::function<ValueType(point_tuple)> ShiftFunction = [&](point_tuple args1)->ValueType { 
-        point_tuple out_args = this->_shiftArgs(args1, shift_args);
-    //    __tuple_print<point_tuple>::print(args1); 
-    //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
-    //    INFO_NONEWLINE("-->");__tuple_print<point_tuple>::print(out_args);
-        return (*this)(out_args);
-        };
-    point_function_type fillF = tools::fun_traits<point_function_type>::getFromTupleF(ShiftFunction);
-    //out.fill(fillF);
-    out.fill_tuple(ShiftFunction);
-    
-    static std::function<ValueType(arg_tuple)> ShiftAnalyticF;
-    ShiftAnalyticF = [this, shift_args](const arg_tuple& in)->ValueType {
-        arg_tuple out_args = _shiftArgs(in,shift_args); 
-        return __get_f(out_args);
-    };
-    
-    function_type tailF = tools::fun_traits<function_type>::getFromTupleF(ShiftAnalyticF);
-    out.f_ = tailF;
-    
-    return out;
-}
-
-/*
-template <typename ValueType, typename ...GridTypes> 
-    template <typename OrigArg1, typename ...OrigArgs, typename ArgType1, typename ...ArgTypes, 
-        typename std::enable_if<sizeof...(OrigArgs)==sizeof...(ArgTypes)>,  
-        typename std::enable_if<sizeof...(OrigArgs)!=0> > 
-std::tuple<OrigArg1, OrigArgs...> grid_object<ValueType,GridTypes...>::_shiftArgs(const std::tuple<OrigArg1, OrigArgs...>&in, const std::tuple<ArgType1, ArgTypes...>& shift_args) const
-{
-    OrigArg1 arg1 = std::get<0>(in);
-    ArgType1 shift_arg1 = std::get<0>(shift_args);
-    OrigArg1 out1 = std::get<sizeof...(GridTypes)-sizeof...(ArgTypes)-1>(grids_).shift(arg1,shift_arg1); 
-
-
-    auto f_o = [&in](OrigArg1 arg1, OrigArgs... others)->std::tuple<OrigArgs...>{ return std::forward_as_tuple(others...);};
-    auto f_s = [&shift_args](ArgType1 arg1, ArgTypes... others)->std::tuple<ArgTypes...>{ return std::forward_as_tuple(others...);};
-
-    tuple_tools::extra::tuple_caller<std::tuple<OrigArgs...>,OrigArg1,OrigArgs...> t_o = {in,f_o};
-    std::tuple<OrigArgs...> other_orig_args(t_o.call());
-
-    tuple_tools::extra::tuple_caller<std::tuple<ArgTypes...>,ArgType1,ArgTypes...> t_s = {shift_args,f_s};
-    std::tuple<ArgTypes...> other_shift_args(t_s.call());
-
-    return std::tuple_cat(std::forward_as_tuple(out1),this->_shiftArgs(other_orig_args,other_shift_args));
-}
-*/
-template <typename ValueType, typename ...GridTypes> 
-template <typename OrigArg1, typename ArgType1> 
-inline std::tuple<OrigArg1> grid_object<ValueType,GridTypes...>::_shiftArgs(const std::tuple<OrigArg1>&in, const std::tuple<ArgType1>& shift_args) const
-{
-    OrigArg1 arg1 = std::get<0>(in);
-    ArgType1 shift_arg1 = std::get<0>(shift_args);
-    OrigArg1 out1 = std::get<sizeof...(GridTypes)-1>(grids_).shift(arg1,shift_arg1); 
-    return std::forward_as_tuple(out1);
-}
-
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::savetxt(const std::string& fname) const
+template <typename ContainerType, typename ...GridTypes> 
+void grid_object_base<ContainerType,GridTypes...>::savetxt(const std::string& fname) const
 {
     INFO("Saving " << typeid(*this).name() << " to " << fname);
     std::ofstream out;
@@ -439,18 +135,18 @@ void grid_object<ValueType,GridTypes...>::savetxt(const std::string& fname) cons
     size_t total_size = this->size();
     size_t last_grid_size = std::get<N-1>(grids_).size();
     for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
+        auto pts_index = extra::enumerate_indices_(i, dims_);
         //arg_tuple args = this->getArgsFromIndices(pts_index);
-        point_tuple pts = this->getPointsFromIndices(pts_index);
-        auto val = (*this)(pts);
-        out << std::scientific << tuple_tools::serialize_tuple(pts) << "    " << num_io<ValueType>(val) << std::endl;
+        point_tuple pts = this->get_points(pts_index);
+        auto val = data_(pts_index);
+        out << std::scientific << tuple_tools::serialize_tuple<point_tuple>(pts) << "    " << num_io<value_type>(val) << std::endl;
         if (N > 1 && i && (i+1)%last_grid_size==0) out << std::endl;
         };
     out.close();
 }
 
-template <typename ValueType, typename ...GridTypes> 
-void grid_object<ValueType,GridTypes...>::loadtxt(const std::string& fname, real_type tol)
+template <typename ContainerType, typename ...GridTypes> 
+void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fname, real_type tol)
 {
     INFO("Loading " << typeid(*this).name() << " from " << fname);
     std::ifstream in;
@@ -458,75 +154,40 @@ void grid_object<ValueType,GridTypes...>::loadtxt(const std::string& fname, real
     if (in.fail()) { ERROR("Couldn't open file " << fname); throw exIOProblem(); };
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
-        auto pts_index = _getPointsIndices(i);
-
-        point_tuple pts = this->getPointsFromIndices(pts_index);
+        auto pts_index = extra::enumerate_indices_(i, dims_);
+        point_tuple pts = this->get_points(pts_index);
         //arg_tuple args = this->getArgsFromIndices(pts_index);
-        arg_tuple pts2 = tuple_tools::read_tuple<arg_tuple>(in);
+        arg_tuple pts2 = tuple_tools::read_tuple<point_tuple>(in); // ensure serialize_tuple in savetxt has the same type. Dropping here indices - they're wrong anyway.
         if (!tools::is_float_equal<arg_tuple>(pts,pts2,tol)) throw (exIOProblem());
 
-        num_io<ValueType> tmp2(this->get(pts));
+        num_io<value_type> tmp2(data_(pts_index));
         in >> tmp2;
-        this->get(pts) = tmp2.value_;
+        data_(pts_index) = tmp2.value_;
         };
 
 
     in.close();
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::copyInterpolate (
-    const grid_object<ValueType,GridTypes...>& rhs)
-{
-    //data_=rhs.data_;
-    f_ = rhs.f_;
-    const std::function<ValueType(arg_tuple)> bindf = [&](arg_tuple in){return rhs(in);};
-    this->fill_tuple(bindf);
-
-    return *this;
-}
 
 
 //
-// Operators
+// Math (obsolete)
 //
-
 /*
-template <typename ValueType, typename ...GridTypes> 
+template <typename ContainerType, typename ...GridTypes> 
 template <typename ...ArgTypes> 
-inline grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator= (
-    const std::function<ValueType(ArgTypes...)> & in)
+inline grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
+    const std::function<value_type(ArgTypes...)> & in)
 {
     this->fill(in);
     return *this;
 }
 */
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator= (
-    const grid_object<ValueType,GridTypes...>& rhs)
-{
-    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
-    data_=rhs.data_;
-    f_ = rhs.f_;
-    return *this;
-}
-
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator= (
-    const ValueType& rhs)
-{
-    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
-    data_=rhs;
-    f_ = tools::fun_traits<function_type>::constant(rhs);
-    return *this;
-}
-
-
-
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator+= (
-    const grid_object<ValueType,GridTypes...>& rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator+= (
+    const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_+=rhs.data_;
@@ -534,150 +195,150 @@ grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operat
     return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator+= (
-    const ValueType & rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator+= (
+    const value_type & rhs)
 {
     data_+=rhs;
-    //_f=tools::fun_traits<function_type>::add(_f, tools::fun_traits<function_type>::constant(rhs));
+    //tail_=tools::fun_traits<function_type>::add(tail_, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator*= (
-    const grid_object<ValueType,GridTypes...>& rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator*= (
+    const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_*=rhs.data_;
-    //_f=tools::fun_traits<function_type>::multiply(_f, rhs._f);
+    //tail_=tools::fun_traits<function_type>::multiply(tail_, rhs.tail_);
     return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator*= (
-    const ValueType & rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator*= (
+    const value_type & rhs)
 {
     data_*=rhs;
-    //_f=tools::fun_traits<function_type>::multiply(_f, tools::fun_traits<function_type>::constant(rhs));
+    //tail_=tools::fun_traits<function_type>::multiply(tail_, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator/= (
-    const grid_object<ValueType,GridTypes...>& rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator/= (
+    const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_/=rhs.data_;
-    //_f=tools::fun_traits<function_type>::divide(_f, rhs._f);
+    //tail_=tools::fun_traits<function_type>::divide(tail_, rhs.tail_);
     return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator/= (
-    const ValueType & rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator/= (
+    const value_type & rhs)
 {
     data_/=rhs;
-    //_f=tools::fun_traits<function_type>::divide(_f, tools::fun_traits<function_type>::constant(rhs));
+    //tail_=tools::fun_traits<function_type>::divide(tail_, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator-= (
-    const grid_object<ValueType,GridTypes...>& rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator-= (
+    const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
     //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_-=rhs.data_;
-    //_f=tools::fun_traits<function_type>::subtract(_f, rhs._f);
+    //tail_=tools::fun_traits<function_type>::subtract(tail_, rhs.tail_);
     return *this;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...>& grid_object<ValueType,GridTypes...>::operator-= (
-    const ValueType & rhs)
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator-= (
+    const value_type & rhs)
 {
     data_-=rhs;
-    //_f=tools::fun_traits<function_type>::subtract(_f, tools::fun_traits<function_type>::constant(rhs));
+    //tail_=tools::fun_traits<function_type>::subtract(tail_, tools::fun_traits<function_type>::constant(rhs));
     return *this;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator+ (
-    const grid_object<ValueType,GridTypes...>& rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator+ (
+    const grid_object_base<ContainerType,GridTypes...>& rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out+=rhs;
     return out;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator+ (
-    const ValueType & rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator+ (
+    const value_type & rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out+=rhs;
     return out;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator* (
-    const grid_object<ValueType,GridTypes...>& rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator* (
+    const grid_object_base<ContainerType,GridTypes...>& rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out*=rhs;
     return out;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator* (
-    const ValueType & rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator* (
+    const value_type & rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out*=rhs;
     return out;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator/ (
-    const grid_object<ValueType,GridTypes...>& rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator/ (
+    const grid_object_base<ContainerType,GridTypes...>& rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out/=rhs;
     return out;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator/ (
-    const ValueType & rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator/ (
+    const value_type & rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out/=rhs;
     return out;
 }
 
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator- (
-    const grid_object<ValueType,GridTypes...>& rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator- (
+    const grid_object_base<ContainerType,GridTypes...>& rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out-=rhs;
     return out;
 }
 
-template <typename ValueType, typename ...GridTypes> 
-grid_object<ValueType,GridTypes...> grid_object<ValueType,GridTypes...>::operator- (
-    const ValueType & rhs) const
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,GridTypes...>::operator- (
+    const value_type & rhs) const
 {
-    grid_object out(*this);
+    grid_object_base out(*this);
     out-=rhs;
     return out;
 }
+
 
 
 } // end of namespace GFTools
-#endif

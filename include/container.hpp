@@ -103,6 +103,7 @@ struct container_base
 
     boost_t& boost_container_() const {return storage_; }
     ValueType& operator()(std::array<size_t, N> indices){return storage_(indices);}
+    const ValueType& operator() (std::array<size_t, N> indices) const {return storage_(indices);}
 
     container_base<ValueType,1,boost::multi_array_ref<ValueType,1>> flatten();
 // TODO : put views

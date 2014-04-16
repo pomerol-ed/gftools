@@ -43,39 +43,39 @@ struct ArgFunGenerator<1, ValueType, ArgType1, ArgTypes...> {
 //
 
 /** Set of tools to check float equality of numbers or tuples. */
-template <typename > struct equality_checker;
+template <typename, typename > struct equality_checker;
 
-template <typename T>
+template <typename T1,typename T2> 
+    bool is_float_equal(T1 t1, T2 t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T1,T2>::is_equal(t1,t2,tol); };
+template <typename...Args1, typename...Args2>
+    bool is_float_equal(const std::tuple<Args1...> &t1, const std::tuple<Args2...> &t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon())
+    { return equality_checker<std::tuple<Args1...>,std::tuple<Args2...>>::is_equal(t1,t2,tol); };
+
+template <typename T1, typename T2 = T1>
 struct equality_checker {
-    typedef T type;
-    static typename std::enable_if<is_number<T>::value, bool>::type is_equal(T t1, T t2, real_type tol) { 
+    static typename std::enable_if<is_number<T1>::value && is_number<T2>::value, bool>::type is_equal(T1 t1, T2 t2, real_type tol) { 
         return bool(std::abs(complex_type(t1) - complex_type(t2))<tol); };
+};
+
+template <typename ... Args1, typename ... Args2>
+struct equality_checker<std::tuple<Args1...>, std::tuple<Args2...>> { 
+    typedef std::tuple<Args1...> type1;
+    typedef std::tuple<Args2...> type2;
+
+    template <int ... S>
+    static bool is_equal_(tuple_tools::extra::arg_seq<S...>, const  std::tuple<Args1...>& l, const std::tuple<Args2...>& r, double tol)
+    {
+        std::array<bool,sizeof...(Args1)> res = {{ (is_float_equal(std::get<S>(l), std::get<S>(r), tol))... }};
+        return std::all_of(res.begin(), res.end(), [](bool x){return x;});
+    }
+
+    static bool is_equal(type1 t1, type2 t2, real_type tol) {
+        return is_equal_(typename tuple_tools::extra::index_gen<sizeof...(Args1)>::type(), t1, t2, tol);
+    };
 };
 
 // free function
 /** Returns true, if two objects are equal up to a certain tolerance. */
-template <typename T, typename = typename std::enable_if<is_number<T>::value, bool>::type> 
-    bool is_float_equal(T t1, T t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T>::is_equal(t1,t2,tol); };
-
-template <typename T1, typename T2, typename = typename std::enable_if<is_number<T1>::value, bool>::type, typename = typename std::enable_if<is_number<T2>::value, bool>::type> 
-    bool is_float_equal(T1 t1, T2 t2, real_type tol = 10.*std::numeric_limits<real_type>::epsilon()){ return equality_checker<T1>::is_equal(t1,t2,tol); };
-} // end of namespace tools 
-
-namespace tuple_tools { 
-template <int ... S, typename ... Args>
-bool is_float_equal_(extra::arg_seq<S...>, const  std::tuple<Args...>& l, const std::tuple<Args...>& r, double tol)
-{
-    std::array<bool,sizeof...(Args)> res = {{ (tools::is_float_equal(std::get<S>(l), std::get<S>(r), tol))... }};
-    return std::all_of(res.begin(), res.end(), [](bool x){return x;});
-}
-}
-
-namespace tools { 
-template <typename ... Args>
-bool is_float_equal (const std::tuple<Args...>& l, const std::tuple<Args...>& r, double tol)
-{
-    return tuple_tools::is_float_equal_(typename tuple_tools::extra::index_gen<sizeof...(Args)>::type(), l, r, tol);
-}
 
 
 //

@@ -33,6 +33,7 @@ public:
     enum_grid(int min, int max, bool include_last = false);
     enum_grid(const std::vector<int>& in);
     enum_grid(enum_grid&& rhs);
+    enum_grid(const enum_grid& rhs):base(rhs){}
     enum_grid& operator=(enum_grid &&rhs);
     std::tuple <bool, size_t, int> find (int in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
@@ -59,7 +60,7 @@ grid_base<int_wrap_enumerate_grid, enum_grid>(min,max+include_last,[](int n){ret
 }
 
 enum_grid::enum_grid(enum_grid&& rhs):
-    base(rhs)
+    base(std::forward<base>(rhs))
 {
 };
 
