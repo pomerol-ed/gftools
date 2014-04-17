@@ -12,6 +12,7 @@ int main()
     std::cout << "sum_k cos(k) = " << outF1 << std::endl;
     if (!tools::is_float_equal(outF1,0.,1e-8)) return EXIT_FAILURE;
 
+
     typedef typename kmesh::point point;
     point p1 = k1.find_nearest(PI);
     std::cout << "PI == " << p1 << std::endl;
@@ -23,6 +24,8 @@ int main()
     std::cout << "y[" << k1[2] << "]=" << patch1.evaluate(data_y,k1[2]) << std::endl;
     if (patch1.evaluate(data_y,k1[2]) != 1) return EXIT_FAILURE;
 
+
+    DEBUG(k1.evaluate(data_y, k1[2]));
 
     std::cout << k1.shift(p1,2.0*PI*31./32.) << std::endl;
     return EXIT_SUCCESS;

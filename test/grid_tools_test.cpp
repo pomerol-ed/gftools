@@ -6,6 +6,7 @@
 #include "real_grid.hpp"
 
 #include "grid_tools.hpp"
+// #include "eval_expression.hpp"  // TODO
 
 using namespace gftools;
 using namespace tools;
@@ -160,6 +161,28 @@ TEST_F(grid_tuple_test, ArgShiftFail) {
     trs::arg_tuple a1 = trs::shift(trs::get_args(p1,g), std::make_tuple(0,0.,0.,rstep / 3.),g);
     EXPECT_EQ(trs::find_nearest(a1,g),p1);
 }
+
+/* // TODO
+TEST(grids, EvaluateExprTemp1) {
+    
+    int size = 10;
+    std::vector<double> d(size);
+    for (int i=0; i<size; i++) d[i]=double(i)/(size);
+    kmesh k1(size);
+
+    grid_eval_expr<decltype(d), std::tuple<kmesh>> expr1 (d,std::forward_as_tuple(k1)); 
+    //EXPECT_EQ(d[3], expr1[3]);
+    DEBUG((std::is_same<std::vector<double>, std::vector<double>>::value));
+
+    std::vector<std::vector<double>> d2(size);
+    for (int i=0; i<size; i++) { d2[i].resize(size); for (int j=0; j<size; j++) d2[i][j] = double(i+j)/size/size; }
+    
+    //grid_eval_expr<decltype(d2), std::tuple<kmesh,kmesh>> expr2 (d2,std::forward_as_tuple(k1,k1)); 
+    //DEBUG(d2[2][3]);
+    //DEBUG(expr2[2][3]);
+    
+    }
+*/
 
 
 int main(int argc, char **argv) 

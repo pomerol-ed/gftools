@@ -45,9 +45,9 @@ grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple
 template <typename ContainerType, typename ...GridTypes> 
 grid_object_base<ContainerType,GridTypes...>::grid_object_base( grid_object_base<ContainerType,GridTypes...> && rhs):
     grids_(rhs.grids_),
+    dims_(rhs.dims_),
     data_(std::forward<ContainerType>(rhs.data_))
 {
-    dims_.swap(rhs.dims_);
     tail_.swap(rhs.tail_);
 }
 
@@ -78,7 +78,10 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
-    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
+    #ifndef NDEBUG
+    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    #endif
+    assert(dims_ == rhs.dims_);
     data_=rhs.data_;
     tail_ = rhs.tail_;
     return *this;
@@ -90,7 +93,9 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<CType,GridTypes...>& rhs)
 {
-    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
+    #ifndef NDEBUG
+    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    #endif
     data_=rhs.data_;
     tail_ = rhs.tail_;
     return *this;
@@ -100,12 +105,27 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const value_type& rhs)
 {
-    //static_assert(rhs.grids_ == grids_, "Grid mismatch");
     data_=rhs;
     tail_ = tools::fun_traits<function_type>::constant(rhs);
     return *this;
 }
 
+template <typename ContainerType, typename ...GridTypes> 
+grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
+    grid_object_base<ContainerType,GridTypes...>&& rhs)
+{
+    #ifndef NDEBUG
+    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    #endif
+    data_.swap(rhs.data_);
+    tail_.swap(rhs.tail_);
+    return *this;
+}
+
+
+//
+// shift
+//
 
 template <typename ContainerType, typename ...GridTypes> 
 template <typename ...ArgTypes> 
@@ -117,7 +137,7 @@ typename std::enable_if<
 {
     grid_object_base<ContainerType,GridTypes...> out(grids_);
     std::function<value_type(point_tuple)> ShiftFunction = [&](point_tuple args1)->value_type { 
-        point_tuple out_args = trs::shift(args1, shift_args);
+        point_tuple out_args = trs::shift(args1, shift_args,grids_);
     //    __tuple_print<point_tuple>::print(args1); 
     //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
     //    INFO_NONEWLINE("-->");__tuple_print<point_tuple>::print(out_args);
@@ -127,7 +147,7 @@ typename std::enable_if<
     
     static std::function<value_type(arg_tuple)> ShiftAnalyticF;
     ShiftAnalyticF = [this, shift_args](const arg_tuple& in)->value_type {
-        arg_tuple out_args = trs::shift(in,shift_args); 
+        arg_tuple out_args = trs::shift(in,shift_args,grids_); 
         return this->tail(out_args);
     };
     

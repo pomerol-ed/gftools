@@ -96,6 +96,7 @@ struct container_base
     /** Move constructor. */
     container_base(container_base<ValueType,N,boost_t> &&rhs):storage_(std::forward<boost_t>(rhs.storage_)){ }
     container_base& operator=(container_base<ValueType,N,boost_t> &&rhs){std::swap(storage_,rhs.storage_); return (*this);};
+    void swap(container_base& rhs) {std::swap(storage_,rhs.storage_);}
 
     /** Access operators. */
     auto operator[](size_t i) -> under_ref_type { return under_ref_type(storage_[i]); }

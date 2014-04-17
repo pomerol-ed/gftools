@@ -54,7 +54,7 @@ protected:
     /// Grids on which the data is defined. 
     const std::tuple<GridTypes...> grids_;
     /// Cache data dimensions. 
-    indices_t dims_;
+    const indices_t dims_;
     /// Actual data - can be a container (data allocated) or a view (proxy to some other data). 
     container_type data_;
     /// This function returns the value of the object when the point is not in container. 
