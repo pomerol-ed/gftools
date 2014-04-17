@@ -196,7 +196,7 @@ void grid_object_base<ContainerType,GridTypes...>::savetxt(const std::string& fn
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = extra::enumerate_indices_(i, dims_);
         //arg_tuple args = this->getArgsFromIndices(pts_index);
-        point_tuple pts = this->get_points(pts_index);
+        point_tuple pts = this->points(pts_index);
         auto val = data_(pts_index);
         out << std::scientific << tuple_tools::serialize_tuple<point_tuple>(pts) << "    " << num_io<value_type>(val) << std::endl;
         if (N > 1 && i && (i+1)%last_grid_size==0) out << std::endl;
@@ -214,7 +214,7 @@ void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fn
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = extra::enumerate_indices_(i, dims_);
-        point_tuple pts = this->get_points(pts_index);
+        point_tuple pts = this->points(pts_index);
         arg_tuple pts2 = tuple_tools::read_tuple<point_tuple>(in); // ensure serialize_tuple in savetxt has the same type. Dropping here indices - they're wrong anyway.
         if (!tools::is_float_equal<arg_tuple>(pts,pts2,tol)) throw (exIOProblem());
 
@@ -237,7 +237,7 @@ void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_obje
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
         auto pts_index = extra::enumerate_indices_(i, dims_);
-        point_tuple args = trs::get_points(pts_index,grids_);
+        point_tuple args = trs::points(pts_index,grids_);
         auto val = tuple_tools::unfold_tuple(in, args);
         data_(pts_index) = val;
         };

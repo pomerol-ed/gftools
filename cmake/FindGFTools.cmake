@@ -7,7 +7,7 @@ find_package(PkgConfig)
 pkg_check_modules(PC_GFTOOLS QUIET gftools)
 set(GFTOOLS_DEFINITIONS ${PC_GFTOOLS_CFLAGS_OTHER})
 
-find_path(GFTOOLS_INCLUDE_DIR GridObject.hpp
+find_path(GFTOOLS_INCLUDE_DIR grid_object.hpp
           HINTS ${PC_GFTOOLS_INCLUDEDIR} ${PC_GFTOOLS_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} 
          )
 

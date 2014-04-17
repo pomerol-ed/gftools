@@ -65,9 +65,9 @@ public:
     /** Returns a value at given index. */
     point operator[](size_t in) const;
     /** Returns all values. */
-    const std::vector<point> & get_points() const;
+    const std::vector<point> & points() const;
     /** Returns values of all points. */
-    const std::vector<ValueType> &get_values() const;
+    const std::vector<ValueType> &values() const;
     /** Checks if a point is present in a grid. */
     bool check_point(point in, real_type tolerance = std::numeric_limits<real_type>::epsilon()) const;
     /** Returns size of grid. */
@@ -147,13 +147,13 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 }
 
 template <typename ValueType, class Derived>
-inline const std::vector<typename grid_base<ValueType,Derived>::point> & grid_base<ValueType,Derived>::get_points() const
+inline const std::vector<typename grid_base<ValueType,Derived>::point> & grid_base<ValueType,Derived>::points() const
 {
     return vals_;
 }
 
 template <typename ValueType, class Derived>
-inline const std::vector<ValueType>& grid_base<ValueType,Derived>::get_values() const
+inline const std::vector<ValueType>& grid_base<ValueType,Derived>::values() const
 {
     return vals_;
 }

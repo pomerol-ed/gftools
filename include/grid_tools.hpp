@@ -32,7 +32,7 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
     typedef std::array<size_t, N> indices;
 
     /// Convert indices to points.
-    static point_tuple get_points(indices in, const grid_tuple_type& grids) { return get_points_(index_gen(),in,grids); }
+    static point_tuple points(indices in, const grid_tuple_type& grids) { return points_(index_gen(),in,grids); }
     /// Convert indices to args.
     static arg_tuple get_args(indices in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
     /// Convert points to indices. grids argument is only for checking
@@ -53,7 +53,7 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
 
 protected:
     template <int...S> 
-        static point_tuple get_points_(tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids);
+        static point_tuple points_(tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids);
     template <int...S> 
         static arg_tuple get_args_(tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids);
     template <int...S> 
@@ -100,7 +100,7 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple
 template <typename ...GridTypes>
 template <int...S> 
 inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple 
-    grid_tuple_traits<std::tuple<GridTypes...>>::get_points_(typename tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids)
+    grid_tuple_traits<std::tuple<GridTypes...>>::points_(typename tuple_tools::extra::arg_seq<S...>, indices in, const grid_tuple_type& grids)
 {
     #ifndef NDEBUG
     if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in))... }})) 

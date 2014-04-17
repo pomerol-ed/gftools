@@ -79,7 +79,7 @@ if (Testing)
             set (gtest_ROOT "${CMAKE_BINARY_DIR}/gtest")
         endif()
     endif()
-    message(STATUS "googletest is in ${gtest_ROOT1}")
+    message(STATUS "googletest is in ${gtest_ROOT}")
     add_subdirectory(${gtest_ROOT})
 
     add_subdirectory(test)

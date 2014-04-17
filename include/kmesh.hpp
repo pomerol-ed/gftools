@@ -154,7 +154,7 @@ inline kmesh_patch::kmesh_patch(const kmesh& parent):
     _parent(parent),
     _npoints(parent.size())
 {
-    vals_ = parent.get_points();
+    vals_ = parent.points();
      for (size_t i=0; i<_npoints; ++i) {
         mapvals_[size_t(vals_[i])] = i;
         }

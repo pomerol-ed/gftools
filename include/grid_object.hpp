@@ -91,7 +91,7 @@ public:
     template<size_t M = 0> 
         auto grid() const -> const typename std::add_lvalue_reference<typename std::tuple_element<M, std::tuple<GridTypes...>>::type>::type { return std::get<M>(grids_); };
     size_t size() const { return data_.size(); }
-    point_tuple get_points(indices_t in) const { return trs::get_points(in,grids_); }
+    point_tuple points(indices_t in) const { return trs::points(in,grids_); }
     arg_tuple get_args(indices_t in) const { return trs::get_args(in, grids_); }
     arg_tuple get_args(point_tuple in) const { return trs::get_args(in, grids_); }
     indices_t get_indices(point_tuple in) const { return trs::get_indices(in, grids_); }

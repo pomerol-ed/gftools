@@ -63,7 +63,7 @@ TEST_F(grid_tuple_test, IndexOp) {
     EXPECT_EQ(i1[2], 4);
     
     typename trs::indices i2 = {{2,5,3,1}};
-    typename trs::point_tuple p2 = trs::get_points(i2,g);
+    typename trs::point_tuple p2 = trs::points(i2,g);
     typename trs::indices i22 = trs::get_indices(p2, g);
     std::cout << print_array(i2) << "==" << print_array(i22) << std::endl;
     EXPECT_EQ(i2,i22);
@@ -77,7 +77,7 @@ TEST_F(grid_tuple_test, IndexOp) {
     EXPECT_DOUBLE_EQ(std::abs(std::complex<double>(std::get<1>(p2))),std::abs(std::get<1>(a2)));
     EXPECT_DOUBLE_EQ(std::get<2>(p2),std::get<2>(a2));
 
-    EXPECT_ANY_THROW( { trs::get_points({{5,11,7,1}},g); } );
+    EXPECT_ANY_THROW( { trs::points({{5,11,7,1}},g); } );
 
     typename trs::point_tuple p23 = trs::find_nearest(a2,g);
     std::cout << "p23: " << print_tuple(p23) << std::endl;
