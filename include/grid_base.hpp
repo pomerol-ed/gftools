@@ -53,7 +53,7 @@ public:
     /** Copy from vector. */
     grid_base(const std::vector<ValueType> & vals);
     /** Initialize the values from a given function, that maps the integer values
-     * to the ValueType values. 
+     * to the ValueType values.
      */
     grid_base(int min, int max, std::function<ValueType (int)> f);
     /** Copy constructor. */
@@ -67,7 +67,7 @@ public:
     /** Returns all values. */
     const std::vector<point> & points() const;
     /** Returns values of all points. */
-    const std::vector<ValueType> &values() const;
+    std::vector<ValueType> values() const;
     /** Checks if a point is present in a grid. */
     bool check_point(point in, real_type tolerance = std::numeric_limits<real_type>::epsilon()) const;
     /** Returns size of grid. */
@@ -93,8 +93,14 @@ public:
     //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
     //    { return static_cast<const Derived*>(this)->integrate(in); };
     /** Integrate over grid with extra arguments provided. */
-    //template <class Obj, typename ...OtherArgTypes> auto integrate(const Obj &in, OtherArgTypes... Args) const -> decltype(in(vals_[0],Args...))
-    //    { return static_cast<const Derived*>(this)->integrate(in, Args...); };
+    template <class Obj, typename ...OtherArgTypes, typename std::result_of<Obj(point,OtherArgTypes...)>::type> 
+        auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
+            typename std::remove_reference<typename std::result_of<Obj(point,OtherArgTypes...)>::type>::type
+                { return static_cast<const Derived*>(this)->integrate(in, Args...); };
+    template <class Obj, decltype (std::declval<Obj>()[std::declval<point>()])>
+        auto integrate(Obj &&in) const -> 
+            typename std::remove_reference<decltype (std::declval<Obj>()[std::declval<point>()])>::type
+                { return static_cast<const Derived*>(this)->integrate(in); };
     /** Make the object printable. */
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const grid_base<ValType,Derived2> &gr);
 
@@ -153,9 +159,12 @@ inline const std::vector<typename grid_base<ValueType,Derived>::point> & grid_ba
 }
 
 template <typename ValueType, class Derived>
-inline const std::vector<ValueType>& grid_base<ValueType,Derived>::values() const
+inline std::vector<ValueType> grid_base<ValueType,Derived>::values() const
 {
-    return vals_;
+    std::vector<ValueType> out;
+    out.reserve(vals_.size());
+    for (const auto& x : vals_) out.emplace_back(x.val_);
+    return out;
 }
 
 template <typename ValueType, class Derived>
@@ -185,7 +194,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
         "Default find_nearest is written only for less-comparable types");
     auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in, [](ValueType x, ValueType y){return x<y;});
     size_t dist = std::distance(vals_.begin(), nearest_iter);
-    if (dist > 0 && std::abs(vals_[dist].val_ - in) > std::abs(vals_[dist-1].val_ - in) ) dist--;
+    if (dist > 0 && std::abs(complex_type(vals_[dist].val_) - complex_type(in)) > std::abs(complex_type(vals_[dist-1].val_) - complex_type(in)) ) dist--;
     return vals_[dist];
 } 
 
