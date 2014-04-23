@@ -115,8 +115,22 @@ template <class Grid>
 std::istream& operator>>(std::istream& lhs, num_io<typename Grid::point> &out)
 {num_io<decltype(std::declval<typename Grid::point>().value_)> d(0.0); lhs >> d; out.value_.val_ = d.value_; return lhs;};
 
+namespace extra { 
+/// A small helper struct to decorate a function object with [] method.
+template <typename F, typename Grid>
+struct function_proxy { 
+    F f_;
+    const Grid& grid_;
+    function_proxy(F f, Grid const& grid):f_(f),grid_(grid){}
+    typedef typename std::result_of<F(typename Grid::value_type)>::type value_type;
+    value_type operator[](int i) const {return f_((grid_.points()[i]).val_); };
+};
+}
+
+
+
 //
-// Grid implementation
+// grid_base implementation
 //
 
 template <typename ValueType, class Derived>
