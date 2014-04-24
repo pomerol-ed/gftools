@@ -46,15 +46,6 @@ public:
 typedef matsubara_grid<1> fmatsubara_grid;
 typedef matsubara_grid<0> bmatsubara_grid;
 
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename fmatsubara_grid::point> &in){lhs << std::setprecision(in.prec_) << imag(in.value_.val_); return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename fmatsubara_grid::point> &out){real_type im; lhs >> im; out.value_.val_ = I*im; return lhs;};
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename bmatsubara_grid::point> &in){lhs << std::setprecision(in.prec_) << imag(in.value_.val_); return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename bmatsubara_grid::point> &out){real_type im; lhs >> im; out.value_.val_ = I*im; return lhs;};
-
 //
 // matsubara_grid implementations
 //

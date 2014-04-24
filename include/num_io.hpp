@@ -13,7 +13,7 @@ template <typename T> struct num_io;
 /** Read from stream. */
 template <typename T> std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in);
 /** Write to stream. */
-template <typename T> std::istream& operator>>(std::istream& lhs, num_io<T> &out);
+template <typename T> std::istream& operator>>(std::istream& lhs, num_io<T> out);
 
 template <typename T> 
 struct num_io {
@@ -24,9 +24,9 @@ struct num_io {
     /// Delete default constructor
     num_io()=delete;
     /// Delete copy constructor 
-    num_io(const num_io&)=delete;
+    //num_io(const num_io&)=delete;
 
-    num_io(num_io && r):value_(r.value_){};
+    //num_io(num_io && r):value_(r.value_){};
 
     operator T(){return value_;};
     void savetxt(const std::string& filename) { 
@@ -39,7 +39,7 @@ struct num_io {
     }; 
 
     friend std::ostream& operator<< <>(std::ostream& lhs, const num_io<T> &in);
-    friend std::istream& operator>> <>(std::istream& lhs, num_io<T> &out);
+    friend std::istream& operator>> <>(std::istream& lhs, num_io<T> out);
 
     /** Underlying value. */
     type& value_;
@@ -53,11 +53,11 @@ num_io<T> make_num_io (T &v){return num_io<T>(v);}
 template <typename T> 
 inline std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in) {lhs << std::setprecision(in.prec_) << in.value_; return lhs;};
 template <typename T> 
-inline std::istream& operator>>(std::istream& lhs, num_io<T> &out) {lhs >> out.value_; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<T> out) {lhs >> out.value_; return lhs;};
 template <>
 inline std::ostream& operator<<(std::ostream& lhs, const num_io<complex_type> &in){lhs << std::setprecision(in.prec_) << real(in.value_) << " " << imag(in.value_); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<complex_type> &out){real_type re,im; lhs >> re; lhs >> im; out.value_ = re+I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<complex_type> out){real_type re,im; lhs >> re; lhs >> im; out.value_ = re+I*im; return lhs;};
 
 
 } // end of namespace gftools

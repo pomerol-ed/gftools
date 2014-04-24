@@ -44,10 +44,6 @@ public:
     template <class Obj> auto evaluate(Obj &in, kmesh::point x) const ->decltype(in[0]);
     size_t get_index(kmesh::point x) const;
 };
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename kmesh::point> &in){lhs << std::setprecision(in.prec_) << real_type(in.value_.val_); return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, num_io< typename kmesh::point> &in){real_type v; lhs >> v; in.value_.val_ = v; return lhs;};
 
 //
 // kmesh

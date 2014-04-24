@@ -1,7 +1,6 @@
 #pragma once 
 
 #include "defaults.hpp"
-#include "num_io.hpp"
 #include "tools.hpp"
 
 namespace gftools { 
@@ -108,12 +107,6 @@ public:
     std::vector<point> vals_;
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
 };
-
-template <class Grid>
-std::ostream& operator<<(std::ostream& lhs, const num_io<typename Grid::point> &in){lhs << std::setprecision(in.prec_) << in.value_.val_; return lhs;};
-template <class Grid>
-std::istream& operator>>(std::istream& lhs, num_io<typename Grid::point> &out)
-{num_io<decltype(std::declval<typename Grid::point>().value_)> d(0.0); lhs >> d; out.value_.val_ = d.value_; return lhs;};
 
 namespace extra { 
 /// A small helper struct to decorate a function object with [] method.

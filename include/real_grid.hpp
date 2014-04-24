@@ -45,10 +45,6 @@ public:
     using grid_base<real_type, real_grid>::vals_;
 };
 
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename real_grid::point> &in){lhs << std::setprecision(in.prec_) << in.value_.val_; return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename real_grid::point> &out){real_type im; lhs >> im; out.value_.val_ = im; return lhs;};
 
 //
 // real_grid implementation

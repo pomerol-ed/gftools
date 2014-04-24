@@ -44,10 +44,6 @@ public:
 
 
 
-template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io< typename enum_grid::point> &in){lhs << int(in.value_.val_); return lhs;};
-template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<typename enum_grid::point> &out){int im; lhs >> im; out.value_.val_ = im; return lhs;};
 
 
 //
