@@ -26,6 +26,8 @@ struct num_io {
     /// Delete copy constructor 
     num_io(const num_io&)=delete;
 
+    num_io(num_io && r):value_(r.value_){};
+
     operator T(){return value_;};
     void savetxt(const std::string& filename) { 
         std::cout << "Saving " << typeid(*this).name() << " to " << filename << std::endl;
@@ -44,6 +46,9 @@ struct num_io {
     /** Output precision. */
     static const int prec_ = 12;
 };
+
+template <typename T>
+num_io<T> make_num_io (T &v){return num_io<T>(v);}
 
 template <typename T> 
 inline std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in) {lhs << std::setprecision(in.prec_) << in.value_; return lhs;};

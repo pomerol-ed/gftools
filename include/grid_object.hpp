@@ -86,7 +86,7 @@ public:
     grid_object_base& operator= (const value_type & rhs);
 
 // Properties of gridobjects - dimensions, grids, etc
-    const std::tuple<GridTypes...> grids() const { return grids_; }
+    std::tuple<GridTypes...> const& grids() const { return grids_; }
     /// Returns an Mth grid in grids_. 
     template<size_t M = 0> 
         auto grid() const -> const typename std::add_lvalue_reference<typename std::tuple_element<M, std::tuple<GridTypes...>>::type>::type { return std::get<M>(grids_); };
