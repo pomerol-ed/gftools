@@ -147,7 +147,7 @@ typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> 
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2> 
-container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator+=(const R2& rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator+=(const R2& rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     map1+=rhs;
@@ -165,7 +165,7 @@ typename container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator+(const R2& rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator+(const R2& rhs) const
 {
     container<ValueType,N> out(*this); 
     out+=rhs; 
@@ -176,7 +176,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator-=(const R &rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator-=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
@@ -186,7 +186,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container
  
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator-=(const R2& rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator-=(const R2& rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     map1-=rhs;
@@ -195,7 +195,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_ba
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator-(const R &rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator-(const R &rhs) const
 {
     container<ValueType,N> out(*this); 
     out-=rhs; 
@@ -204,7 +204,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> contain
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator-(const R2& rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator-(const R2& rhs) const
 {
     container<ValueType,N> out(*this); 
     out-=rhs; 
@@ -215,7 +215,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator*=(const R &rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator*=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
@@ -225,7 +225,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator*=(const R2& rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator*=(const R2& rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     map1*=rhs;
@@ -234,7 +234,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_ba
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator*(const R &rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator*(const R &rhs) const
 {
     container<ValueType,N> out(*this); 
     out*=rhs; 
@@ -243,7 +243,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> contain
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2> 
-container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator*(const R2& rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator*(const R2& rhs) const
 {
     container<ValueType,N> out(*this); 
     out*=rhs; 
@@ -252,7 +252,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator/=(const R &rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator/=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     EigenMap map2(rhs.storage_.origin(),rhs.storage_.num_elements());
@@ -262,7 +262,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator/=(const R2& rhs)
+typename container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_base<ValueType,N,BoostCType>::operator/=(const R2& rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
     map1/=rhs;
@@ -271,7 +271,7 @@ container_base<ValueType,N,BoostCType>::template BaseRefIfValue<R2> container_ba
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R>
-container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator/(const R &rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> container_base<ValueType,N,BoostCType>::operator/(const R &rhs) const
 {
     container<ValueType,N> out(*this); 
     out/=rhs; 
@@ -280,7 +280,7 @@ container_base<ValueType,N,BoostCType>::template ContainerIfContainer<R> contain
 
 template <typename ValueType, size_t N, typename BoostCType> 
 template <typename R2>
-container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator/(const R2& rhs) const
+typename container_base<ValueType,N,BoostCType>::template ContainerIfValue<R2> container_base<ValueType,N,BoostCType>::operator/(const R2& rhs) const
 {
     container<ValueType,N> out(*this); 
     out/=rhs; 

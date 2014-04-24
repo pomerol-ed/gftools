@@ -3,6 +3,7 @@
 #include <numeric>
 
 #include "grid_base.hpp"
+#include "tools.hpp"
 //#include <unsupported/Eigen/Splines>
 
 namespace gftools { 
@@ -31,6 +32,8 @@ public:
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     template <class Obj> auto evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
 
+    template <class Obj> auto integrate(Obj &&in) const -> 
+            typename std::remove_reference<typename std::result_of<Obj(value_type)>::type>::type;
     template <class Obj, typename ...OtherArgTypes> 
         auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
             typename std::remove_reference<typename std::result_of<Obj(value_type,OtherArgTypes...)>::type>::type;
@@ -72,7 +75,7 @@ grid_base<real_type, real_grid>(in)
     auto in2(in);
     std::sort(in2.begin(), in2.end());
     size_t npts = in2.size();
-    for (int i=0; i<npts; ++i) vals_[i]=point(in2[i],i);
+    for (size_t i=0; i<npts; ++i) vals_[i]=point(in2[i],i);
     min_ = in2[0]; max_ = in2[npts-1];
     check_uniform_();
 }
@@ -84,24 +87,39 @@ inline real_grid::real_grid(const std::vector<real_type>& in)
     auto in2(in);
     std::sort(in2.begin(), in2.end());
     size_t npts = in2.size();
-    for (int i=0; i<npts; ++i) vals_.emplace_back(in2[i],i);
+    for (size_t i=0; i<npts; ++i) vals_.emplace_back(in2[i],i);
     min_ = in2[0]; max_ = in2[npts-1];
     check_uniform_();
 }
+
+template <class Obj>
+auto real_grid::integrate(Obj &&f) const -> 
+    typename std::remove_reference<typename std::result_of<Obj(value_type)>::type>::type
+{
+    //typedef typename std::result_of<Obj(value_type)>::type R;
+    return this->integrate(gftools::extra::function_proxy<Obj,real_grid>(f,*this));
+}
+
 
 template <class Obj, typename ...OtherArgTypes> 
 auto real_grid::integrate(Obj &&f, OtherArgTypes... Args) const -> 
     typename std::remove_reference<typename std::result_of<Obj(value_type,OtherArgTypes...)>::type>::type
 {
+    static_assert(sizeof...(Args) > 1,"use other method");
     typedef typename std::result_of<Obj(value_type,OtherArgTypes...)>::type R;
-    std::function<R(value_type)> tmp = [&](value_type x){return f(x,Args...);};
-    return this->integrate(gftools::extra::function_proxy<Obj,real_grid>(f,*this));
+// gcc bug 
+    std::tuple<OtherArgTypes...> other_args = std::forward_as_tuple(Args...);
+    std::function<R(value_type)> tmp = [&](value_type x){return tuple_tools::unfold_tuple(f, std::tuple_cat(std::forward_as_tuple(x, other_args)));};
+// end gcc bug
+// this is a normal solution
+//    std::function<R(value_type)> tmp = [&](value_type x){return f(x,Args...);};
+    return this->integrate(gftools::extra::function_proxy<decltype(tmp),real_grid>(tmp,*this));
 }
 
 bool real_grid::check_uniform_()  
 { 
     bool is_uniform = true; 
-    for (int i=0; i<vals_.size()-2 && is_uniform; i++) { 
+    for (int i=0; i<int(vals_.size())-2 && is_uniform; i++) { 
         is_uniform = is_uniform && tools::is_float_equal(vals_[i+2].val_-vals_[i+1].val_, vals_[i+1].val_ - vals_[i].val_);
         }
     is_uniform_ = is_uniform;

@@ -19,10 +19,11 @@ class matsubara_grid : public grid_base<complex_type, matsubara_grid<Fermion>>
 {
 public:
     typedef grid_base<complex_type, matsubara_grid<Fermion>> base;
-    using grid_base<complex_type, matsubara_grid<Fermion>>::vals_;
-    using typename grid_base<complex_type, matsubara_grid<Fermion>>::ex_wrong_index;
+    using typename base::point;
+    using base::vals_;
+    using typename base::ex_wrong_index;
     //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;
-    using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
+    //using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
     /** Inverse temperature. */
     const real_type _beta;
     /** Spacing between values. */
@@ -104,7 +105,7 @@ auto matsubara_grid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
 }
 
 template <bool F>
-inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (complex_type in) const
+inline typename grid_base<complex_type, matsubara_grid<F>>::point matsubara_grid<F>::find_nearest (complex_type in) const
 {
     int n=getNumber(in);
     #ifndef NDEBUG

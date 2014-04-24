@@ -161,6 +161,13 @@ typename std::result_of<Functor(Args...)>::type unfold_tuple(Functor F, std::tup
     return extra::tuple_caller<result_type,std::tuple<Args...>>(F, t).call();
 };
 
+template <typename Functor, typename Arg>
+typename std::result_of<Functor(Arg)>::type unfold_tuple(Functor F, std::tuple<Arg> t) {
+    typedef typename std::result_of<Functor(Arg)>::type result_type; 
+    return f(std::get<0>(t));
+};
+
+
 //
 /// create a tuple or array from by repeating an argument
 //
