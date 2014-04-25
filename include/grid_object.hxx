@@ -78,9 +78,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
-    #ifndef NDEBUG
     if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
-    #endif
     assert(dims_ == rhs.dims_);
     data_=rhs.data_;
     tail_ = rhs.tail_;
@@ -93,9 +91,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<CType,GridTypes...>& rhs)
 {
-    #ifndef NDEBUG
     if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
-    #endif
     data_=rhs.data_;
     tail_ = rhs.tail_;
     return *this;
@@ -114,9 +110,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     grid_object_base<ContainerType,GridTypes...>&& rhs)
 {
-    #ifndef NDEBUG
     if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
-    #endif
     data_.swap(rhs.data_);
     tail_.swap(rhs.tail_);
     return *this;
