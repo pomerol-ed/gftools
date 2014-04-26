@@ -3,4 +3,4 @@ Description: Some gf tools
 Requires: eigen3
 Version: 
 Libs:
-Cflags: -I@CMAKE_INSTALL_PREFIX@/include/gftools
+Cflags: -I@CMAKE_INSTALL_PREFIX@/include

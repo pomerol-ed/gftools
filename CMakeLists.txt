@@ -32,7 +32,7 @@ endif ()
 #end :: C++11 check
 
 # begin :: doxygen
-set(DOXYFILE_SOURCE_DIR "./include")
+set(DOXYFILE_SOURCE_DIR "./gftools")
 include(UseDoxygen)
 # end :: doxygen
 
@@ -49,11 +49,11 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
     #${EIGEN3_INCLUDE_DIR}/unsupported
     ${Boost_INCLUDE_DIRS}
-    ./include
+    ./gftools
 )
 
 # Build and enable tests
-add_subdirectory(include)
+add_subdirectory(gftools)
 option(Testing "Enable testing" OFF)
 if (Testing)
     message(STATUS "Building tests")
@@ -96,4 +96,5 @@ endif (Examples)
 # Generate pkg-config file
 configure_file("${CMAKE_SOURCE_DIR}/gftools.pc.in" "${CMAKE_BINARY_DIR}/gftools.pc")
 install(FILES "${CMAKE_BINARY_DIR}/gftools.pc" DESTINATION "lib/pkgconfig")
+install(FILES "${CMAKE_SOURCE_DIR}/gftools.hpp" DESTINATION include)
 
