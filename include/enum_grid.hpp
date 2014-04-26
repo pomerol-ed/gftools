@@ -37,9 +37,9 @@ public:
     enum_grid& operator=(enum_grid &&rhs);
     std::tuple <bool, size_t, int> find (int in) const ;
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) -> Obj;
-    template <class Obj> auto evaluate(Obj &in, enum_grid::point x) const -> decltype(in[0]);
-    template <class Obj> auto evaluate(Obj &in, int x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
-    //template <class Obj> auto evaluate(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, enum_grid::point x) const -> decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, int x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    //template <class Obj> auto eval(Obj &in, EnumerateGrid::point x) const ->decltype(in[0]);
 };
 
 
@@ -74,7 +74,7 @@ inline std::tuple<bool, size_t, int> enum_grid::find (int in) const
 }
 
 template <class Obj>
-inline auto enum_grid::evaluate(Obj &in, int x) const -> 
+inline auto enum_grid::eval(Obj &in, int x) const -> 
     decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0) 
 {
     const auto find_result=this->find(x);
@@ -84,7 +84,7 @@ inline auto enum_grid::evaluate(Obj &in, int x) const ->
 
 
 template <class Obj>
-inline auto enum_grid::evaluate(Obj &in, enum_grid::point x) const ->decltype(in[0]) 
+inline auto enum_grid::eval(Obj &in, enum_grid::point x) const ->decltype(in[0]) 
 {
     if (x.index_ < vals_.size() && x == vals_[x.index_])
     return in[x.index_];
@@ -92,7 +92,7 @@ inline auto enum_grid::evaluate(Obj &in, enum_grid::point x) const ->decltype(in
         #ifndef NDEBUG
         ERROR ("Point not found"); 
         #endif
-        return this->evaluate(in, int(x)); 
+        return this->eval(in, int(x)); 
          };
 }
 

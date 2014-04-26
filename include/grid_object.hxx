@@ -142,7 +142,7 @@ typename std::enable_if<
     static std::function<value_type(arg_tuple)> ShiftAnalyticF;
     ShiftAnalyticF = [this, shift_args](const arg_tuple& in)->value_type {
         arg_tuple out_args = trs::shift(in,shift_args,grids_); 
-        return this->tail(out_args);
+        return tuple_tools::unfold_tuple(this->tail_, out_args);
     };
     
     function_type tailF = tools::extract_tuple_f(ShiftAnalyticF);

@@ -4,7 +4,7 @@
 
 namespace gftools { 
 
-// evaluate some object on a grid
+// eval some object on a grid
 
 template <typename Node, typename, typename Evaluable = Node> struct grid_eval_expr; 
 

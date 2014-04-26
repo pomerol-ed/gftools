@@ -76,7 +76,7 @@ public:
     /** Returns the closest point to the given value. */
     point find_nearest(ValueType in) const;
     /** Get a value of an object at the given point, which is defined on a grid. */
-    template <class Obj> auto evaluate(Obj &&in, point x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &&in, point x) const ->decltype(in[0]);
 
     /** Shift a point by the given value. */
     point shift(point in, ValueType shift_arg) const;
@@ -86,8 +86,8 @@ public:
     // CFTP forwards
     /** Get a value of an object at the given coordinate, which is defined on a grid. */
     //template <class Obj> 
-    //    auto evaluate(Obj &in, ValueType x) const ->decltype(in[0])
-    //    { return static_cast<const Derived*>(this)->evaluate(in,x); };
+    //    auto eval(Obj &in, ValueType x) const ->decltype(in[0])
+    //    { return static_cast<const Derived*>(this)->eval(in,x); };
     /** Returns a tuple of left closest index, weight, right closest index and weight, which are the closest to input value. */
     /** Integrate over grid. */
     //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
@@ -189,7 +189,7 @@ inline bool grid_base<ValueType,Derived>::check_point(point in, real_type tolera
 
 template <typename ValueType, class Derived>
 template <class Obj>
-inline auto grid_base<ValueType,Derived>::evaluate(Obj &&in, point x) const ->decltype(in[0]) 
+inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0]) 
 {
     if (check_point(x)) return in[x.index_];
     else { ERROR ("Point not found"); throw ex_wrong_index(); };

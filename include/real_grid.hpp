@@ -30,7 +30,7 @@ public:
     real_type min() const { return min_; }
 
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
-    template <class Obj> auto evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    template <class Obj> auto eval(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
 
     template <class Obj, typename ...OtherArgTypes> 
         auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
@@ -153,7 +153,7 @@ inline std::tuple <bool, size_t, real_type> real_grid::find (real_type in) const
 
 
 template <class Obj>
-inline auto real_grid::evaluate(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
+inline auto real_grid::eval(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (ex_wrong_index()); 

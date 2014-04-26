@@ -37,8 +37,8 @@ int main()
 
     std::vector<int> x(n2.size());
     for (size_t i=0; i<x.size(); ++i) x[i]=i*i;
-    INFO(n2.evaluate(x,FMatsubara(10,20)));
-    if (n2.evaluate(x,FMatsubara(10,20))!=100) return EXIT_FAILURE;
+    INFO(n2.eval(x,FMatsubara(10,20)));
+    if (n2.eval(x,FMatsubara(10,20))!=100) return EXIT_FAILURE;
 
     bmatsubara_grid bgrid1(-20,20,10);
 

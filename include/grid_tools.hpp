@@ -43,7 +43,7 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
     static indices get_dimensions(const grid_tuple_type& grids) {return dims_(index_gen(), grids); }
     /// Get a product of all dimensions of gris.
     static int get_total_size(const grid_tuple_type& grids){auto d = get_dimensions(grids); return std::accumulate(d.begin(),d.end(),1,std::multiplies<int>()); }
-    //template <class F> evaluate(F &&f, arg_tuple in, const grid_tuple_type& grids); 
+    //template <class F> eval(F &&f, arg_tuple in, const grid_tuple_type& grids); 
 
     static point_tuple find_nearest(arg_tuple in, const grid_tuple_type& grids) { return find_nearest_(index_gen(),in,grids); }
 

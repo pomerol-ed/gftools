@@ -39,9 +39,9 @@ public:
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
-    template <class Obj> auto evaluate(Obj &in, complex_type x) const ->decltype(in[0]);
-    //template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
-    using base::evaluate;
+    template <class Obj> auto eval(Obj &in, complex_type x) const ->decltype(in[0]);
+    //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
+    using base::eval;
 };
 
 typedef matsubara_grid<1> fmatsubara_grid;
@@ -105,7 +105,7 @@ auto matsubara_grid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
 }
 
 template <bool F>
-inline typename grid_base<complex_type, matsubara_grid<F>>::point matsubara_grid<F>::find_nearest (complex_type in) const
+inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (complex_type in) const
 {
     int n=getNumber(in);
     #ifndef NDEBUG
@@ -130,7 +130,7 @@ inline int matsubara_grid<F>::getNumber(complex_type in) const
 
 template <bool F>
 template <class Obj>
-inline auto matsubara_grid<F>::evaluate(Obj &in, complex_type x) const ->decltype(in[0]) 
+inline auto matsubara_grid<F>::eval(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find_nearest(x);
     if (!tools::is_float_equal(x,find_result.val_)) { throw (ex_wrong_index()); } 

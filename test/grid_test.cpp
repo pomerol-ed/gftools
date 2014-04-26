@@ -46,8 +46,8 @@ int main()
     if (g2.size() != 3) return EXIT_FAILURE;
 
     std::vector<int> data_y ( { 1, 4, 5} );
-    bool success =  (g2.evaluate(data_y, g2[1]) == data_y[1]);
-    std::cout << "y[" << g2[1] << "]=" << g2.evaluate(data_y, g2[1]) << std::endl;
+    bool success =  (g2.eval(data_y, g2[1]) == data_y[1]);
+    std::cout << "y[" << g2[1] << "]=" << g2.eval(data_y, g2[1]) << std::endl;
     if (!success) return EXIT_FAILURE;
 
     return EXIT_SUCCESS;

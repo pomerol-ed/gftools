@@ -24,8 +24,8 @@ public:
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
-    //template <class Obj> auto evaluate(Obj &in, real_type x) const ->decltype(in[0]);
-    //template <class Obj> auto evaluate(Obj &in, point x) const ->decltype(in[0]);
+    //template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
+    //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
     real_type shift(real_type in,real_type shift_arg) const;
     point shift(point in, real_type shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
     point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
@@ -40,8 +40,8 @@ public:
     using kmesh::vals_;
     kmesh_patch(const kmesh& parent, std::vector<size_t> indices);
     kmesh_patch(const kmesh& parent);
-    template <class Obj> auto evaluate(Obj &in, real_type x) const ->decltype(in[0]);
-    template <class Obj> auto evaluate(Obj &in, kmesh::point x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, kmesh::point x) const ->decltype(in[0]);
     size_t get_index(kmesh::point x) const;
 };
 
@@ -77,7 +77,7 @@ inline std::tuple <bool, size_t, real_type> kmesh::find (real_type in) const
 
 /*
 template <class Obj>
-inline auto kmesh::evaluate(Obj &in, real_type x) const ->decltype(in[0]) 
+inline auto kmesh::eval(Obj &in, real_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find(x);
     if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
@@ -157,15 +157,15 @@ inline kmesh_patch::kmesh_patch(const kmesh& parent):
 }
 
 template <class Obj> 
-inline auto kmesh_patch::evaluate(Obj &in, real_type x) const ->decltype(in[0])
+inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find_nearest(x);
-    if (!tools::is_float_equal(find_result.val_, x)) { ERROR("Can't evaluate point out of bounds."); throw (ex_wrong_index()); };
-    return _parent.evaluate(in, find_result);
+    if (!tools::is_float_equal(find_result.val_, x)) { ERROR("Can't eval point out of bounds."); throw (ex_wrong_index()); };
+    return _parent.eval(in, find_result);
 }
 
 template <class Obj> 
-inline auto kmesh_patch::evaluate(Obj &in, kmesh::point x) const ->decltype(in[0])
+inline auto kmesh_patch::eval(Obj &in, kmesh::point x) const ->decltype(in[0])
 {
     return in[this->get_index(x)];
 }

@@ -131,16 +131,18 @@ public:
     auto operator[](size_t i)->decltype(data_[i]) { return data_[i]; };
     //template <size_t M> value_type& operator[](const std::array<size_t,M>& in);
     /// Returns tail_(in). 
-    value_type tail(const arg_tuple& in) const { return tuple_tools::unfold_tuple(tail_, in); }
+    value_type tail_eval(const arg_tuple& in) const { return tuple_tools::unfold_tuple(tail_, in); }
     template <typename ... ArgTypes>
-        typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value, value_type> tail(ArgTypes...in) { return tail_(in...); };
+        typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value, value_type>::type 
+            tail_eval(ArgTypes...in) { return tail_(in...); };
     /// Return the value by grid values. 
     value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
     value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
     const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
 
-    template <typename ...ArgTypes> value_type operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
-    /// Return value of grid_object. evaluate methods of grids are used, so interpolation is done if provided with grids
+    template <typename ...ArgTypes> typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value, value_type>::type 
+        operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
+    /// Return value of grid_object. eval methods of grids are used, so interpolation is done if provided with grids
     value_type operator()(const arg_tuple& in) const;
 
 // Fill values

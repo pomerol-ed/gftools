@@ -21,11 +21,11 @@ int main()
     kmesh_patch patch1(k1, {0, 2, 4, 8, 14, 16, 30});
     std::cout << "kmesh patch : " << patch1 << std::endl;
     std::vector<int> data_y = {0,1,2};
-    std::cout << "y[" << k1[2] << "]=" << patch1.evaluate(data_y,k1[2]) << std::endl;
-    if (patch1.evaluate(data_y,k1[2]) != 1) return EXIT_FAILURE;
+    std::cout << "y[" << k1[2] << "]=" << patch1.eval(data_y,k1[2]) << std::endl;
+    if (patch1.eval(data_y,k1[2]) != 1) return EXIT_FAILURE;
 
 
-    DEBUG(k1.evaluate(data_y, k1[2]));
+    DEBUG(k1.eval(data_y, k1[2]));
 
     std::cout << k1.shift(p1,2.0*PI*31./32.) << std::endl;
     return EXIT_SUCCESS;

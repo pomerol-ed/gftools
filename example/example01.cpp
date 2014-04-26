@@ -5,14 +5,14 @@
  */
 
 // This includes the grid of real values.
-#include "RealGrid.hpp"
+#include "real_grid.hpp"
 // This includes the definition of a container class - a tool to store data.
-#include "Container.hpp"
-// This include the GridObject class - an object to store data, defined on a grid.
-#include "GridObject.hpp"
+#include "container.hpp"
+// This include the grid_object class - an object to store data, defined on a grid.
+#include "grid_object.hpp"
 
 /* Some more basic definitions, that are used:
- * RealType is double
+ * double is double
  * ComplexType is complex<double>
  * INFO( something ) is the same as std::cout << something << std::endl;
  * DEBUG( something ) is the same as INFO, but it also prints the number of the
@@ -21,47 +21,47 @@
  * it sends the text to the error stream (stderr).
  */
 
-// This is a shorthand for not writing GFTools::RealGrid, GFTools::GridObject etc
-using namespace GFTools;
+// This is a shorthand for not writing GFTools::real_grid, GFTools::grid_object etc
+using namespace gftools;
 
 int main()
 {
     // Let's start with grids.
     // This generates a uniform grid of 20 real numbers from -5 to 5
-    RealGrid grid1(-5,5,20);
+    real_grid grid1(-5,5,20);
     // And prints it
     INFO(grid1); // same as std::cout << grid1 << std::endl
     
     // New c++ feature - store a function
-    std::function<RealType(int)> f1;
+    std::function<double(int)> f1;
     /* The right hand side of next line is called a "lambda" construction.
      * We construct some function of integer and assign it to f1. */
     f1 = [](int n){return std::pow(3,n);};
     // f1 is now 3^n. Let's now generate a non-uniform grid and print it.
-    RealGrid grid2(0,10,f1);
+    real_grid grid2(0,10,f1);
     INFO(grid2)
     
     // Another option is to generate a set of values and generate a grid.
-    std::vector<RealType> v1;
-    for (RealType a=-3;a<=3;a+=0.01) v1.push_back(a);
-    RealGrid grid3(v1);
+    std::vector<double> v1;
+    for (double a=-3;a<=3;a+=0.01) v1.push_back(a);
+    real_grid grid3(v1);
     INFO(grid3);
     
     // Now let's make an integration over a grid
     // Let's create another function
-    std::function<RealType(RealType)> sinF;
-    sinF = [](RealType x){return sin(x);};
+    std::function<double(double)> sinF;
+    sinF = [](double x){return sin(x);};
     // sinF is now sin(x). We integrate an even function and generate zero.
     INFO(grid1.integrate(sinF));
     
     // Ok, that's all for grids.
     // Now, let's define objects on a grid.
     // First, make a shorthand
-    typedef GridObject<RealType,RealGrid> GFRetarded;
+    typedef grid_object<double,real_grid> GFRetarded;
     // Now in order to construct an object on a grid, we need to provide a grid.
     // Let's use the one, already created.
     GFRetarded G1(grid1);
-    // After construction, GridObject stores only zeros.
+    // After construction, grid_object stores only zeros.
     // Let's fill it with something more interesting, say sin(x).
     G1.fill(sinF);
     INFO(G1)
@@ -72,11 +72,11 @@ int main()
     // Notice the values are counted from zero.
     INFO(G1[2]);
     
-    //GridObjects also support mathematical operations. Let's create another
-    //GridObject first.
+    //grid_objects also support mathematical operations. Let's create another
+    //grid_object first.
     GFRetarded G2(grid1);
-    std::function<RealType(RealType)> cosF;
-    cosF = [](RealType x){return cos(x);};
+    std::function<double(double)> cosF;
+    cosF = [](double x){return cos(x);};
     G2.fill(cosF);
     INFO(G2);
     // Now let's make some operations. sin^2(x) + cos^2(x) is trivial.
@@ -85,21 +85,25 @@ int main()
     
     // Some advanced features. Grids allow to interpolate values.
 
-    INFO(grid1.getValue(G1,4.47));
+#warning fix operator() of gridobjects
+// fixme 
+/*
+    INFO(grid1.eval(G1,4.47));
     INFO(G1(4.47));
-    INFO(grid1.getValue(G1,0.0));
+    INFO(grid1.eval(G1,0.0));
     INFO(G1(0.0));
     
-    /*GridObjects allow for the extrapolation of the values, if they are out 
-     of grid bounds. For this we need to assign the extrapolation
-     function. */
-    G1._f = sinF;
+    //grid_objects allow for the extrapolation of the values, if they are out 
+    // of grid bounds. For this we need to assign the extrapolation
+    // function. 
+    G1.tail() = sinF;
     INFO(G1(2*PI));
     G1.savetxt("G1.dat");
+*/
 
-    GridObject<RealType,RealGrid,RealGrid> R1(std::make_tuple(grid1,grid1));
-    std::function<RealType(RealType,RealType)> cos2;
-    cos2 = [](RealType x,RealType y){return cos(x)*cos(y);};
+    grid_object<double,real_grid,real_grid> R1(std::make_tuple(grid1,grid1));
+    std::function<double(double,double)> cos2;
+    cos2 = [](double x,double y){return cos(x)*cos(y);};
     R1.fill(cos2);
     R1.savetxt("G2.dat");
 }
