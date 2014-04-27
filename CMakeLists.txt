@@ -95,6 +95,7 @@ endif (Examples)
 
 # Generate pkg-config file
 configure_file("${CMAKE_SOURCE_DIR}/gftools.pc.in" "${CMAKE_BINARY_DIR}/gftools.pc")
+configure_file("${CMAKE_SOURCE_DIR}/gftools.hpp.in" "${CMAKE_BINARY_DIR}/gftools.hpp")
 install(FILES "${CMAKE_BINARY_DIR}/gftools.pc" DESTINATION "lib/pkgconfig")
-install(FILES "${CMAKE_SOURCE_DIR}/gftools.hpp" DESTINATION include)
+install(FILES "${CMAKE_BINARY_DIR}/gftools.hpp" DESTINATION include)
 
