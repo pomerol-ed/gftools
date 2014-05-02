@@ -1,4 +1,5 @@
-gftools is a set of tools to work with numeric physics-condmat problems. It provides three basic classes of objects:
+##### Overview
+gftools is a set of tools to work with numerical condmat problems. It provides three basic classes of objects:
 
 - grids. 
 There exists a set of implementation of grids for common purposes:
@@ -15,4 +16,27 @@ Examples :
 
 Look for examples in "example/" directory for detailed information.
 
-The code is provided as a header-only library with a set of examples. Requires C++11, Boost headers and Eigen >=3.1 library.
+##### Installation ###
+The code is is provided as a header-only library with a set of examples and tests.
+The `gftools.hpp` in the repo root can be included in any derivative projects.
+To compile examples and tests create a build directory and run 
+
+1. `cmake -DExamples=ON -DTesting=ON {path_to_gftools}`
+2. `make`
+3. `make test` (for running tests)
+4. example will be build in example subdirectory
+5. `make doc` to generate documentation
+
+##### Dependencies 
+- c++11-compatible compiler (tested with clang >= 3.1, gcc >= 4.8.2, icpc >= 14.0.2)  
+- *Boost* headers 
+- *Eigen* >=3.1 
+- *git* to fetch the code 
+- *cmake* to build tests and examples (optional)
+- *doxygen* for documentation (optional)
+
+##### Author
+- Andrey Antipov, *Andrey.E.Antipov[at]gmail.com*, 2013-2014
+
+##### Distribution
+Open-source under MIT license.
