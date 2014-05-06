@@ -10,9 +10,9 @@ There exists a set of implementation of grids for common purposes:
 - `container<N, ValueType>`. A recursive multidimensional container of depth <N> to store ValueType objects.
 - `grid_object<Grids..., ValueType>`. Green's function. In a broader scope - a multidimensional object that is defined on a set of grids (Grids...) that contains ValueType values.
 Examples :
-    - `grid_object<ComplexType,matsubara_grid<1>>` - Green's function in imaginary frequencies
-    - `grid_object<ComplexType,matsubara_grid<1>,kmesh>` - Green's function in imaginary frequencies and reciprocal 1d space.
-    - `grid_object<ComplexType,real_grid>` - Retarded or Advanced Green's function, etc...
+    - `grid_object<complex_type,matsubara_grid<1>>` - Green's function in imaginary frequencies
+    - `grid_object<complex_type,matsubara_grid<1>,kmesh>` - Green's function in imaginary frequencies and reciprocal 1d space.
+    - `grid_object<complex_type,real_grid>` - Retarded or Advanced Green's function, etc...
 
 Look for examples in "example/" directory for detailed information.
 
