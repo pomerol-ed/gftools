@@ -11,17 +11,6 @@
 // This include the grid_object class - an object to store data, defined on a grid.
 #include "grid_object.hpp"
 
-/* Some more basic definitions, that are used:
- * double is double
- * ComplexType is complex<double>
- * INFO( something ) is the same as std::cout << something << std::endl;
- * DEBUG( something ) is the same as INFO, but it also prints the number of the
- * line in the code, where it is called from.
- * ERROR( something ) is the same as INFO but is used for outputting the errors,
- * it sends the text to the error stream (stderr).
- */
-
-// This is a shorthand for not writing GFTools::real_grid, GFTools::grid_object etc
 using namespace gftools;
 
 int main()
@@ -30,7 +19,7 @@ int main()
     // This generates a uniform grid of 20 real numbers from -5 to 5
     real_grid grid1(-5,5,20);
     // And prints it
-    INFO(grid1); // same as std::cout << grid1 << std::endl
+    std::cout << grid1 << std::endl; // same as std::cout << grid1 << std::endl
     
     // New c++ feature - store a function
     std::function<double(int)> f1;
@@ -39,20 +28,20 @@ int main()
     f1 = [](int n){return std::pow(3,n);};
     // f1 is now 3^n. Let's now generate a non-uniform grid and print it.
     real_grid grid2(0,10,f1);
-    INFO(grid2)
+    std::cout << grid2 << std::endl;
     
     // Another option is to generate a set of values and generate a grid.
     std::vector<double> v1;
     for (double a=-3;a<=3;a+=0.01) v1.push_back(a);
     real_grid grid3(v1);
-    INFO(grid3);
+    std::cout << grid3 << std::endl;
     
     // Now let's make an integration over a grid
     // Let's create another function
     std::function<double(double)> sinF;
     sinF = [](double x){return sin(x);};
     // sinF is now sin(x). We integrate an even function and generate zero.
-    INFO(grid1.integrate(sinF));
+    std::cout << grid1.integrate(sinF) << std::endl;
     
     // Ok, that's all for grids.
     // Now, let's define objects on a grid.
@@ -64,13 +53,13 @@ int main()
     // After construction, grid_object stores only zeros.
     // Let's fill it with something more interesting, say sin(x).
     G1.fill(sinF);
-    INFO(G1)
+    std::cout << G1 << std::endl;
     // And now let's integrate it. It should give zero once again.
-    INFO(grid1.integrate(G1));
+    std::cout << grid1.integrate(G1) << std::endl;
     
     // In order to have an access to the data points, one can just use [] operator.
     // Notice the values are counted from zero.
-    INFO(G1[2]);
+    std::cout << G1[2] << std::endl;
     
     //grid_objects also support mathematical operations. Let's create another
     //grid_object first.
@@ -78,26 +67,26 @@ int main()
     std::function<double(double)> cosF;
     cosF = [](double x){return cos(x);};
     G2.fill(cosF);
-    INFO(G2);
+    std::cout << G2 << std::endl;
     // Now let's make some operations. sin^2(x) + cos^2(x) is trivial.
     GFRetarded G3 = G2*G2+G1*G1;
-    INFO(G3);
+    std::cout << G3 << std::endl;
     
     // Some advanced features. Grids allow to interpolate values.
 
 #warning fix operator() of gridobjects
 // fixme 
 /*
-    INFO(grid1.eval(G1,4.47));
-    INFO(G1(4.47));
-    INFO(grid1.eval(G1,0.0));
-    INFO(G1(0.0));
+    std::cout << grid1.eval(G1,4.47));
+    std::cout << G1(4.47));
+    std::cout << grid1.eval(G1,0.0));
+    std::cout << G1(0.0));
     
     //grid_objects allow for the extrapolation of the values, if they are out 
     // of grid bounds. For this we need to assign the extrapolation
     // function. 
     G1.tail() = sinF;
-    INFO(G1(2*PI));
+    std::cout << G1(2*PI));
     G1.savetxt("G1.dat");
 */
 
