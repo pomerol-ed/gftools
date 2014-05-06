@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numeric>
+
 #include "grid_base.hpp"
 #include "tuple_tools.hpp"
 
