@@ -21,7 +21,7 @@ struct point_base {
     point_base(point_base&& rhs):val_(rhs.val_),index_(rhs.index_) {};
     point_base& operator=(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
     point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
-    point_base (){};
+    point_base () = delete;
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
     bool operator!=(const point_base &rhs) const {return !(*this == rhs); }
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
@@ -37,7 +37,7 @@ class grid_base {
 public:
     /** A point combines a point of the grid and it's index. */
     struct point : point_base<ValueType> { 
-        point():point_base<ValueType>::point_base(){};
+        //point():point_base<ValueType>::point_base(){};
         point(ValueType val, size_t index):point_base<ValueType>::point_base(val,index){};
         point(const point_base<ValueType> &in):point_base<ValueType>::point_base(in){};
         point(point_base<ValueType> &&in):point_base<ValueType>::point_base(in){};
@@ -209,8 +209,8 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ValueType shift_arg) const
 {
-    point out;
     if (tools::is_float_equal(shift_arg, 0.0)) return in;
+    point out(in);
     out.val_ = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out.val_);
     if (!tools::is_float_equal(p1.val_, out.val_)) { 

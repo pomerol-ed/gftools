@@ -19,7 +19,7 @@ class matsubara_grid : public grid_base<complex_type, matsubara_grid<Fermion>>
 {
 public:
     typedef grid_base<complex_type, matsubara_grid<Fermion>> base;
-    using typename base::point;
+    typedef typename base::point point;
     using base::vals_;
     using typename base::ex_wrong_index;
     //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;

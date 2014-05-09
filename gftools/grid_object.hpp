@@ -89,7 +89,8 @@ public:
     std::tuple<GridTypes...> const& grids() const { return grids_; }
     /// Returns an Mth grid in grids_. 
     template<size_t M = 0> 
-        auto grid() const -> const typename std::add_lvalue_reference<typename std::tuple_element<M, std::tuple<GridTypes...>>::type>::type { return std::get<M>(grids_); };
+        auto grid() const -> const typename std::tuple_element<M, std::tuple<GridTypes...>>::type&
+           { return std::get<M>(grids_); };
     size_t size() const { return data_.size(); }
     point_tuple points(indices_t in) const { return trs::points(in,grids_); }
     arg_tuple get_args(indices_t in) const { return trs::get_args(in, grids_); }
@@ -137,13 +138,29 @@ public:
             tail_eval(ArgTypes...in) { return tail_(in...); };
     /// Return the value by grid values. 
     value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
-    value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
-    const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
 
-    template <typename ...ArgTypes> typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, arg_tuple>::value, value_type>::type 
-        operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
-    /// Return value of grid_object. eval methods of grids are used, so interpolation is done if provided with grids
+    //value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
+    const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
     value_type operator()(const arg_tuple& in) const;
+
+    template <typename ...ArgTypes>
+    	typename std::enable_if<std::is_same<std::tuple<ArgTypes...>, arg_tuple>::value &&
+    							!std::is_same<std::tuple<ArgTypes...>, point_tuple>::value &&
+    							sizeof...(ArgTypes)!=1
+    	, value_type>::type
+        operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
+    template <typename ...ArgTypes>
+        	typename std::enable_if<!std::is_same<std::tuple<ArgTypes...>, arg_tuple>::value &&
+        							std::is_same<std::tuple<ArgTypes...>, point_tuple>::value
+        	, value_type>::type
+            operator()(const ArgTypes&... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
+
+    template <typename ArgType>
+    	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
+    	 operator()(ArgType in) { return std::get<0>(grids_).eval(data_, in); }
+
+    /// Return value of grid_object. eval methods of grids are used, so interpolation is done if provided with grids
+
 
 // Fill values
     /// Fills the container with a provided function. 
