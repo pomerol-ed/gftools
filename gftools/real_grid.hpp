@@ -105,7 +105,7 @@ auto real_grid::integrate(Obj &&f, OtherArgTypes... Args) const ->
     return this->integrate(gftools::extra::function_proxy<decltype(tmp),real_grid>(tmp,*this));
 }
 
-bool real_grid::check_uniform_()  
+inline bool real_grid::check_uniform_()
 { 
     bool is_uniform = true; 
     for (int i=0; i<int(vals_.size())-2 && is_uniform; i++) { 

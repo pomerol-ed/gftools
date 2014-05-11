@@ -57,10 +57,11 @@ protected:
     const indices_t dims_;
     /// Actual data - can be a container (data allocated) or a view (proxy to some other data). 
     container_type data_;
+public:
     /// This function returns the value of the object when the point is not in container. 
     function_type tail_;
 
-public:
+
 // Constructors
     /// Constructs a grid object out of a tuple containing various grids. 
     grid_object_base( const std::tuple<GridTypes...> &grids);
@@ -140,24 +141,34 @@ public:
     value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
 
     //value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
+
+
     const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
-    value_type operator()(const arg_tuple& in) const;
+
+    template <int M=N>
+    typename std::enable_if<(M>1 ), value_type>::type  operator()(arg_tuple in) const
+    	{ throw std::logic_error("operator() for many arguments is not implemented."); }
+    template <int M=N>
+    typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const
+    	{ return std::get<0>(grids_).eval(data_, std::get<0>(in)); }
 
     template <typename ...ArgTypes>
-    	typename std::enable_if<std::is_same<std::tuple<ArgTypes...>, arg_tuple>::value &&
-    							!std::is_same<std::tuple<ArgTypes...>, point_tuple>::value &&
-    							sizeof...(ArgTypes)!=1
-    	, value_type>::type
-        operator()(const ArgTypes&... in) const { return (*this)(std::forward_as_tuple(in...)); }
+    	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value
+    							, value_type>::type
+        operator()(ArgTypes... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
     template <typename ...ArgTypes>
-        	typename std::enable_if<!std::is_same<std::tuple<ArgTypes...>, arg_tuple>::value &&
-        							std::is_same<std::tuple<ArgTypes...>, point_tuple>::value
-        	, value_type>::type
-            operator()(const ArgTypes&... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
+        	typename std::enable_if<!std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value &&
+        							sizeof...(ArgTypes)!=1 && (sizeof...(ArgTypes)==N)
+        							, value_type>::type
+            operator()(ArgTypes... in) const { return (*this)(arg_tuple(std::forward_as_tuple(in...))); }
 
     template <typename ArgType>
     	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
-    	 operator()(ArgType in) { return std::get<0>(grids_).eval(data_, in); }
+    	 operator()(ArgType in) const { return std::get<0>(grids_).eval(data_, in); }
+
+    template <typename ArgType>
+        	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
+        	 operator()(ArgType in) { return std::get<0>(grids_).eval(data_, in); }
 
     /// Return value of grid_object. eval methods of grids are used, so interpolation is done if provided with grids
 

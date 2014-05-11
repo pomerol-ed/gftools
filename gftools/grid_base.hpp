@@ -85,9 +85,9 @@ public:
 
     // CFTP forwards
     /** Get a value of an object at the given coordinate, which is defined on a grid. */
-    //template <class Obj> 
-    //    auto eval(Obj &in, ValueType x) const ->decltype(in[0])
-    //    { return static_cast<const Derived*>(this)->eval(in,x); };
+    template <class Obj>
+        auto eval(Obj &in, ValueType x) const ->decltype(in[0])
+        { return static_cast<const Derived*>(this)->eval(in,x); };
     /** Returns a tuple of left closest index, weight, right closest index and weight, which are the closest to input value. */
     /** Integrate over grid. */
     //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 

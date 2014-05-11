@@ -24,8 +24,8 @@ public:
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
-    //template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
-    //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
+    template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]) { return base::eval(in,x); }
     real_type shift(real_type in,real_type shift_arg) const;
     point shift(point in, real_type shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
     point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
@@ -75,15 +75,14 @@ inline std::tuple <bool, size_t, real_type> kmesh::find (real_type in) const
     return std::make_tuple (1,n,weight);
 }
 
-/*
+
 template <class Obj>
 inline auto kmesh::eval(Obj &in, real_type x) const ->decltype(in[0]) 
 {
-    const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
-    return in[std::get<1>(find_result)];
+	auto p = find_nearest(x);
+    return eval(in,p);
 }
-*/
+
 
 template <class Obj> 
 auto kmesh::integrate(const Obj &in) const -> decltype(in(vals_[0]))
