@@ -220,7 +220,7 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     using IsNotContainer = typename std::enable_if<!(T::N_>=1)>::type;
 
     container(std::array<int,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
-    container(std::array<size_t,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
+    explicit container(std::array<size_t,N> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
     container(std::initializer_list<int> shape):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(shape)) {};
 
     template <typename CT>
