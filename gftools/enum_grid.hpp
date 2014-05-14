@@ -55,12 +55,12 @@ grid_base<int_wrap_enumerate_grid, enum_grid>(min,max+include_last,[](int n){ret
 {
 }
 
-enum_grid::enum_grid(enum_grid&& rhs):
+inline enum_grid::enum_grid(enum_grid&& rhs):
     base(std::forward<base>(rhs))
 {
 };
 
-enum_grid& enum_grid::operator=(enum_grid &&rhs) 
+inline enum_grid& enum_grid::operator=(enum_grid &&rhs) 
 {
     base(*this) = base(rhs); 
     return (*this);
