@@ -131,11 +131,12 @@ typename std::enable_if<
 {
     grid_object_base<ContainerType,GridTypes...> out(grids_);
     std::function<value_type(point_tuple)> ShiftFunction = [&](point_tuple args1)->value_type { 
-        point_tuple out_args = trs::shift(args1, shift_args,grids_);
+        try { point_tuple out_args = trs::shift(args1, shift_args,grids_); return (*this)(out_args); }
+        catch (...) 
+            { arg_tuple out_args = trs::shift(arg_tuple(args1), arg_tuple(shift_args) ,grids_); return (*this)(out_args); }
     //    __tuple_print<point_tuple>::print(args1); 
     //    INFO_NONEWLINE("+");  __tuple_print<std::tuple<ArgTypes...>>::print(shift_args); 
     //    INFO_NONEWLINE("-->");__tuple_print<point_tuple>::print(out_args);
-        return (*this)(out_args);
         };
     out.fill(ShiftFunction);
     

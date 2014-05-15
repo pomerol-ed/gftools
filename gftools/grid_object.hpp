@@ -147,12 +147,14 @@ public:
 
     template <int M=N>
     typename std::enable_if<(M>1 ), value_type>::type  operator()(arg_tuple in) const
-    	{  point_tuple x = trs::find_nearest(in, grids_); return (*this)(x); // FIXME with expression templates
+    	{  
+            try { point_tuple x = trs::find_nearest(in, grids_); return (*this)(x); } // FIXME with expression templates 
+            catch (...) { return this->tail_eval(in); };
         # warning grid_object::operator() doesn't provide interpolation for D>=2 
         }
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const
-    	{ return std::get<0>(grids_).eval(data_, std::get<0>(in)); }
+    	{ try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (...) { return this->tail_eval(in); } }
 
     template <typename ...ArgTypes>
     	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value
@@ -166,12 +168,13 @@ public:
 
     template <typename ArgType>
     	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
-    	 operator()(ArgType in) const { return std::get<0>(grids_).eval(data_, in); }
+    	 operator()(ArgType in) const { try { return std::get<0>(grids_).eval(data_, in); } 
+            catch (typename std::tuple_element<0, grid_tuple>::type::ex_wrong_index) { return tail_(in); }; }
 
-    template <typename ArgType>
+    /*template <typename ArgType>
         	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
         	 operator()(ArgType in) { return std::get<0>(grids_).eval(data_, in); }
-
+*/
     /// Return value of grid_object. eval methods of grids are used, so interpolation is done if provided with grids
 
 

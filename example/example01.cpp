@@ -74,21 +74,17 @@ int main()
     
     // Some advanced features. Grids allow to interpolate values.
 
-#warning fix operator() of gridobjects
-// fixme 
-/*
-    std::cout << grid1.eval(G1,4.47));
-    std::cout << G1(4.47));
-    std::cout << grid1.eval(G1,0.0));
-    std::cout << G1(0.0));
+    std::cout << grid1.eval(G1,4.47) << std::endl;
+    std::cout << G1(4.47) << std::endl;
+    std::cout << grid1.eval(G1,0.0) << std::endl;
+    std::cout << G1(0.0) << std::endl;
     
     //grid_objects allow for the extrapolation of the values, if they are out 
     // of grid bounds. For this we need to assign the extrapolation
     // function. 
-    G1.tail() = sinF;
-    std::cout << G1(2*PI));
+    G1.tail_ = sinF;
+    std::cout << G1(2*PI) << std::endl;
     G1.savetxt("G1.dat");
-*/
 
     grid_object<double,real_grid,real_grid> R1(std::make_tuple(grid1,grid1));
     std::function<double(double,double)> cos2;
