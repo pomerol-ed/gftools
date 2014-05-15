@@ -147,7 +147,9 @@ public:
 
     template <int M=N>
     typename std::enable_if<(M>1 ), value_type>::type  operator()(arg_tuple in) const
-    	{ throw std::logic_error("operator() for many arguments is not implemented."); }
+    	{  point_tuple x = trs::find_nearest(in, grids_); return (*this)(x); // FIXME with expression templates
+        # warning grid_object::operator() doesn't provide interpolation for D>=2 
+        }
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const
     	{ return std::get<0>(grids_).eval(data_, std::get<0>(in)); }
