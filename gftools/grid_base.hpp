@@ -40,7 +40,7 @@ public:
         //point():point_base<ValueType>::point_base(){};
         point(ValueType val, size_t index):point_base<ValueType>::point_base(val,index){};
         point(const point_base<ValueType> &in):point_base<ValueType>::point_base(in){};
-        point(point_base<ValueType> &&in):point_base<ValueType>::point_base(in){};
+        point(point_base<ValueType> &&in):point_base<ValueType>::point_base(std::forward<point_base<ValueType>>(in)){};
         };
 
     typedef ValueType value_type;
