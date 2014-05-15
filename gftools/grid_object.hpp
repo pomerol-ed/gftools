@@ -50,14 +50,13 @@ public:
     class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
     class exIOProblem : public std::exception { virtual const char* what() const throw(){return "IO problem.";} }; 
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
-protected:
+public:
     /// Grids on which the data is defined. 
     const std::tuple<GridTypes...> grids_;
     /// Cache data dimensions. 
     const indices_t dims_;
     /// Actual data - can be a container (data allocated) or a view (proxy to some other data). 
     container_type data_;
-public:
     /// This function returns the value of the object when the point is not in container. 
     function_type tail_;
 
@@ -150,7 +149,7 @@ public:
     	{  
             try { point_tuple x = trs::find_nearest(in, grids_); return (*this)(x); } // FIXME with expression templates 
             catch (...) { return this->tail_eval(in); };
-        # warning grid_object::operator() doesn't provide interpolation for D>=2 
+        // FIXME # warning grid_object::operator() doesn't provide interpolation for D>=2 
         }
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const

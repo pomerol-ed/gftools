@@ -11,7 +11,11 @@
 namespace gftools {
 
 #define MSG_PREFIX            __FILE__ << ":" << __LINE__ << ": "
+#ifndef NDEBUG
 #define DEBUG(MSG)            std::cout << MSG_PREFIX << MSG << std::endl;
+#else
+#define DEBUG(MSG)
+#endif
 #define INFO(MSG)             std::cout << MSG << std::endl;
 #define INFO_NONEWLINE(MSG)   std::cout << MSG << std::flush;
 #define INFO2(MSG)            std::cout << "\t"     << MSG << std::endl;

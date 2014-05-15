@@ -140,7 +140,7 @@ template <typename R>
 typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator+=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
-    EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
+    typename R::EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
     map1+=map2;
     return (*this);
 }
@@ -179,7 +179,7 @@ template <typename R>
 typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator-=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
-    EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
+    typename R::EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
     map1-=map2;
     return (*this);
 }
@@ -218,7 +218,8 @@ template <typename R>
 typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator*=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
-    EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
+    typename R::EigenMap map2(rhs.boost_container_().origin(),rhs.boost_container_().num_elements());
+
     map1*=map2;
     return (*this);
 }
@@ -255,7 +256,7 @@ template <typename R>
 typename container_base<ValueType,N,BoostCType>::template BaseRefIfContainer<R> container_base<ValueType,N,BoostCType>::operator/=(const R &rhs)
 {
     EigenMap map1(storage_.origin(),storage_.num_elements());
-    EigenMap map2(rhs.storage_.origin(),rhs.storage_.num_elements());
+    typename R::EigenMap map2(rhs.storage_.origin(),rhs.storage_.num_elements());
     map1/=map2;
     return (*this);
 }
