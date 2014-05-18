@@ -37,6 +37,8 @@ TEST(expression2d, vector) {
     eval_expression<data2d, double, 2> e(y);
     std::cout << "original   : " << y[2][3] << std::endl;
     std::cout << "expression : " << e[2][3] << std::endl;
+    DEBUG(y[2][3] + y[1][2]);
+    DEBUG(e[2][3] + e[1][2]);
     for (int i1 = 0; i1 < dims[0]; i1++) 
         for (int i2 = 0; i2 < dims[1]; i2++) 
             ASSERT_EQ(y[i1][i2], e[i1][i2]);

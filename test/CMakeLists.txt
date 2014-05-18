@@ -15,6 +15,7 @@ real_grid_test
 enum_grid_test
 grid_tools_test
 eval_expression_test
+math_expression_test
 container_test
 grid_object_test
 #SaveLoadTest
