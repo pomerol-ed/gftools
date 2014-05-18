@@ -5,8 +5,14 @@
 #include<complex>
 #include<iostream>
 #include<utility>
-#include<Eigen/Core>
-#include<Eigen/StdVector>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-register" 
+    #include<Eigen/Core>
+    #include<Eigen/StdVector>
+#pragma GCC diagnostic pop
+
+
 
 namespace gftools {
 
