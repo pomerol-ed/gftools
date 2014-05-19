@@ -36,7 +36,7 @@ public:
         auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
             typename std::remove_reference<typename std::result_of<Obj(value_type,OtherArgTypes...)>::type>::type;
 
-    template <class Obj>// decltype (std::declval<Obj>()[0])>
+    iemplate <class Obj>// decltype (std::declval<Obj>()[0])>
         auto integrate(Obj &&in) const -> 
             typename std::remove_reference<decltype (std::declval<Obj>()[0])>::type;
         
@@ -124,11 +124,11 @@ template <class Obj>// decltype (std::declval<Obj>()[0])>
     int n = this->size();
     R s = 0.0;
     if (!is_uniform_ || n<8) {
-        DEBUG("Using trapezoidal integration");
+        //DEBUG("Using trapezoidal integration");
         for (int i=0; i<n-1; i++) s+=(v[i+1] + v[i])*(vals_[i+1].val_ - vals_[i].val_);
         return 0.5*s;
         }
-    DEBUG("Using simpson");
+    //DEBUG("Using simpson");
     for (int i=4;i<n-4;i++) { s += 48.*v[i]; }
     auto dx = vals_[1].val_ - vals_[0].val_;
     return dx/48.*(17.*v[0] + 59.*v[1] + 43.*v[2]+49.*v[3] + s + 49. *v[n-4] + 43.*v[n-3] + 59.*v[n-2] + 17.*v[n-1]);
