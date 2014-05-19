@@ -36,7 +36,7 @@ public:
         auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
             typename std::remove_reference<typename std::result_of<Obj(value_type,OtherArgTypes...)>::type>::type;
 
-    iemplate <class Obj>// decltype (std::declval<Obj>()[0])>
+    template <class Obj>// decltype (std::declval<Obj>()[0])>
         auto integrate(Obj &&in) const -> 
             typename std::remove_reference<decltype (std::declval<Obj>()[0])>::type;
         
