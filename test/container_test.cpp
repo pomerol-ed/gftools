@@ -77,6 +77,16 @@ TEST_F(cont_test, Assignment) {
 
 }
 
+TEST_F(cont_test, matrix) {
+    (*d2) = 1.0;
+    (*d2)[0][1] = 0.2;
+    std::cout << d2->as_matrix() << std::endl;
+    std::cout << d2->transpose() << std::endl;
+    EXPECT_EQ(d2->transpose()[1][0], 0.2);
+    (*cd2)[0][2] = 2.+3.*I;
+    EXPECT_EQ(std::abs(cd2->hermite_conj()[2][0] - 2. + 3.*I), 0);
+}
+
 TEST_F(cont_test, Math) {
     (*d2) = 2.0;
     (*d3) = 1.0;
