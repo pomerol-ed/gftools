@@ -130,6 +130,7 @@ public:
 // Access operators
     /// Returns element number i, which corresponds to (*_grid)[i]. 
     auto operator[](size_t i)->decltype(data_[i]) { return data_[i]; };
+    auto operator[](size_t i) const -> const decltype(data_[i]) { return data_[i]; };
     //template <size_t M> value_type& operator[](const std::array<size_t,M>& in);
     /// Returns tail_(in). 
     value_type tail_eval(const arg_tuple& in) const { return tuple_tools::unfold_tuple(tail_, in); }
