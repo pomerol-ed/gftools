@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-project (GFTools)
+project (GFTools CXX)
 
 # Select default build type
 IF(DEFINED CMAKE_BUILD_TYPE)
