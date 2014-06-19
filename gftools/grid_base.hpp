@@ -1,13 +1,20 @@
 #pragma once 
+
+#include <boost/operators.hpp>
+
 #include <iterator>
 
 #include "defaults.hpp"
 #include "tools.hpp"
 
+
 namespace gftools { 
 
 template <typename ValueType>
-struct point_base {
+struct point_base : 
+    boost::less_than_comparable<point_base<ValueType>>,
+    boost::equality_comparable<point_base<ValueType>>
+ {
     static_assert(!std::is_same<ValueType,int>::value, "Can't create a grid of ints");
 
     typedef ValueType value_type;
@@ -23,7 +30,8 @@ struct point_base {
     point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
     point_base () = delete;
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
-    bool operator!=(const point_base &rhs) const {return !(*this == rhs); }
+    //bool operator!=(const point_base &rhs) const {return !(*this == rhs); }
+    bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
     ValueType val_;
