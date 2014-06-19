@@ -97,7 +97,7 @@ template <typename ValType, typename ... ArgTypes>
 struct fun_traits<std::function<ValType(ArgTypes...)> >
 {
     static std::function<ValType(ArgTypes...)> constant(ValType c) 
-    { return [c](ArgTypes...in){return c;};}
+    { std::function<ValType(ArgTypes...)> out; out = [c](ArgTypes...in){return c;};  return out; }
 };
 
 template <typename V, typename ...Args>
