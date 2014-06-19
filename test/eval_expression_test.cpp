@@ -61,7 +61,9 @@ TEST(expression2d, grid_object) {
     typedef grid_object<double, real_grid, real_grid> data2d;
     std::array<size_t, 2> dims = {{10, 4}};
     data2d y(real_grid(0,1.,dims[0]), real_grid(0,1.,dims[1]));
-    y.fill(typename data2d::function_type([](double x, double y){return sin(x+y);}));
+    typename data2d::function_type f1; 
+    f1 = [](double x, double y){return sin(x+y);}; // intel bug
+    y.fill(f1);
     eval_expression<data2d, double, 2> e(y);
     std::cout << "original   : " << y[2][3] << std::endl;
     std::cout << "expression : " << e[2][3] << std::endl;

@@ -137,7 +137,7 @@ TEST_F(gridobject_test1, fill)
     gf_t& gf = *gf_ptr;
     gf_t gf2(gf.grids());
 
-    typename gf_t::function_type f1  = []  (int i, complex_type p, double k){return i*std::abs(p) + k;};
+    typename gf_t::function_type f1  = []  (int_wrap_enumerate_grid i, complex_type p, double k)->double{return int(i)*std::abs(p) + k;};
     gf.fill(f1);
 
     typename gf_t::point_function_type f2 = [f1](typename enum_grid::point i, typename fmatsubara_grid::point p, typename kmesh::point k){return f1(i,p,k);};
