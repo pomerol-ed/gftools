@@ -140,9 +140,7 @@ public:
     /// Return the value by grid values. 
     value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
 
-    //value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
-
-
+    value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
     const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
 
     template <int M=N>
@@ -157,7 +155,7 @@ public:
     	{ try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (...) { return this->tail_eval(in); } }
 
     template <typename ...ArgTypes>
-    	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value
+    	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
     							, value_type>::type
         operator()(ArgTypes... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
     template <typename ...ArgTypes>
