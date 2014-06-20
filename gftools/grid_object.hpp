@@ -156,8 +156,15 @@ public:
 
     template <typename ...ArgTypes>
     	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
-    							, value_type>::type
+    							, value_type&>::type
+        operator()(ArgTypes... in) { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
+    template <typename ...ArgTypes>
+    	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
+    							, value_type const&>::type
         operator()(ArgTypes... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
+
+
+
     template <typename ...ArgTypes>
         	typename std::enable_if<!std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value &&
         							sizeof...(ArgTypes)!=1 && (sizeof...(ArgTypes)==N)
