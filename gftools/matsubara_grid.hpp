@@ -41,7 +41,7 @@ public:
     //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto eval(Obj &in, complex_type x) const ->decltype(in[0]);
     //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
-    using base::eval;
+    //using base::eval;
 };
 
 typedef matsubara_grid<1> fmatsubara_grid;
