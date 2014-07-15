@@ -154,6 +154,17 @@ public:
     typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const
     	{ try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (...) { return this->tail_eval(in); } }
 
+    template <int M=N>
+    typename std::enable_if<(M==1 ), value_type&>::type
+    operator()(typename std::tuple_element<0,grid_tuple>::type::point in) const
+        { return data_[in.index_]; };
+
+    template <int M=N>
+    typename std::enable_if<(M==1 ), value_type&>::type
+    operator()(typename std::tuple_element<0,grid_tuple>::type::point in)
+        { return data_[in.index_]; };
+
+
     template <typename ...ArgTypes>
     	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
     							, value_type&>::type
