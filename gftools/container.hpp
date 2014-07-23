@@ -116,9 +116,9 @@ struct container_base
     container_base<ValueType,N,boost_t>& operator=(MatrixType rhs);
 
     template<size_t N2 = N, typename U = Is2d<N2>>
-    container<ValueType,N> transpose() { return container<ValueType, N>( this->as_matrix().transpose()); }
+    container<ValueType,N> transpose() const { return container<ValueType, N>( this->as_matrix().transpose()); }
     template<size_t N2 = N, typename U = Is2d<N2>>
-    container<ValueType,N> hermite_conj() { return this->transpose().conj(); }
+    container<ValueType,N> hermite_conj() const { return this->transpose().conj(); }
     
 
     template<size_t N2 = N, typename U = Is2d<N2>>
