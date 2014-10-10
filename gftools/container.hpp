@@ -242,7 +242,7 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
             static_assert(sizeof...(in) == N,"arg mismatch");
         };
 
-    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>> 
+    template<size_t N2 = N, typename U = typename std::enable_if<N2==2, bool>::type> 
         container<ValueType,N> (MatrixType rhs);
     using Base::operator+=;
     using Base::operator-=;

@@ -52,7 +52,7 @@ template<size_t N2, typename U>
 }
 
 template <typename ValueType, size_t N> 
-template <size_t N2, typename U>
+template <size_t N2, typename>
 container<ValueType,N>::container(MatrixType rhs):
     container<ValueType,N>(std::array<size_t,2>({{static_cast<size_t>(rhs.rows()), static_cast<size_t>(rhs.cols()) }}))
 {

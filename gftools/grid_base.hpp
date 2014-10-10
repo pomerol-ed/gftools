@@ -101,13 +101,9 @@ public:
     //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
     //    { return static_cast<const Derived*>(this)->integrate(in); };
     /** Integrate over grid with extra arguments provided. */
-    template <class Obj, typename ...OtherArgTypes, typename std::result_of<Obj(point,OtherArgTypes...)>::type> 
-        auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
-            typename std::remove_reference<typename std::result_of<Obj(point,OtherArgTypes...)>::type>::type
-                { return static_cast<const Derived*>(this)->integrate(in, Args...); };
-    template <class Obj, decltype (std::declval<Obj>()[std::declval<point>()])>
+    template <class Obj, typename std::result_of<Obj(point)>::type> 
         auto integrate(Obj &&in) const -> 
-            typename std::remove_reference<decltype (std::declval<Obj>()[std::declval<point>()])>::type
+            typename std::remove_reference<typename std::result_of<Obj(point)>::type>::type
                 { return static_cast<const Derived*>(this)->integrate(in); };
     /** Make the object printable. */
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const grid_base<ValType,Derived2> &gr);
