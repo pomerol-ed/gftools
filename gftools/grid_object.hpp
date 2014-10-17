@@ -103,12 +103,12 @@ public:
 
 // Global operations - reductions, shifts 
     /// Returns the complex conjugate of this object, if it's complex valued. 
-    grid_object_base<ContainerType, GridTypes...> conj() { return grid_object_base(grids_, data_.conj()); }
+    grid_object_base<ContainerType, GridTypes...> conj() const { return grid_object_base(grids_, data_.conj()); }
     /// Returns a norm of difference between two objects. 
     template <typename CT>
         real_type diff (const grid_object_base<CT, GridTypes...> &rhs) const { return data_.diff(rhs.data()); } ;
     /// Returns the sum of all elements in the container. 
-    value_type sum() { return data_.sum(); };
+    value_type sum() const { return data_.sum(); };
     /// Returns an object with arguments, shifted by the given values.
     template <typename ...ArgTypes> 
         typename std::enable_if<
