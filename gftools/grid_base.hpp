@@ -34,6 +34,9 @@ struct point_base :
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
+    ValueType value() const { return val_; }
+    size_t index() const { return index_; }
+
     ValueType val_;
     size_t index_;
 }; 
