@@ -74,6 +74,16 @@ struct equality_checker<std::tuple<Args1...>, std::tuple<Args2...>> {
     };
 };
 
+template <typename Arg1, typename Arg2>
+struct equality_checker<std::vector<Arg1>, std::vector<Arg2>> { 
+    static bool is_equal(std::vector<Arg1> const& t1, std::vector<Arg2> const& t2, real_type tol) {
+        if (t1.size() != t2.size()) return false;
+        bool out = true;
+        for (int i=0; i< t1.size() && out; i++) out = out && is_float_equal(t1[i], t2[i], tol); 
+        return out;
+    }
+};
+
 // free function
 /** Returns true, if two objects are equal up to a certain tolerance. */
 
