@@ -221,7 +221,9 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     out = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
     if (!tools::is_float_equal(p1.val_, out, std::abs(p1.val_ - ((p1.index_!=0)?vals_[p1.index_ - 1]:vals_[p1.index_+1]).val_)/10.)) { 
+        #ifndef NDEBUG
         ERROR("Couldn't shift point" <<  in << " by " << shift_arg);
+        #endif
         throw (ex_wrong_index());
         }
     else return p1;

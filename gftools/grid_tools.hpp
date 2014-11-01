@@ -34,24 +34,24 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
     typedef std::array<size_t, N> indices;
 
     /// Convert indices to points.
-    static point_tuple points(indices in, const grid_tuple_type& grids) { return points_(index_gen(),in,grids); }
+    static point_tuple points(indices const& in, const grid_tuple_type& grids) { return points_(index_gen(),in,grids); }
     /// Convert indices to args.
-    static arg_tuple get_args(indices in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
+    static arg_tuple get_args(indices const& in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
     /// Convert points to indices. grids argument is only for checking
-    static indices get_indices(point_tuple in, const grid_tuple_type& grids) { return get_indices_(index_gen(),in,grids); }
+    static indices get_indices(point_tuple const& in, const grid_tuple_type& grids) { return get_indices_(index_gen(),in,grids); }
     /// Convert points to args. grids argument is only for checking
-    static arg_tuple get_args(point_tuple in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
+    static arg_tuple get_args(point_tuple const& in, const grid_tuple_type& grids) { return get_args_(index_gen(),in,grids); }
     /// Get an array of dimensions of grids.
     static indices get_dimensions(const grid_tuple_type& grids) {return dims_(index_gen(), grids); }
     /// Get a product of all dimensions of gris.
     static int get_total_size(const grid_tuple_type& grids){auto d = get_dimensions(grids); return std::accumulate(d.begin(),d.end(),1,std::multiplies<int>()); }
     //template <class F> eval(F &&f, arg_tuple in, const grid_tuple_type& grids); 
 
-    static point_tuple find_nearest(arg_tuple in, const grid_tuple_type& grids) { return find_nearest_(index_gen(),in,grids); }
+    static point_tuple find_nearest(arg_tuple const& in, const grid_tuple_type& grids) { return find_nearest_(index_gen(),in,grids); }
 
-    static point_tuple shift(point_tuple in, point_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
-    static point_tuple shift(point_tuple in, arg_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
-    static arg_tuple shift(arg_tuple in, arg_tuple shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+    static point_tuple shift(point_tuple const& in, point_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+    static point_tuple shift(point_tuple const& in, arg_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+    static arg_tuple shift(arg_tuple const& in, arg_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
 
 protected:
     template <int...S> 

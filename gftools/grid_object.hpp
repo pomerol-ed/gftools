@@ -106,7 +106,7 @@ public:
     grid_object_base<ContainerType, GridTypes...> conj() const { return grid_object_base(grids_, data_.conj()); }
     /// Returns a norm of difference between two objects. 
     template <typename CT>
-        real_type diff (const grid_object_base<CT, GridTypes...> &rhs, bool norm = false) const { return data_.diff(rhs.data(), norm); } ;
+        real_type diff (const grid_object_base<CT, GridTypes...> &rhs, bool norm = true) const { return data_.diff(rhs.data(), norm); } ;
     /// Returns the sum of all elements in the container. 
     value_type sum() const { return data_.sum(); };
     /// Returns an object with arguments, shifted by the given values.
