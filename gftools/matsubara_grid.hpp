@@ -114,7 +114,7 @@ inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (comple
     if (n>=w_min_ && n<w_max_) { return vals_[n-w_min_]; }
     else { 
         #ifndef NDEBUG
-        ERROR("Couldn't find the point");
+        //ERROR("Couldn't find the point");
         #endif
         if (n<w_min_) return vals_[0];
         else return vals_[vals_.size()-1];

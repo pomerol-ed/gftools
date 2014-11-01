@@ -29,6 +29,18 @@ int container_base<ValueType,N, BoostCType>::size() const
 };
 
 template <typename ValueType, size_t N, typename BoostCType> 
+template <typename V2, typename DT>
+double container_base<ValueType,N, BoostCType>::diff(const container_base<V2,N,DT>& r, bool norm) const
+{   
+    assert(this->size() == r.size());
+    double d = 0;
+    for (int i=0; i<this->size(); i++) {
+        d+=std::abs(*(this->data() + i) - *(r.data()+i));
+        }
+    return d/double(norm?this->size():1);
+}
+
+template <typename ValueType, size_t N, typename BoostCType> 
 std::array<size_t,N> container_base<ValueType,N, BoostCType>::shape() const 
 {
     std::array<size_t, N> out; for (int i=0; i<N; i++) out[i] = storage_.shape()[i]; return out; 

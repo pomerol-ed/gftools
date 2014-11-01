@@ -137,11 +137,10 @@ struct container_base
     /** Sum of all values in the container. */
     ValueType sum() const; 
     ValueType* data() { return storage_.origin(); }
+    const ValueType* data() const { return storage_.origin(); }
     int size() const;
     std::array<size_t,N> shape() const;
-    template <typename V2, typename DT>
-    double diff(const container_base<V2,N,DT>& r) const 
-        { return std::sqrt(std::abs( ((*this)*(*this).conj()).sum() + (r*r.conj()).sum() - ((*this)*r.conj()).sum() - ((*this).conj()*r).sum())); }
+    template <typename V2, typename DT> double diff(const container_base<V2,N,DT>& r, bool norm = true) const; 
 
     /** Make the object streamable. */
     template <typename V1, size_t M, typename B>

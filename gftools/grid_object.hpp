@@ -106,7 +106,7 @@ public:
     grid_object_base<ContainerType, GridTypes...> conj() const { return grid_object_base(grids_, data_.conj()); }
     /// Returns a norm of difference between two objects. 
     template <typename CT>
-        real_type diff (const grid_object_base<CT, GridTypes...> &rhs) const { return data_.diff(rhs.data()); } ;
+        real_type diff (const grid_object_base<CT, GridTypes...> &rhs, bool norm = false) const { return data_.diff(rhs.data(), norm); } ;
     /// Returns the sum of all elements in the container. 
     value_type sum() const { return data_.sum(); };
     /// Returns an object with arguments, shifted by the given values.
@@ -141,7 +141,10 @@ public:
     value_type& get(const point_tuple& in) { return data_(get_indices(in)); }
 
     value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
-    const value_type& operator()(const point_tuple& in) const { return data_(get_indices(in)); }
+    value_type operator()(const point_tuple& in) const { 
+            try { return data_(get_indices(in)); } 
+            catch (...) { return this->tail_eval(in); };
+        }
 
     template <int M=N>
     typename std::enable_if<(M>1 ), value_type>::type  operator()(arg_tuple in) const
@@ -155,9 +158,12 @@ public:
     	{ try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (...) { return this->tail_eval(in); } }
 
     template <int M=N>
-    typename std::enable_if<(M==1 ), value_type&>::type
-    operator()(typename std::tuple_element<0,grid_tuple>::type::point in) const
-        { return data_[in.index_]; };
+    typename std::enable_if<(M==1 ), value_type>::type
+    operator()(typename std::tuple_element<0,grid_tuple>::type::point in) const { 
+        if (in.index() < grid().size()) { 
+            assert(in.index() == grid().points()[in.index()].index()); return data_[in.index_]; } 
+        else { return this->tail_(in); }; 
+        };
 
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type&>::type
@@ -169,9 +175,10 @@ public:
     	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
     							, value_type&>::type
         operator()(ArgTypes... in) { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
+
     template <typename ...ArgTypes>
     	typename std::enable_if<std::is_convertible<std::tuple<ArgTypes...>, point_tuple>::value && sizeof...(ArgTypes) != 1 && sizeof...(ArgTypes)==N
-    							, value_type const&>::type
+    							,value_type>::type
         operator()(ArgTypes... in) const { return (*this)(point_tuple(std::forward_as_tuple(in...))); }
 
 
