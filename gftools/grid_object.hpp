@@ -131,6 +131,8 @@ public:
     /// Returns element number i, which corresponds to (*_grid)[i]. 
     auto operator[](size_t i)->decltype(data_[i]) { return data_[i]; };
     auto operator[](size_t i) const -> const typename container_type::under_ref_type { return data_[i]; };
+    auto operator[](typename std::tuple_element<0,grid_tuple>::type::point in)->decltype(data_[0]) { assert(in.index() < grid<0>().size()); return data_[in.index()]; };
+    auto operator[](typename std::tuple_element<0,grid_tuple>::type::point in) const -> const typename container_type::under_ref_type { assert(in.index() < grid<0>().size()); return data_[in.index()]; };
     //template <size_t M> value_type& operator[](const std::array<size_t,M>& in);
     /// Returns tail_(in). 
     value_type tail_eval(const arg_tuple& in) const { return tuple_tools::unfold_tuple(tail_, in); }
