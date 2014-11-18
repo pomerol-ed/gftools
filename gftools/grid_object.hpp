@@ -37,7 +37,7 @@ public:
     static constexpr size_t N = sizeof...(GridTypes);
 
     /// A typedef for a function that gives the analytical value of the object, when it's not stored. 
-    typedef typename tools::GridArgTypeExtractor<value_type, std::tuple<GridTypes...> >::f_type function_type;
+    typedef typename std::remove_cv<typename tools::GridArgTypeExtractor<value_type, std::tuple<GridTypes...> >::f_type>::type function_type;
     /// A typedef for a function that gives the analytical value of the object, when it's not stored. 
     typedef typename tools::GridPointExtractor<value_type, std::tuple<GridTypes...> >::f_type point_function_type;
     /// A typedef for a tuple of grid points. 
@@ -203,10 +203,17 @@ public:
 
 // Fill values
     /// Fills the container with a provided function. 
-    void fill(const function_type &in);
-    void fill(const point_function_type &in);
-    void fill(const std::function<value_type(arg_tuple)>& in) { this->fill(tools::extract_tuple_f(in)); }
-    void fill(const std::function<value_type(point_tuple)>& in) { this->fill(tools::extract_tuple_f(in)); }
+    void fill_function(const function_type &in);
+    void fill_point_function(const point_function_type &in);
+    template <typename F> 
+        typename std::enable_if<std::is_convertible<typename std::remove_cv<F>::type, point_function_type>::value, void>::type fill(const F& f) {
+            this->fill_point_function(f); }
+    template <typename F> 
+        typename std::enable_if<std::is_convertible<typename std::remove_cv<F>::type, function_type>::value && 
+                                !std::is_convertible<typename std::remove_cv<F>::type, point_function_type>::value, void>::type fill(const F& f) { 
+            this->fill_function(f); }
+    void fill(const std::function<value_type(arg_tuple)>& in) { this->fill_function(tools::extract_tuple_f(in)); }
+    void fill(const std::function<value_type(point_tuple)>& in) { this->fill_point_function(tools::extract_tuple_f(in)); }
     /// A shortcut for fill method. 
     //template <typename ...ArgTypes> grid_object_base& operator= (const std::function<value_type(ArgTypes...)> &);
     /// Same as operator=, but allows for non-equal grids. Slow. Uses analytic function to provide missing values. 

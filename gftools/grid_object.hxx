@@ -227,7 +227,7 @@ void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fn
 //
 
 template <typename ContainerType, typename ...GridTypes> 
-void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_object_base<ContainerType,GridTypes...>::point_function_type& in)
+void grid_object_base<ContainerType,GridTypes...>::fill_point_function(const typename grid_object_base<ContainerType,GridTypes...>::point_function_type& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {
@@ -239,7 +239,7 @@ void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_obje
 }
 
 template <typename ContainerType, typename ...GridTypes> 
-void grid_object_base<ContainerType,GridTypes...>::fill(const typename grid_object_base<ContainerType,GridTypes...>::function_type& in)
+void grid_object_base<ContainerType,GridTypes...>::fill_function(const typename grid_object_base<ContainerType,GridTypes...>::function_type& in)
 {
     size_t total_size = this->size();
     for (size_t i=0; i<total_size; ++i) {

@@ -115,7 +115,7 @@ TEST_F(gridobject_test1, Reductions)
 
     gf_t gf2(gf);
     gf2[0][0][0] = 0.5;
-    EXPECT_DOUBLE_EQ(gf2.diff(gf), 0.5);
+    EXPECT_DOUBLE_EQ(gf2.diff(gf, false), 0.5);
 }
 
 TEST_F(gridobject_test1, IO)
