@@ -44,7 +44,7 @@ struct point_base :
 /** A representation of a one-dimensional grid, which stores an array of the ValueType values. */
 //template <typename ValueType, class Derived, typename = typename std::enable_if<!std::is_same<ValueType, int>::value>::type>
 template <typename ValueType, class Derived>
-class grid_base {
+class grid_base : public boost::equality_comparable<grid_base<ValueType, Derived>> {
 public:
     /** A point combines a point of the grid and it's index. */
     struct point : point_base<ValueType> { 
@@ -108,9 +108,10 @@ public:
         auto integrate(Obj &&in) const -> 
             typename std::remove_reference<typename std::result_of<Obj(point)>::type>::type
                 { return static_cast<const Derived*>(this)->integrate(in); };
-    /** Make the object printable. */
+    /// Make the object printable.
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const grid_base<ValType,Derived2> &gr);
-
+    /// Compare 2 grids
+    bool operator==(const grid_base &rhs) const;
 
     std::vector<point> vals_;
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
@@ -246,6 +247,17 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     return vals_[index];
 
 }
+
+template <typename ValueType, class Derived>
+inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const 
+{ 
+    bool out = (this->size() == rhs.size()); 
+    for (int i=0; i<vals_.size() && out; i++) { 
+        out = out && vals_[i].value() == rhs.vals_[i].value(); 
+    }
+    return out;
+}
+
 
 template <typename ValueType, class Derived>
 std::ostream& operator<<(std::ostream& lhs, const grid_base<ValueType,Derived> &gr)
