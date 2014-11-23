@@ -25,15 +25,16 @@ public:
     //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;
     //using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
     /** Inverse temperature. */
-    const real_type _beta;
+    const real_type beta_;
     /** Spacing between values. */
-    const real_type _spacing;
+    const real_type spacing_;
     /** Min and max numbers of freq. - useful for searching. */
     const int w_min_, w_max_;
     matsubara_grid(int min, int max, real_type beta);
     matsubara_grid(const matsubara_grid &rhs);
     matsubara_grid(matsubara_grid&& rhs);
     int getNumber(complex_type in) const;
+    double beta() const { return beta_; }
 
     point find_nearest(complex_type in) const;
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
@@ -55,8 +56,8 @@ template <bool F>
 matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
     //grid_base<complex_type, matsubara_grid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
     grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
-    _beta(beta), 
-    _spacing(PI/beta), 
+    beta_(beta), 
+    spacing_(PI/beta), 
     w_min_(min),
     w_max_(max)
 {
@@ -65,8 +66,8 @@ matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
 template <bool F>
 matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) : 
     grid_base<complex_type, matsubara_grid<F>>(rhs.vals_),
-    _beta(rhs._beta), 
-    _spacing(rhs._spacing), 
+    beta_(rhs.beta_), 
+    spacing_(rhs.spacing_), 
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
 {
@@ -75,8 +76,8 @@ matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) :
 template <bool F>
 matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
     grid_base<complex_type, matsubara_grid>(rhs.vals_), 
-    _beta(rhs._beta), 
-    _spacing(rhs._spacing), 
+    beta_(rhs.beta_), 
+    spacing_(rhs.spacing_), 
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
 {
@@ -88,7 +89,7 @@ auto matsubara_grid<F>::integrate(const Obj &in) const -> decltype(in(vals_[0]))
 {
     decltype(in(this->vals_[0])) R = in(this->vals_[0]);
     R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {return y+in(x);}); 
-    return R/_beta;
+    return R/beta_;
 }
 
 template <bool F>
@@ -125,7 +126,7 @@ template <bool F>
 inline int matsubara_grid<F>::getNumber(complex_type in) const
 {
     assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
-    return std::lround(imag(in)/_spacing-F)/2;
+    return std::lround(imag(in)/spacing_-F)/2;
 };
 
 template <bool F>
