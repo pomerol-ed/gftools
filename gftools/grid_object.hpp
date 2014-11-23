@@ -151,8 +151,10 @@ public:
     template <int M=N>
     typename std::enable_if<(M>1 ), value_type>::type  operator()(arg_tuple in) const
     	{  
-            try { point_tuple x = trs::find_nearest(in, grids_); return (*this)(x); } // FIXME with expression templates 
-            catch (...) { return this->tail_eval(in); };
+            
+            point_tuple x = trs::find_nearest(in, grids_); 
+            if (gftools::tools::is_float_equal<arg_tuple>(x,in)) {  return (*this)(x); } // FIXME with expression templates 
+            else { return this->tail_eval(in); };
         // FIXME # warning grid_object::operator() doesn't provide interpolation for D>=2 
         }
     template <int M=N>
@@ -162,9 +164,8 @@ public:
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type
     operator()(typename std::tuple_element<0,grid_tuple>::type::point in) const { 
-        if (in.index() < grid().size()) { 
-            assert(in.index() == grid().points()[in.index()].index()); return data_[in.index_]; } 
-        else { return this->tail_(in); }; 
+        if (in.index() < grid().size() && tools::is_float_equal(in.value(), grid().points()[in.index()])) { return data_[in.index_]; } 
+        return this->operator()(in.value()); 
         };
 
     template <int M=N>

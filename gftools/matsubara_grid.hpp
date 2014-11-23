@@ -133,7 +133,7 @@ template <class Obj>
 inline auto matsubara_grid<F>::eval(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find_nearest(x);
-    if (!tools::is_float_equal(x,find_result.val_)) { throw (ex_wrong_index()); } 
+    if (!tools::is_float_equal<complex_type>(x,find_result.val_)) { throw (ex_wrong_index()); } 
     return in[find_result.index_];
 }
 
