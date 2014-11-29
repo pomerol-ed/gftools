@@ -106,7 +106,9 @@ public:
     grid_object_base<ContainerType, GridTypes...> conj() const { return grid_object_base(grids_, data_.conj()); }
     /// Returns a norm of difference between two objects. 
     template <typename CT>
-        real_type diff (const grid_object_base<CT, GridTypes...> &rhs, bool norm = true) const { return data_.diff(rhs.data(), norm); } ;
+        real_type diff (const grid_object_base<CT, GridTypes...> &rhs, bool norm = true) const { 
+            if (!trs::is_equal(this->grids(), rhs.grids())) throw (std::logic_error("Objects are defined on different grids"));
+            return data_.diff(rhs.data(), norm); } 
     /// Returns the sum of all elements in the container. 
     value_type sum() const { return data_.sum(); };
     /// Returns an object with arguments, shifted by the given values.
@@ -245,6 +247,10 @@ public:
     friend grid_object_base operator- (const value_type & lhs, const grid_object_base & rhs) {return rhs*(-1.0)+lhs;};
     friend grid_object_base operator/ (const value_type & lhs, const grid_object_base & rhs) {grid_object_base out(rhs); out=lhs; return out/rhs;};
 };
+
+template <typename GridObjectType>
+GridObjectType loadtxt(std::string const& fname, double tol = 1e-8);
+
 
 /*
 /// A helper recursive template utility to extract and set data from the container.

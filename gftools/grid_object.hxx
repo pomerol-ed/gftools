@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/functional/hash.hpp>
+#include <unordered_set>
 #include "grid_object.hpp"
 
 namespace gftools {
@@ -433,6 +435,95 @@ grid_object_base<ContainerType,GridTypes...> grid_object_base<ContainerType,Grid
     return out;
 }
 
+namespace extra { 
+
+    template <typename GridTupleType, typename OrigGridTupleType, int N>
+    struct GridTupleFromVector
+    {
+        typedef std::vector<typename tools::grid_tuple_traits<OrigGridTupleType>::arg_tuple> vector_type;
+        static constexpr int TupleSize = std::tuple_size<OrigGridTupleType>::value;
+        typedef typename std::tuple_element<TupleSize - N, OrigGridTupleType>::type grid_type;
+        typedef typename grid_type::value_type value_type;
+        typedef typename tuple_tools::extra::tuple_io<GridTupleType>::tail_type grid_tuple_tail;
+        static GridTupleType extract(vector_type const& in) {
+            std::unordered_set<value_type, boost::hash<value_type>> vals_set;
+            std::vector<value_type> vals_vec;
+            for (int i=0; i<in.size(); i++) { 
+                value_type v = std::get<TupleSize - N>(in[i]);
+                auto x = vals_set.insert(v); 
+                if (x.second) vals_vec.push_back(v);
+                }
+            return std::tuple_cat(
+                std::forward_as_tuple(grid_type(vals_vec)),
+                GridTupleFromVector<grid_tuple_tail, OrigGridTupleType, N-1>::extract(in)
+                );
+            }
+    };
+    
+    template <typename GridTupleType, typename OrigGridTupleType>
+    struct GridTupleFromVector<GridTupleType, OrigGridTupleType, 1>
+    {
+        typedef std::vector<typename tools::grid_tuple_traits<OrigGridTupleType>::arg_tuple> vector_type;
+        static constexpr int TupleSize = std::tuple_size<OrigGridTupleType>::value;
+        typedef typename std::tuple_element<TupleSize - 1, OrigGridTupleType>::type grid_type;
+        typedef typename grid_type::value_type value_type;
+        static constexpr int N = 1;
+        static GridTupleType extract(vector_type const& in) {
+            static_assert(std::tuple_size<GridTupleType>::value == 1, "wrong tuple size");
+            std::unordered_set<value_type, boost::hash<value_type>> vals_set;
+            std::vector<value_type> vals_vec;
+            for (int i=0; i<in.size(); i++) { 
+                value_type v = std::get<TupleSize - N>(in[i]);
+                auto x = vals_set.insert(v); 
+                if (x.second) vals_vec.push_back(v);
+                }
+            return std::forward_as_tuple(grid_type(vals_vec)); 
+            }
+    };
+    
+
+
+    template <typename GridTuple>
+    GridTuple arg_vector_to_grid_tuple(std::vector<typename tools::grid_tuple_traits<GridTuple>::arg_tuple> const& in)
+    {
+        constexpr int ngrids =  std::tuple_size<GridTuple>::value; 
+        return GridTupleFromVector<GridTuple,GridTuple,ngrids>::extract(in);
+    }
+}
+
+template <typename GridObjectType>
+GridObjectType loadtxt(std::string const& fname, double tol)
+{
+// load some grid_object from file
+    typedef typename GridObjectType::arg_tuple arg_tuple;
+    typedef typename GridObjectType::value_type value_type;
+    typedef typename GridObjectType::grid_tuple grid_tuple;
+
+    INFO("Loading " << typeid(GridObjectType).name() << " from " << fname);
+    std::ifstream in;
+    in.open(fname.c_str());
+    if (in.fail()) { ERROR("Couldn't open file " << fname); throw typename GridObjectType::exIOProblem(); };
+
+    std::vector<arg_tuple> grid_vals;
+    std::vector<value_type> vals;
+
+    while (!in.eof()) {  
+        arg_tuple pts = tuple_tools::read_tuple<arg_tuple>(in); // ensure serialize_tuple in savetxt has the same type. Dropping here indices - they're wrong anyway.
+        if (in.eof()) break;
+        value_type v; 
+        in >> num_io<value_type>(v); 
+        grid_vals.push_back(pts);
+        vals.push_back(v);
+        }
+
+//    for (int i=0; i<grid_vals.size(); i++) 
+//        DEBUG(tuple_tools::print_tuple(grid_vals[i]));
+
+    grid_tuple grids = extra::arg_vector_to_grid_tuple<grid_tuple>(grid_vals);
+    GridObjectType out(grids);
+    std::copy(vals.begin(), vals.end(), out.data().data()); 
+    return out;
+}
 
 
 } // end of namespace GFTools

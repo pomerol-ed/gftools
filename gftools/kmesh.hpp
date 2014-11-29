@@ -19,6 +19,7 @@ public:
     kmesh(const kmesh& rhs):grid_base<real_type, kmesh>(rhs),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
     kmesh(kmesh &&rhs):base(std::forward<base>(rhs)),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
     kmesh():npoints_(0){};
+    kmesh(std::vector<real_type> const& in);
     kmesh& operator=(kmesh &&rhs) {npoints_ = rhs.npoints_; domain_len_ = rhs.domain_len_; vals_.swap(rhs.vals_); return (*this);};
     kmesh& operator=(const kmesh &rhs) {npoints_ = rhs.npoints_; domain_len_ = rhs.domain_len_;vals_ = rhs.vals_; return (*this);};
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
@@ -64,6 +65,22 @@ kmesh::kmesh(kmesh &&rhs):grid_base(rhs.vals_),npoints_(rhs.npoints_)
 {
 }
 */
+
+inline kmesh::kmesh(std::vector<real_type> const& in):
+    base(in)
+{
+    if (vals_.size() <= 1) throw std::logic_error("Can't construct a kmesh with <= 1 element");
+    double diff = vals_[1] - vals_[0];
+    bool ok = true;
+    for (int i=1; i<vals_.size() && ok; i++) { 
+         ok = tools::is_float_equal(vals_[i] - vals_[i-1], diff, diff * 1e-6); 
+        }
+    if (!ok) throw std::logic_error("kmesh should be uniform");
+    domain_len_ = vals_.size() * diff;
+    npoints_ = vals_.size();
+}
+
+
 inline std::tuple <bool, size_t, real_type> kmesh::find (real_type in) const
 {
     assert(in>=0 && in < domain_len_);

@@ -33,6 +33,7 @@ public:
     matsubara_grid(int min, int max, real_type beta);
     matsubara_grid(const matsubara_grid &rhs);
     matsubara_grid(matsubara_grid&& rhs);
+    matsubara_grid(std::vector<complex_type> const& in);
     int getNumber(complex_type in) const;
     double beta() const { return beta_; }
 
@@ -80,6 +81,16 @@ matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
     spacing_(rhs.spacing_), 
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
+{
+}
+
+template <bool F>
+matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
+    base(in),
+    beta_( PI / std::abs((in[1] - in[0])/2.) ),
+    spacing_(std::abs((in[1] - in[0])/2.)),
+    w_min_(FMatsubaraIndex(in[0], beta_)),
+    w_max_(FMatsubaraIndex(in[in.size() - 1], beta_))
 {
 }
 

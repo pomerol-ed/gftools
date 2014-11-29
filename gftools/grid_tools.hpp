@@ -47,11 +47,14 @@ struct grid_tuple_traits<std::tuple<GridTypes...> >
     static int get_total_size(const grid_tuple_type& grids){auto d = get_dimensions(grids); return std::accumulate(d.begin(),d.end(),1,std::multiplies<int>()); }
     //template <class F> eval(F &&f, arg_tuple in, const grid_tuple_type& grids); 
 
+    /// Find a tuple of nearest points to the given tuple of values
     static point_tuple find_nearest(arg_tuple const& in, const grid_tuple_type& grids) { return find_nearest_(index_gen(),in,grids); }
-
+    /// Shift a tuple of grid::point to the right (if possible) 
     static point_tuple shift(point_tuple const& in, point_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
     static point_tuple shift(point_tuple const& in, arg_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
     static arg_tuple shift(arg_tuple const& in, arg_tuple const& shift, const grid_tuple_type& grids) { return shift_(index_gen(), in, shift, grids); }
+
+    static bool is_equal(grid_tuple_type const& g1, grid_tuple_type const& g2) { return is_equal_(index_gen(), g1, g2); }
 
 protected:
     template <int...S> 
@@ -72,6 +75,8 @@ protected:
         static point_tuple shift_(tuple_tools::extra::arg_seq<S...>, point_tuple in, arg_tuple shift, const grid_tuple_type&grids);
     template <int...S> 
         static arg_tuple shift_(tuple_tools::extra::arg_seq<S...>, arg_tuple in, arg_tuple shift, const grid_tuple_type&grids);
+    template <int...S> 
+        static bool is_equal_(tuple_tools::extra::arg_seq<S...>, grid_tuple_type const& g1, grid_tuple_type const& g2);
 };
 
 template <typename ...GridTypes>
@@ -161,6 +166,17 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple
     return out;
 }
 
+
+template <typename ...GridTypes>
+template <int...S> 
+inline bool grid_tuple_traits<std::tuple<GridTypes...>>::is_equal_(
+        tuple_tools::extra::arg_seq<S...>, grid_tuple_type const& g1, grid_tuple_type const& g2)
+{
+    std::array<bool, N> arr = {{ std::get<S>(g1) == std::get<S>(g2) ... }};
+    bool ok = true;
+    for (int i=0; i<N && ok; i++) { ok = ok && arr[i]; }
+    return ok;
+}
 //impl
 
 template <typename ValueType, template <typename ...> class T, typename GridType1, typename ...GridTypes, typename ...ArgTypes>

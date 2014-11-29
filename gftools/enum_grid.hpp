@@ -1,11 +1,12 @@
 #ifndef ___GFTOOLS_ENUMERATEGRID_HPP___
 #define ___GFTOOLS_ENUMERATEGRID_HPP___
 
+#include <boost/functional/hash.hpp>
 #include "grid_base.hpp"
 
 namespace gftools { 
 
-// A wrapper around int to avoid weird gcc bug
+/// A wrapper around int to avoid weird gcc bug
 struct int_wrap_enumerate_grid
 {
     int v_; 
@@ -14,8 +15,9 @@ struct int_wrap_enumerate_grid
     operator int&(){return v_;}; 
     int_wrap_enumerate_grid(int i=0):v_(i) {}; 
 };
-
-
+/// Make the wrapper hashable
+inline std::size_t hash_value(int_wrap_enumerate_grid const& b) 
+{ boost::hash<int> h; return h(static_cast<int>(b)); }
 
 /** A grid of real values. */
 class enum_grid : public grid_base<int_wrap_enumerate_grid, enum_grid>
@@ -32,6 +34,7 @@ public:
      */
     enum_grid(int min, int max, bool include_last = false);
     enum_grid(const std::vector<int>& in):base( ([&in](){std::vector<typename point::value_type> out(in.size()); for (int i=0; i<out.size(); ++i) out[i]=in[i]; return out; })()) {}
+    enum_grid(const std::vector<int_wrap_enumerate_grid>& in):base(in){}
     enum_grid(enum_grid&& rhs);
     enum_grid(const enum_grid& rhs):base(rhs){}
     enum_grid& operator=(enum_grid &&rhs);

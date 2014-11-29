@@ -129,6 +129,11 @@ TEST_F(gridobject_test1, IO)
     gf_t g2(gf.grids());
     g2.loadtxt("g1.dat");
     EXPECT_DOUBLE_EQ(g2.diff(gf),0.0);
+
+    auto g3 = loadtxt<gf_t>("g1.dat");
+    std::cout << "(g3 == g) = " << is_float_equal(g3.diff(gf), 0.0) << std::endl;
+    g3.savetxt("g2.dat");
+    EXPECT_DOUBLE_EQ(g3.diff(gf),0.0);
 }
 
 

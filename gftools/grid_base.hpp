@@ -253,7 +253,7 @@ inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const
 { 
     bool out = (this->size() == rhs.size()); 
     for (int i=0; i<vals_.size() && out; i++) { 
-        out = out && vals_[i].value() == rhs.vals_[i].value(); 
+        out = out && vals_[i] == rhs.vals_[i]; 
     }
     return out;
 }
