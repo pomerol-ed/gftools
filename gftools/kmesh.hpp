@@ -112,10 +112,9 @@ auto kmesh::integrate(const Obj &in) const -> decltype(in(vals_[0]))
 inline real_type kmesh::shift(real_type in, real_type shift_arg) const
 {
     assert (in>=0 && in < domain_len_);
-    //if (std::abs(real_type(shift_arg))<std::numeric_limits<real_type>::epsilon()) return in;
     real_type out;
     out = in + real_type(shift_arg); 
-    out-= std::floor(out/domain_len_)*domain_len_;
+    out-= domain_len_*(tools::is_float_equal(out, domain_len_, num_io<double>::tolerance())?1.0:std::floor(out/domain_len_));
     return out;
 }
 /*

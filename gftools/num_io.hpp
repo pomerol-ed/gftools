@@ -38,15 +38,18 @@ struct num_io {
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
     }; 
 
-    static const int precision() { return prec_; }
+    static constexpr int precision() { return prec_; }
+    static constexpr double tolerance() { return tol_; }
 
     friend std::ostream& operator<< <>(std::ostream& lhs, const num_io<T> &in);
     friend std::istream& operator>> <>(std::istream& lhs, num_io<T> out);
 
-    /** Underlying value. */
+    /// Underlying value.
     type& value_;
-    /** Output precision. */
-    static const int prec_ = 12;
+    /// Output precision. 
+    static constexpr int prec_ = 12;
+    /// Comparison tolerance
+    static constexpr double tol_ = 1e-10;
 };
 
 template <typename T>

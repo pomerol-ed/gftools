@@ -222,7 +222,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
     if (!tools::is_float_equal(p1.val_, out, std::abs(p1.val_ - ((p1.index_!=0)?vals_[p1.index_ - 1]:vals_[p1.index_+1]).val_)/10.)) { 
         #ifndef NDEBUG
-        ERROR("Couldn't shift point" <<  in << " by " << shift_arg);
+        ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
         #endif
         throw (ex_wrong_index());
         }
@@ -250,10 +250,9 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 template <typename ValueType, class Derived>
 inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const 
 { 
-    double tol = 5*std::pow(10., -num_io<double>::precision()); 
     bool out = (this->size() == rhs.size()); 
     for (int i=0; i<vals_.size() && out; i++) { 
-        out = out && tools::is_float_equal(vals_[i].value(), rhs.vals_[i].value(), tol); 
+        out = out && tools::is_float_equal(vals_[i].value(), rhs.vals_[i].value(), num_io<double>::tolerance()); 
     }
     return out;
 }
