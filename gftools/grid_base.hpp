@@ -56,7 +56,6 @@ public:
 
     typedef ValueType value_type;
 
-
     grid_base(const std::vector<point> & vals);
 
     /** Empty constructor. */
@@ -251,9 +250,10 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 template <typename ValueType, class Derived>
 inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const 
 { 
+    double tol = 5*std::pow(10., -num_io<double>::precision()); 
     bool out = (this->size() == rhs.size()); 
     for (int i=0; i<vals_.size() && out; i++) { 
-        out = out && vals_[i] == rhs.vals_[i]; 
+        out = out && tools::is_float_equal(vals_[i].value(), rhs.vals_[i].value(), tol); 
     }
     return out;
 }

@@ -38,6 +38,8 @@ struct num_io {
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
     }; 
 
+    static const int precision() { return prec_; }
+
     friend std::ostream& operator<< <>(std::ostream& lhs, const num_io<T> &in);
     friend std::istream& operator>> <>(std::istream& lhs, num_io<T> out);
 
