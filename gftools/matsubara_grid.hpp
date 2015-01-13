@@ -91,8 +91,8 @@ matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
     base(in),
     beta_( PI / std::abs((in[1] - in[0])/2.) ),
     spacing_(std::abs((in[1] - in[0])/2.)),
-    w_min_(FMatsubaraIndex(in[0], beta_)),
-    w_max_(FMatsubaraIndex(in[in.size() - 1], beta_))
+    w_min_(MatsubaraIndex<F>(in[0], beta_)),
+    w_max_(MatsubaraIndex<F>(in[in.size() - 1], beta_))
 {
 }
 
