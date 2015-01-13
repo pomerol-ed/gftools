@@ -36,6 +36,8 @@ public:
     matsubara_grid(std::vector<complex_type> const& in);
     int getNumber(complex_type in) const;
     double beta() const { return beta_; }
+    int min_n() const { return w_min_; }
+    int max_n() const { return w_max_; }
 
     point find_nearest(complex_type in) const;
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
