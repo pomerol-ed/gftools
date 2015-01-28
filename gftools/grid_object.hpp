@@ -99,7 +99,10 @@ public:
     /// Returns the data_ container. 
     container_type& data(){return data_;}
     container_type const& data() const {return data_;}
-    function_type& tail(){return tail_;}
+    function_type const& tail(){return tail_;}
+
+    void set_tail(function_type&& f){tail_ = f; }
+    void set_tail(function_type const& f){tail_ = f; }
 
 // Global operations - reductions, shifts 
     /// Returns the complex conjugate of this object, if it's complex valued. 
