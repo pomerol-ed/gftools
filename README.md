@@ -35,6 +35,10 @@ To compile examples and tests create a build directory and run
 - *cmake* to build tests and examples (optional)
 - *doxygen* for documentation (optional)
 
+##### Extra features
+- FFT support via FFTW
+- HDF5 support via alpscore (http://www.alpscore.org)
+
 ##### Author
 - Andrey Antipov, *Andrey.E.Antipov[at]gmail.com*, 2013-2014
 
