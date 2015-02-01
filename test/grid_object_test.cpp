@@ -102,7 +102,7 @@ TEST_F(gridobject_test1, Reductions)
 
     EXPECT_DOUBLE_EQ(gf.sum(),12.);
 
-    gf.tail() = [](int a, complex_type b, double c){return 1.0;}; 
+    gf.set_tail([](int a, complex_type b, double c){return 1.0;}); 
     EXPECT_DOUBLE_EQ(gf.tail()(1.,I,3.),1.0);
     
     auto t1 = gf.points({{3, 1, 7}});
