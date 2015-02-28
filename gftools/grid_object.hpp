@@ -228,27 +228,29 @@ public:
     template <typename CType2>
     grid_object_base& copy_interpolate(const grid_object_base<CType2, GridTypes...> &rhs);
 
+    typedef grid_object<value_type, GridTypes...> gobj_t;
+
 // Math (should be removed to an external algebra class). 
     grid_object_base& operator*= (const grid_object_base & rhs);
     grid_object_base& operator*= (const value_type& rhs);
-    grid_object_base operator* (const grid_object_base & rhs) const;
-    grid_object_base operator* (const value_type & rhs) const;
+    grid_object<value_type, GridTypes...> operator* (const grid_object_base & rhs) const { gobj_t out(this->grids()); out.data() = this->data(); out*=rhs; return out; }  
+    grid_object<value_type, GridTypes...> operator* (const value_type & rhs) const { gobj_t out(*this); out*=rhs; return out; }
     grid_object_base& operator+= (const grid_object_base & rhs);
     grid_object_base& operator+= (const value_type& rhs);
-    grid_object_base operator+ (const grid_object_base & rhs) const;
-    grid_object_base operator+ (const value_type & rhs) const;
+    grid_object<value_type, GridTypes...> operator+ (const grid_object_base & rhs) const { gobj_t out(*this); out+=rhs; return out; }
+    grid_object<value_type, GridTypes...> operator+ (const value_type & rhs) const { gobj_t out(*this); out+=rhs; return out; }
     grid_object_base& operator-= (const grid_object_base & rhs);
     grid_object_base& operator-= (const value_type& rhs);
-    grid_object_base operator- (const grid_object_base & rhs) const;
-    grid_object_base operator- (const value_type & rhs) const;
+    grid_object<value_type, GridTypes...> operator- (const grid_object_base & rhs) const { gobj_t out(*this); out-=rhs; return out; }
+    grid_object<value_type, GridTypes...> operator- (const value_type & rhs) const { gobj_t out(*this); out-=rhs; return out; }
     grid_object_base& operator/= (const grid_object_base & rhs);
     grid_object_base& operator/= (const value_type& rhs);
-    grid_object_base operator/ (const grid_object_base & rhs) const;
-    grid_object_base operator/ (const value_type & rhs) const;
-    friend grid_object_base operator* (const value_type & lhs, const grid_object_base & rhs) {return rhs*lhs;};
-    friend grid_object_base operator+ (const value_type & lhs, const grid_object_base & rhs) {return rhs+lhs;};
-    friend grid_object_base operator- (const value_type & lhs, const grid_object_base & rhs) {return rhs*(-1.0)+lhs;};
-    friend grid_object_base operator/ (const value_type & lhs, const grid_object_base & rhs) {grid_object_base out(rhs); out=lhs; return out/rhs;};
+    grid_object<value_type, GridTypes...> operator/ (const grid_object_base & rhs) const { gobj_t out(*this); out/=rhs; return out; }
+    grid_object<value_type, GridTypes...> operator/ (const value_type & rhs) const { gobj_t out(*this); out/=rhs; return out; }
+    friend grid_object<value_type, GridTypes...> operator* (const value_type & lhs, const grid_object_base & rhs) {return rhs*lhs;};
+    friend grid_object<value_type, GridTypes...> operator+ (const value_type & lhs, const grid_object_base & rhs) {return rhs+lhs;};
+    friend grid_object<value_type, GridTypes...> operator- (const value_type & lhs, const grid_object_base & rhs) {return rhs*(-1.0)+lhs;};
+    friend grid_object<value_type, GridTypes...> operator/ (const value_type & lhs, const grid_object_base & rhs) {grid_object_base out(rhs); out=lhs; return out/rhs;};
 };
 
 template <typename GridObjectType>
