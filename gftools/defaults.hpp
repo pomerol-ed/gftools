@@ -6,13 +6,8 @@
 #include<iostream>
 #include<utility>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-register" 
-    #include<Eigen/Core>
-    #include<Eigen/StdVector>
-#pragma GCC diagnostic pop
-
-
+#include<Eigen/Core>
+#include<Eigen/StdVector>
 
 namespace gftools {
 
