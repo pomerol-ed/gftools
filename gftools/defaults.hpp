@@ -55,7 +55,7 @@ typedef std::complex<real_type> complex_type;
 /** A short name for imaginary unit. */
 static const complex_type I = complex_type(0.0,1.0);    // 'static' to prevent linking problems
 /** A short name for pi. */
-const real_type PI = std::atan(1.0)*4;
+const real_type PI = M_PI;
 
 /*
 template <typename T>
