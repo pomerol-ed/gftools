@@ -6,7 +6,7 @@
 #include <string>
 
 #include "defaults.hpp"
-#include "tools.hpp"
+#include "num_io.hpp"
 
 
 namespace gftools { 
@@ -94,21 +94,11 @@ public:
     template <class Obj>
         auto eval(Obj &in, ValueType x) const ->decltype(in[0])
         { return static_cast<const Derived*>(this)->eval(in,x); };
-    /** Returns a tuple of left closest index, weight, right closest index and weight, which are the closest to input value. */
-    /** Integrate over grid. */
-    //template <class Obj> auto integrate(const Obj &in) const ->decltype(in[vals_[0]]) 
-    //    { return static_cast<const Derived*>(this)->integrate(in); };
-    /** Integrate over grid with extra arguments provided. */
-    template <class Obj, typename std::result_of<Obj(point)>::type> 
-        auto integrate(Obj &&in) const -> 
-            typename std::remove_reference<typename std::result_of<Obj(point)>::type>::type
-                { return static_cast<const Derived*>(this)->integrate(in); };
     /// Make the object printable.
     template <typename ValType, class Derived2> friend std::ostream& operator<<(std::ostream& lhs, const grid_base<ValType,Derived2> &gr);
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
-    //class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
 protected:
     std::vector<point> vals_;
 };
@@ -213,11 +203,11 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ValueType shift_arg) const
 {
-    if (tools::is_float_equal(shift_arg, 0.0)) return in;
+    if (almost_equal(shift_arg, 0.0)) return in;
     ValueType out(in.value());
     out = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
-    if (!tools::is_float_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) { 
+    if (!almost_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) { 
 #ifndef NDEBUG
       ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
 #endif
@@ -238,7 +228,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
     ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
-    if (!tools::is_float_equal(val, vals_[index].value())) throw std::logic_error("float is equal failed."); 
+    if (!almost_equal(val, vals_[index].value())) throw std::logic_error("almost equal failed."); 
     #endif
     return vals_[index];
 
@@ -249,7 +239,7 @@ inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const
 { 
     bool out = (this->size() == rhs.size()); 
     for (int i=0; i<vals_.size() && out; i++) { 
-        out = out && tools::is_float_equal(vals_[i].value(), rhs.vals_[i].value(), num_io<double>::tolerance()); 
+        out = out && almost_equal(vals_[i].value(), rhs.vals_[i].value(), num_io<double>::tolerance()); 
     }
     return out;
 }
@@ -266,12 +256,4 @@ std::ostream& operator<<(std::ostream& lhs, const grid_base<ValueType,Derived> &
     return lhs;
 }
 
-/*template <typename ValueType, class Derived>
-const char* grid_base<ValueType,Derived>::ex_wrong_index::what() const throw(){ 
-     return "Index out of bounds";
-};*/
-
 } // end :: namespace gftools
-
-//#include "grid_tools.hpp"
-

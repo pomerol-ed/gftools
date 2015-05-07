@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "grid_base.hpp"
+#include "tools.hpp"
 
 namespace gftools { 
 

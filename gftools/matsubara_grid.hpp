@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "grid_base.hpp"
+#include "tools.hpp"
 #include <numeric>
 
 namespace gftools { 
