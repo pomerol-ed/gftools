@@ -10,34 +10,45 @@
 
 namespace gftools { 
 
-template <typename ValueType>
-struct point_base : 
-    boost::less_than_comparable<point_base<ValueType>>,
-    boost::equality_comparable<point_base<ValueType>>
+/** This class describes a point on a grid. It has an index (integer) and a value (pretty much anything) , and it 
+maps between the two. The index is used for fast access, and the value is used for other things like interpolation/physics/math.*/
+template <typename ValueType> class point_base : 
+    boost::less_than_comparable<point_base<ValueType> >,
+    boost::equality_comparable<point_base<ValueType> >
  {
+public:
+    //there is a small wrapper for integers down below. Here we exclude grids of ints to avoid confusion in the cast operators. 
     static_assert(!std::is_same<ValueType,int>::value, "Can't create a grid of ints");
 
     typedef ValueType value_type;
 
+    ///cast operator to value type
     operator ValueType() const { return val_; }
+    ///cast operator to index type
     explicit operator size_t() const { return index_; }
+    ///another cast operator to index type
     explicit operator int() const { return index_; }
 
-    point_base(ValueType val, size_t index):val_(val),index_(index){};
-    point_base(const point_base& rhs):val_(rhs.val_),index_(rhs.index_){};
-    point_base(point_base&& rhs):val_(rhs.val_),index_(rhs.index_) {};
+    ///constructor with a pair of values and indices
+    point_base(ValueType val, size_t index):val_(val),index_(index){}
+    ///constructor with another point
+    point_base(const point_base& rhs):val_(rhs.val_),index_(rhs.index_){}
+    ///C++-11 move constructor
+    point_base(point_base&& rhs):val_(rhs.val_),index_(rhs.index_) {}
+
     point_base& operator=(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
     point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
-    point_base () = delete;
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
-    //bool operator!=(const point_base &rhs) const {return !(*this == rhs); }
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
     ValueType value() const { return val_; }
     size_t index() const { return index_; }
 
+protected:
+    ///grid point (in physical units)
     ValueType val_;
+    ///grid point index
     size_t index_;
 }; 
 
@@ -124,7 +135,7 @@ struct function_proxy {
     const Grid& grid_;
     function_proxy(F f, Grid const& grid):f_(f),grid_(grid){}
     typedef typename std::result_of<F(typename Grid::value_type)>::type value_type;
-    value_type operator[](int i) const {return f_((grid_.points()[i]).val_); };
+    value_type operator[](int i) const {return f_((grid_.points()[i]).value()); }
 };
 }
 
@@ -178,7 +189,7 @@ inline std::vector<ValueType> grid_base<ValueType,Derived>::values() const
 {
     std::vector<ValueType> out;
     out.reserve(vals_.size());
-    for (const auto& x : vals_) out.emplace_back(x.val_);
+    for (const auto& x : vals_) out.emplace_back(x.value());
     return out;
 }
 
@@ -191,14 +202,14 @@ inline size_t grid_base<ValueType,Derived>::size() const
 template <typename ValueType, class Derived>
 inline bool grid_base<ValueType,Derived>::check_point(point in, real_type tolerance) const
 {
-    return (in.index_ < vals_.size() && std::abs(in.val_ - vals_[in.index_].val_) < tolerance);
+    return (in.index() < vals_.size() && std::abs(in.value() - vals_[in.index()].value()) < tolerance);
 }
 
 template <typename ValueType, class Derived>
 template <class Obj>
 inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0]) 
 {
-    if (check_point(x)) return in[x.index_];
+    if (check_point(x)) return in[x.index()];
     else { ERROR ("Point not found"); throw ex_wrong_index(); };
 }
 
@@ -209,7 +220,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
         "Default find_nearest is written only for less-comparable types");
     auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in, [](ValueType x, ValueType y){return x<y;});
     size_t dist = std::distance(vals_.begin(), nearest_iter);
-    if (dist > 0 && std::abs(complex_type(vals_[dist].val_) - complex_type(in)) > std::abs(complex_type(vals_[dist-1].val_) - complex_type(in)) ) dist--;
+    if (dist > 0 && std::abs(complex_type(vals_[dist].value()) - complex_type(in)) > std::abs(complex_type(vals_[dist-1].value()) - complex_type(in)) ) dist--;
     return vals_[dist];
 } 
 
@@ -217,10 +228,10 @@ template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ValueType shift_arg) const
 {
     if (tools::is_float_equal(shift_arg, 0.0)) return in;
-    ValueType out(in.val_);
+    ValueType out(in.value());
     out = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
-    if (!tools::is_float_equal(p1.val_, out, std::abs(p1.val_ - ((p1.index_!=0)?vals_[p1.index_ - 1]:vals_[p1.index_+1]).val_)/10.)) { 
+    if (!tools::is_float_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) { 
         #ifndef NDEBUG
         ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
         #endif
@@ -238,10 +249,10 @@ inline ValueType grid_base<ValueType,Derived>::shift(ValueType in, ValueType shi
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, point shift_arg) const
 {
-    size_t index = (in.index_ + shift_arg.index_)%vals_.size();
+    size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
-    ValueType val = static_cast<const Derived*>(this)->shift(in.val_, shift_arg.val_);
-    if (!tools::is_float_equal(val, vals_[index].val_)) throw (ex_wrong_index()); 
+    ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
+    if (!tools::is_float_equal(val, vals_[index].value())) throw (ex_wrong_index()); 
     #endif
     return vals_[index];
 

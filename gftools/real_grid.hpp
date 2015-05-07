@@ -109,7 +109,7 @@ inline bool real_grid::check_uniform_()
 { 
     bool is_uniform = true; 
     for (int i=0; i<int(vals_.size())-2 && is_uniform; i++) { 
-        is_uniform = is_uniform && tools::is_float_equal(vals_[i+2].val_-vals_[i+1].val_, vals_[i+1].val_ - vals_[i].val_);
+        is_uniform = is_uniform && tools::is_float_equal(vals_[i+2].value()-vals_[i+1].value(), vals_[i+1].value() - vals_[i].value());
         }
     is_uniform_ = is_uniform;
     return is_uniform;
@@ -125,12 +125,12 @@ template <class Obj>// decltype (std::declval<Obj>()[0])>
     R s = 0.0;
     if (!is_uniform_ || n<8) {
         //DEBUG("Using trapezoidal integration");
-        for (int i=0; i<n-1; i++) s+=(v[i+1] + v[i])*(vals_[i+1].val_ - vals_[i].val_);
+        for (int i=0; i<n-1; i++) s+=(v[i+1] + v[i])*(vals_[i+1].value() - vals_[i].value());
         return 0.5*s;
         }
     //DEBUG("Using simpson");
     for (int i=4;i<n-4;i++) { s += 48.*v[i]; }
-    auto dx = vals_[1].val_ - vals_[0].val_;
+    auto dx = vals_[1].value() - vals_[0].value();
     return dx/48.*(17.*v[0] + 59.*v[1] + 43.*v[2]+49.*v[3] + s + 49. *v[n-4] + 43.*v[n-3] + 59.*v[n-2] + 17.*v[n-1]);
 }
 

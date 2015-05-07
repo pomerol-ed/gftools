@@ -1,5 +1,4 @@
-#ifndef ___GFTOOLS_TOOLS_HPP___
-#define ___GFTOOLS_TOOLS_HPP___
+#pragma once
 
 #include <tuple>
 #include <array>
@@ -181,4 +180,3 @@ template <typename Arg, typename ... Extras> struct repeater<Arg,1,Extras...> {
 } // end namespace gftools
 
 
-#endif // endif::ifndef ___GFTOOLS_TOOLS_HPP___

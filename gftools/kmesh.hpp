@@ -175,7 +175,7 @@ template <class Obj>
 inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find_nearest(x);
-    if (!tools::is_float_equal(find_result.val_, x)) { ERROR("Can't eval point out of bounds."); throw (ex_wrong_index()); };
+    if (!tools::is_float_equal(find_result.value(), x)) { ERROR("Can't eval point out of bounds."); throw (ex_wrong_index()); };
     return _parent.eval(in, find_result);
 }
 

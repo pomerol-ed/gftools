@@ -20,17 +20,17 @@ int main()
     DEBUG(n2);
 
     complex_type freq = FMatsubara(10,20);
-    bool success = tools::is_float_equal(freq, n2.find_nearest(freq).val_);
+    bool success = tools::is_float_equal(freq, n2.find_nearest(freq).value());
     std::cout << freq << " == " << n2.find_nearest(freq) << " = " << std::boolalpha << success << std::endl;
     if (!success) return EXIT_FAILURE;
 
     freq = FMatsubara(20,20);
-    success = tools::is_float_equal(freq, n2.find_nearest(freq).val_);
+    success = tools::is_float_equal(freq, n2.find_nearest(freq).value());
     std::cout << freq << " == " << n2.find_nearest(freq) << " = " << std::boolalpha << success << std::endl;
     if (!success) return EXIT_FAILURE;
 
     freq = FMatsubara(32,20);
-    success = (n2.size()-1 == n2.find_nearest(freq).index_);
+    success = (n2.size()-1 == n2.find_nearest(freq).index());
     if (!success) return EXIT_FAILURE;
 
     INFO(n2.find_nearest(FMatsubara(35,20)));

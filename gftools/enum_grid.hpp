@@ -71,9 +71,9 @@ inline enum_grid& enum_grid::operator=(enum_grid &&rhs)
 
 inline std::tuple<bool, size_t, int> enum_grid::find (int in) const
 {
-    if (in<vals_[0].val_) { ERROR("out of bounds"); return std::make_tuple(0,0,0);};
-    if (in > vals_[vals_.size()-1].val_) { ERROR("out of bounds"); return std::make_tuple(0,vals_.size(),0);}; 
-    return std::make_tuple (1,in-vals_[0].val_,1);
+    if (in<vals_[0].value()) { ERROR("out of bounds"); return std::make_tuple(0,0,0);};
+    if (in > vals_[vals_.size()-1].value()) { ERROR("out of bounds"); return std::make_tuple(0,vals_.size(),0);}; 
+    return std::make_tuple (1,in-vals_[0].value(),1);
 }
 
 template <class Obj>
@@ -89,8 +89,8 @@ inline auto enum_grid::eval(Obj &in, int x) const ->
 template <class Obj>
 inline auto enum_grid::eval(Obj &in, enum_grid::point x) const ->decltype(in[0]) 
 {
-    if (x.index_ < vals_.size() && x == vals_[x.index_])
-    return in[x.index_];
+    if (x.index() < vals_.size() && x == vals_[x.index()])
+    return in[x.index()];
     else { 
         #ifndef NDEBUG
         ERROR ("Point not found"); 
