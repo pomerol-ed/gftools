@@ -51,37 +51,22 @@ template<typename T> std::ostream& operator<<(std::ostream& lhs, const point_bas
   lhs<<"{"<<p.value()<<"<-["<<p.index()<<"]}"; return lhs;
 }
 
-/** A representation of a one-dimensional grid, which stores an array of the ValueType values. */
-//template <typename ValueType, class Derived, typename = typename std::enable_if<!std::is_same<ValueType, int>::value>::type>
+/** A one-dimensional grid, which stores an array of values. Typical examples: grid of real frequencies. Grid of k-points. Grid of Matsubara frequencies. Grid of imaginary times.*/
 template <typename ValueType, class Derived>
-class grid_base : public boost::equality_comparable<grid_base<ValueType, Derived>> {
+class grid_base : public boost::equality_comparable<grid_base<ValueType, Derived> > {
 public:
-    /** A point combines a point of the grid and it's index. */
-    struct point : point_base<ValueType> { 
-        //point():point_base<ValueType>::point_base(){};
-        point(ValueType val, size_t index):point_base<ValueType>::point_base(val,index){};
-        point(const point_base<ValueType> &in):point_base<ValueType>::point_base(in){};
-        point(point_base<ValueType> &&in):point_base<ValueType>::point_base(std::forward<point_base<ValueType>>(in)){};
-        };
-
+    typedef point_base<ValueType> point;
     typedef ValueType value_type;
 
-    grid_base(const std::vector<point> & vals);
-
-    /** Empty constructor. */
+    /** constructor a grid out of thin air. */
     grid_base();
-    /** Copy from vector. */
+    /** construct a grid given a vector of points. */
+    grid_base(const std::vector<point> & vals);
+    /** construct a grid from a vector of values (but not associated indices that would be stored in points). */
     grid_base(const std::vector<ValueType> & vals);
-    /** Initialize the values from a given function, that maps the integer values
-     * to the ValueType values.
-     */
+    /** Initialize the values from an external function that maps the integer values to the ValueType values. */
     grid_base(int min, int max, std::function<ValueType (int)> f);
-    /** Copy constructor. */
-    grid_base(const grid_base& rhs):vals_(rhs.vals_){};
-    /** Move constructor. */
-    grid_base(grid_base&& rhs){vals_.swap(rhs.vals_);};
-    /** rvalue assignment. */
-    grid_base& operator=(grid_base &&rhs){vals_.swap(rhs.vals_); return (*this);};
+    
     /** Returns a value at given index. */
     point operator[](size_t in) const;
     /** Returns all values. */
