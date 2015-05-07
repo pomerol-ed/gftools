@@ -80,7 +80,7 @@ namespace extra {
                 head_type out; 
                 num_io<head_type> t1(out);
                 in >> t1;
-                return std::tuple_cat(std::make_tuple(t1.value_),tuple_io<tail_type>::read(in));
+                return std::tuple_cat(std::make_tuple(t1()),tuple_io<tail_type>::read(in));
                 }
         };
     template <typename ArgType> struct tuple_io<std::tuple<ArgType>> 
@@ -98,7 +98,7 @@ namespace extra {
                 ArgType out;
                 num_io<ArgType> t1(out);
                 in >> t1;
-                return std::make_tuple(t1.value_);
+                return std::make_tuple(t1());
             };
         };
 }; // end of namespace extra

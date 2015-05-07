@@ -17,12 +17,12 @@ int main()
         test_type b = 1.0;
         num_io<test_type> b_io(b);
         b_io.loadtxt("a.dat");
-        std::cout << "(double) b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,b,a_io.prec_)) return EXIT_FAILURE;
+        std::cout << "(double) b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,b,a_io.precision())) return EXIT_FAILURE;
 
-        test_type c = b_io;
-        std::cout << "(double) c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,c,a_io.prec_)) return EXIT_FAILURE;
+        test_type c = b_io();
+        std::cout << "(double) c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,c,a_io.precision())) return EXIT_FAILURE;
         std::cout << "PASSED : " << a << std::endl << std::endl;
     };
 
@@ -37,12 +37,12 @@ int main()
         test_type b = 1.0;
         num_io<decltype(b)> b_io(b);
         b_io.loadtxt("a.dat");
-        std::cout << "b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,b,a_io.prec_)) return EXIT_FAILURE;
+        std::cout << "b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,b,a_io.precision())) return EXIT_FAILURE;
 
-        test_type c = b_io;
-        std::cout << "c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,c,a_io.prec_)) return EXIT_FAILURE;
+        test_type c = b_io();
+        std::cout << "c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,c,a_io.precision())) return EXIT_FAILURE;
         std::cout << "PASSED : " << a << std::endl << std::endl;
     };
 
@@ -57,12 +57,12 @@ int main()
         test_type b;
         num_io<decltype(b)> b_io(b);
         b_io.loadtxt("a.dat");
-        std::cout << "b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,b,a_io.prec_)) return EXIT_FAILURE;
+        std::cout << "b == a = " << std::boolalpha <<  tools::is_float_equal(a,b,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,b,a_io.precision())) return EXIT_FAILURE;
 
-        test_type c = b_io;
-        std::cout << "c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.prec_) << std::endl;
-        if (!tools::is_float_equal(a,c,a_io.prec_)) return EXIT_FAILURE;
+        test_type c = b_io();
+        std::cout << "c == a = " << std::boolalpha <<  tools::is_float_equal(a,c,a_io.precision()) << std::endl;
+        if (!tools::is_float_equal(a,c,a_io.precision())) return EXIT_FAILURE;
         std::cout << "PASSED : " << a << std::endl << std::endl;
     };
 

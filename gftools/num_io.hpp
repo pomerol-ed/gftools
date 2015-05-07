@@ -6,33 +6,28 @@
 
 namespace gftools {
 
-/** num_io is a wrapper around object of type T for various input/output operations, 
-    such as streaming, saving to/loading from plaintext files.  */
-template <typename T> struct num_io;
-
-/** Read from stream. */
-template <typename T> std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in);
-/** Write to stream. */
-template <typename T> std::istream& operator>>(std::istream& lhs, num_io<T> out);
-
-template <typename T> 
-struct num_io {
+/** num_io is a wrapper around another object (of type T). 
+    num_io does input/output operations.
+    such as streaming, saving to/loading from plaintext files.
+    Internally it stores references to an instance of type T.
+    Typical objects are: numbers, arrays of numbers, complex numbers, grid points*/
+template <typename T> class num_io {
+public:
     typedef typename std::remove_reference<T>::type type; 
 
     /// Construct from value
-    num_io(type& v):value_(v){};
-    /// Delete default constructor
-    num_io()=delete;
-    /// Delete copy constructor 
-    //num_io(const num_io&)=delete;
+    num_io(type& v):value_(v){}
 
-    //num_io(num_io && r):value_(r.value_){};
-
-    operator T(){return value_;};
+    /// Access the internally stored value
+    type &operator()(){return value_;}
+    /// Const access to the internally stored value
+    const type &operator()() const{return value_;}
+    /// Save the object to a file with a filename passed in as a name
     void savetxt(const std::string& filename) { 
         std::cout << "Saving " << typeid(*this).name() << " to " << filename << std::endl;
         std::ofstream out; out.open(filename.c_str()); out << *this << std::endl; out.close(); 
     }; 
+    /// Read the object from a file with a filename passed in as a name
     void loadtxt(const std::string& filename) { 
         std::cout << "Loading " << typeid(*this).name() << " from " << filename << std::endl;
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
@@ -41,28 +36,26 @@ struct num_io {
     static constexpr int precision() { return prec_; }
     static constexpr double tolerance() { return tol_; }
 
-    friend std::ostream& operator<< <>(std::ostream& lhs, const num_io<T> &in);
-    friend std::istream& operator>> <>(std::istream& lhs, num_io<T> out);
-
+private:
     /// Underlying value.
     type& value_;
-    /// Output precision. 
-    static constexpr int prec_ = 12;
+    /// Output precision. TODO: replace c++-11 construct constexpr with something backwards compatible.
+    static constexpr int prec_ = std::numeric_limits<double>::max_digits10;
     /// Comparison tolerance
     static constexpr double tol_ = 1e-10;
 };
 
-template <typename T>
-num_io<T> make_num_io (T &v){return num_io<T>(v);}
-
+template <typename T> inline std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in) {
+  lhs << std::setprecision(in.precision()) << in(); return lhs;
+};
 template <typename T> 
-inline std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in) {lhs << std::setprecision(in.prec_) << in.value_; return lhs;};
-template <typename T> 
-inline std::istream& operator>>(std::istream& lhs, num_io<T> out) {lhs >> out.value_; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<T> out) {
+  lhs >> out(); return lhs;
+}
 template <>
-inline std::ostream& operator<<(std::ostream& lhs, const num_io<complex_type> &in){lhs << std::setprecision(in.prec_) << real(in.value_) << " " << imag(in.value_); return lhs;};
+inline std::ostream& operator<<(std::ostream& lhs, const num_io<complex_type> &in){lhs << std::setprecision(in.precision()) << real(in()) << " " << imag(in()); return lhs;};
 template <>
-inline std::istream& operator>>(std::istream& lhs, num_io<complex_type> out){real_type re,im; lhs >> re; lhs >> im; out.value_ = re+I*im; return lhs;};
+inline std::istream& operator>>(std::istream& lhs, num_io<complex_type> out){real_type re,im; lhs >> re; lhs >> im; out() = re+I*im; return lhs;};
 
 
 } // end of namespace gftools

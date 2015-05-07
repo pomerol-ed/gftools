@@ -217,7 +217,7 @@ void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fn
 
         num_io<value_type> tmp2(data_(pts_index));
         in >> tmp2;
-        data_(pts_index) = tmp2.value_;
+        data_(pts_index) = tmp2();
         };
 
 
