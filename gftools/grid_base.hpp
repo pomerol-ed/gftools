@@ -36,7 +36,6 @@ public:
     
     bool operator==(const point_base &rhs) const {return index_ == rhs.index_;}
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
-    friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
     ValueType value() const { return val_; }
     size_t index() const { return index_; }
@@ -47,6 +46,10 @@ protected:
     ///grid point index
     size_t index_;
 }; 
+    
+template<typename T> std::ostream& operator<<(std::ostream& lhs, const point_base<T> &p){
+  lhs<<"{"<<p.value()<<"<-["<<p.index()<<"]}"; return lhs;
+}
 
 /** A representation of a one-dimensional grid, which stores an array of the ValueType values. */
 //template <typename ValueType, class Derived, typename = typename std::enable_if<!std::is_same<ValueType, int>::value>::type>
