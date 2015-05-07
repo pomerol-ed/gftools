@@ -31,13 +31,7 @@ public:
 
     ///constructor with a pair of values and indices
     point_base(ValueType val, size_t index):val_(val),index_(index){}
-    ///constructor with another point
-    point_base(const point_base& rhs):val_(rhs.val_),index_(rhs.index_){}
-    ///C++-11 move constructor
-    point_base(point_base&& rhs):val_(rhs.val_),index_(rhs.index_) {}
-
-    point_base& operator=(point_base&& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
-    point_base operator=(const point_base& rhs) { val_ = rhs.val_, index_ = rhs.index_; return *this;}
+    
     bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
