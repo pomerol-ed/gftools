@@ -197,10 +197,12 @@ public:
         							, value_type>::type
             operator()(ArgTypes... in) const { return (*this)(arg_tuple(std::forward_as_tuple(in...))); }
 
+/* TODO: REEXAMINE THIS!
     template <typename ArgType>
     	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
     	 operator()(ArgType in) const { try { return std::get<0>(grids_).eval(data_, in); } 
             catch (typename std::tuple_element<0, grid_tuple>::type::ex_wrong_index) { return tail_(in); }; }
+*/
 
     /*template <typename ArgType>
         	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type

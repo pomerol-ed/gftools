@@ -175,7 +175,7 @@ template <class Obj>
 inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find_nearest(x);
-    if (!tools::is_float_equal(find_result.value(), x)) { ERROR("Can't eval point out of bounds."); throw (ex_wrong_index()); };
+    if (!tools::is_float_equal(find_result.value(), x)) throw std::logic_error("Can't eval point out of bounds.");
     return _parent.eval(in, find_result);
 }
 
@@ -189,7 +189,7 @@ inline size_t kmesh_patch::get_index(kmesh::point x) const
 {
     auto f1 = mapvals_.find(size_t(x));
     if (f1!=mapvals_.end()) { return f1->second; }
-    else throw (ex_wrong_index());
+    else throw std::logic_error("problem finding index: "+std::to_string(x));
 }
 
 } // end of namespace gftools

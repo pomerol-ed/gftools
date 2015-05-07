@@ -21,7 +21,6 @@ public:
     typedef grid_base<complex_type, matsubara_grid<Fermion>> base;
     typedef typename base::point point;
     using base::vals_;
-    using typename base::ex_wrong_index;
     //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;
     //using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
     /** Inverse temperature. */
@@ -147,7 +146,7 @@ template <class Obj>
 inline auto matsubara_grid<F>::eval(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find_nearest(x);
-    if (!tools::is_float_equal<complex_type>(x,find_result.value())) { throw (ex_wrong_index()); } 
+    if (!tools::is_float_equal<complex_type>(x,find_result.value()))  throw std::logic_error("problem finding complex index: ");
     return in[find_result.index()];
 }
 

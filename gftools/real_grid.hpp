@@ -156,7 +156,7 @@ template <class Obj>
 inline auto real_grid::eval(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0)
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) throw (ex_wrong_index()); 
+    if (!std::get<0>(find_result)) throw std::logic_error("wrong index: "+std::to_string(x)); 
 // linear spline
     auto prev_index = std::get<1>(find_result);
     auto prevval_ue = in[prev_index];

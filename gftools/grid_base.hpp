@@ -3,6 +3,7 @@
 #include <boost/operators.hpp>
 
 #include <iterator>
+#include <string>
 
 #include "defaults.hpp"
 #include "tools.hpp"
@@ -88,7 +89,7 @@ public:
     ValueType shift(ValueType in, ValueType shift_arg) const;
     point shift (point in, point shift_arg) const;
 
-    // CFTP forwards
+    // CRTP forwards: TODO: these will need to be cleaned for C++ and documented.
     /** Get a value of an object at the given coordinate, which is defined on a grid. */
     template <class Obj>
         auto eval(Obj &in, ValueType x) const ->decltype(in[0])
@@ -107,7 +108,7 @@ public:
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
-    class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
+    //class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
 protected:
     std::vector<point> vals_;
 };
@@ -159,7 +160,7 @@ grid_base<ValueType,Derived>::grid_base(int min, int max, std::function<ValueTyp
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::operator[](size_t index) const
 {
-    if (index>vals_.size()) throw ex_wrong_index();
+    if (index>vals_.size()) throw std::logic_error("wrong index" + std::to_string(index) + ".");
     return vals_[index];
 }
 
@@ -195,7 +196,7 @@ template <class Obj>
 inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0]) 
 {
     if (check_point(x)) return in[x.index()];
-    else { ERROR ("Point not found"); throw ex_wrong_index(); };
+    else throw std::logic_error("wrong index: "+std::to_string(x.index()));
 }
 
 template <typename ValueType, class Derived>
@@ -217,11 +218,11 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     out = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
     if (!tools::is_float_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) { 
-        #ifndef NDEBUG
-        ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
-        #endif
-        throw (ex_wrong_index());
-        }
+#ifndef NDEBUG
+      ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
+#endif
+      throw std::logic_error("Couldn't shift point");
+    }
     else return p1;
 }
 
@@ -237,7 +238,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
     ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
-    if (!tools::is_float_equal(val, vals_[index].value())) throw (ex_wrong_index()); 
+    if (!tools::is_float_equal(val, vals_[index].value())) throw std::logic_error("float is equal failed."); 
     #endif
     return vals_[index];
 
@@ -265,10 +266,10 @@ std::ostream& operator<<(std::ostream& lhs, const grid_base<ValueType,Derived> &
     return lhs;
 }
 
-template <typename ValueType, class Derived>
+/*template <typename ValueType, class Derived>
 const char* grid_base<ValueType,Derived>::ex_wrong_index::what() const throw(){ 
      return "Index out of bounds";
-};
+};*/
 
 } // end :: namespace gftools
 
