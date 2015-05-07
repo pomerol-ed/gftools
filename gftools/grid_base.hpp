@@ -71,7 +71,7 @@ public:
     point operator[](size_t in) const;
     /** Returns all values. */
     const std::vector<point> & points() const;
-    /** Returns values of all points. */
+    /** Returns values of all points. (computed on the fly, slow)*/
     std::vector<ValueType> values() const;
     /** Checks if a point is present in a grid. */
     bool check_point(point in, real_type tolerance = std::numeric_limits<real_type>::epsilon()) const;
@@ -107,8 +107,9 @@ public:
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
-    std::vector<point> vals_;
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(); }; 
+protected:
+    std::vector<point> vals_;
 };
 
 namespace extra { 
