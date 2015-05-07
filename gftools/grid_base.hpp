@@ -13,7 +13,9 @@ namespace gftools {
 /** This class describes a point on a grid. It has an index (integer) and a value (pretty much anything) , and it 
 maps between the two. The index is used for fast access, and the value is used for other things like interpolation/physics/math.*/
 template <typename ValueType> class point_base : 
+    ///dependence on this provides additional comparison operators
     boost::less_than_comparable<point_base<ValueType> >,
+    ///dependence on this provides additional comparison operators
     boost::equality_comparable<point_base<ValueType> >
  {
 public:
@@ -32,7 +34,7 @@ public:
     ///constructor with a pair of values and indices
     point_base(ValueType val, size_t index):val_(val),index_(index){}
     
-    bool operator==(const point_base &rhs) const {return (val_ == rhs.val_) && (index_ == rhs.index_);}
+    bool operator==(const point_base &rhs) const {return index_ == rhs.index_;}
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
     friend std::ostream& operator<<(std::ostream& lhs, const point_base &p){lhs<<"{"<<p.val_<<"<-["<<p.index_<<"]}"; return lhs;};
 
