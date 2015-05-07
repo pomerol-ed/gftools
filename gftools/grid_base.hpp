@@ -7,6 +7,7 @@
 
 #include "defaults.hpp"
 #include "num_io.hpp"
+#include "almost_equal.hpp"
 
 
 namespace gftools { 
