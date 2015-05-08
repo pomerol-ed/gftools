@@ -9,6 +9,7 @@
 namespace gftools { 
 
 ///this class implements a regular equidistant grid, typically used as a regular k-space grid between 0 and 2PI.
+///lower boundary is always zero
 class kmesh : public grid_base<real_type, kmesh>
 {
 public:
@@ -22,12 +23,18 @@ public:
     kmesh():npoints_(0){};
     ///constructor from a vector of regularly spaced ints
     kmesh(std::vector<real_type> const& in);
+   
+    ///given a double 'in', it finds that double in the grid.
+    ///The first return value is whether it has been found or not 
+    ///The second return value is the index.
+    ///The third return value 'weight' measures how close the point is to a grid point
+    std::tuple <bool, size_t, real_type> find(real_type in) const ;
     
-    std::tuple <bool, size_t, real_type> find (real_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
-    //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
     template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]) { return base::eval(in,x); }
+   
+    ///shift implements a periodic operator+ in three variants 
     real_type shift(real_type in,real_type shift_arg) const;
     point shift(point in, real_type shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
     point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
@@ -64,15 +71,15 @@ inline kmesh::kmesh(std::vector<real_type> const& in):
 }
 
 
-inline std::tuple <bool, size_t, real_type> kmesh::find (real_type in) const
+inline std::tuple <bool, size_t, real_type> kmesh::find(real_type in) const
 {
     assert(in>=0 && in < domain_len_);
     int n = std::lround(in/domain_len_*npoints_);
-    if (n<0) { ERROR("kmesh point is out of bounds, " << in << "<" << 0); return std::make_tuple(0,0,0); };
+    if (n<0) { ERROR("kmesh point is out of bounds, " << in << "<" << 0); return std::make_tuple(false,0,0); };
     if (n==npoints_) n=0; 
-    if (n>npoints_) { ERROR("kmesh point is out of bounds, " << in << ">" << domain_len_); return std::make_tuple(0,npoints_,0); };
+    if (n>npoints_) { ERROR("kmesh point is out of bounds, " << in << ">" << domain_len_); return std::make_tuple(false,npoints_,0); };
     real_type weight=in/domain_len_*npoints_-real_type(n);
-    return std::make_tuple (1,n,weight);
+    return std::make_tuple (true,n,weight);
 }
 
 
