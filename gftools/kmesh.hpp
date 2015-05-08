@@ -32,20 +32,6 @@ public:
     point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
 };
 
-struct kmesh_patch : public kmesh 
-{
-    std::map<size_t,size_t> mapvals_;
-public:
-    const kmesh& _parent;
-    size_t _npoints;
-    using kmesh::vals_;
-    kmesh_patch(const kmesh& parent, std::vector<size_t> indices);
-    kmesh_patch(const kmesh& parent);
-    template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
-    template <class Obj> auto eval(Obj &in, kmesh::point x) const ->decltype(in[0]);
-    size_t get_index(kmesh::point x) const;
-};
-
 //
 // kmesh
 //
@@ -56,15 +42,6 @@ domain_len_(len),
 npoints_(n_points)
 {
 }
-/*
-kmesh::kmesh(const kmesh& rhs):grid_base(rhs.vals_),npoints_(rhs._points)
-{
-}
-
-kmesh::kmesh(kmesh &&rhs):grid_base(rhs.vals_),npoints_(rhs.npoints_)
-{
-}
-*/
 
 inline kmesh::kmesh(std::vector<real_type> const& in):
     base(in)
@@ -116,80 +93,6 @@ inline real_type kmesh::shift(real_type in, real_type shift_arg) const
     out = in + real_type(shift_arg); 
     out-= domain_len_*(almost_equal(out, domain_len_, num_io<double>::tolerance())?1.0:std::floor(out/domain_len_));
     return out;
-}
-/*
-inline typename kmesh::point kmesh::shift(point in, real_type shift_arg) const
-{
-    DEBUG(in);
-    point out;
-    if (tools::is_float_equal(shift_arg, 0.0)) return in;
-    out.val_ = this->shift(real_type(in),shift_arg);
-    DEBUG(out.val_);
-    point p1 = this->find_nearest(out.val_);
-    if (!tools::is_float_equal(p1.val_, out.val_)) { 
-        std::cerr << "Couldn't shift point" << std::endl; 
-        throw (ex_wrong_index());
-        }
-    else return p1;
-}
-*/
-/*
-inline typename kmesh::point kmesh::shift(point in, point shift_arg) const
-{
-    size_t index = (in.index_ + shift_arg.index_)%vals_.size();
-    #ifndef NDEBUG
-    real_type val = this->shift(in.val_, shift_arg.val_);
-    if (!tools::is_float_equal(val, vals_[index].val_)) throw (ex_wrong_index()); 
-    #endif
-    return vals_[index];
-}
-*/
-
-//
-// kmesh_patch
-//
-
-
-inline kmesh_patch::kmesh_patch(const kmesh& parent, std::vector<size_t> indices):
-    kmesh(indices.size()),
-    _parent(parent),
-    _npoints(indices.size())
-{
-    for (size_t i=0; i<_npoints; ++i) {
-        vals_[i]=_parent[indices[i]]; 
-        mapvals_[size_t(vals_[i])] = i;
-        }
-}
-
-inline kmesh_patch::kmesh_patch(const kmesh& parent):
-    _parent(parent),
-    _npoints(parent.size())
-{
-    vals_ = parent.points();
-     for (size_t i=0; i<_npoints; ++i) {
-        mapvals_[size_t(vals_[i])] = i;
-        }
-}
-
-template <class Obj> 
-inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
-{
-    const auto find_result=_parent.find_nearest(x);
-    if (!almost_equal(find_result.value(), x)) throw std::logic_error("Can't eval point out of bounds.");
-    return _parent.eval(in, find_result);
-}
-
-template <class Obj> 
-inline auto kmesh_patch::eval(Obj &in, kmesh::point x) const ->decltype(in[0])
-{
-    return in[this->get_index(x)];
-}
-
-inline size_t kmesh_patch::get_index(kmesh::point x) const
-{
-    auto f1 = mapvals_.find(size_t(x));
-    if (f1!=mapvals_.end()) { return f1->second; }
-    else throw std::logic_error("problem finding index: "+std::to_string(x));
 }
 
 } // end of namespace gftools

@@ -1,5 +1,6 @@
 
 #include "kmesh.hpp"
+#include "kmesh_patch.hpp"
 
 using namespace gftools;
 int main()
