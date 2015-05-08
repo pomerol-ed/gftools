@@ -6,30 +6,43 @@
 
 namespace gftools { 
 
-template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){return M_PI*I/beta*complex_type(2*n+Fermion);};
-template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){return std::round((beta*imag(in)/M_PI-Fermion)/2.0);};
-
-inline complex_type FMatsubara(int n, real_type beta){return Matsubara<1>(n,beta);};
-inline complex_type BMatsubara(int n, real_type beta){return Matsubara<0>(n,beta);};
-inline int FMatsubaraIndex(complex_type in, real_type beta){return MatsubaraIndex<1>(in,beta);};
-inline int BMatsubaraIndex(complex_type in, real_type beta){return MatsubaraIndex<0>(in,beta);};
+///given an index n, return the complex Matsubara frequency. This works for Fermions (1) and Bosons (0)
+template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){
+  return M_PI*I/beta*complex_type(2*n+Fermion);
+}
+///given a complex matsubara frequency in, return the Matsubara index. This works for Fermions (1) and Bosons (0)
+template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){
+  return std::round((beta*imag(in)/M_PI-Fermion)/2.0);
+}
+///Fermion Matsubara frequency
+inline complex_type FMatsubara(int n, real_type beta){
+  return Matsubara<1>(n,beta);
+}
+///Boson Matsubara frequency
+inline complex_type BMatsubara(int n, real_type beta){
+  return Matsubara<0>(n,beta);
+}
+///Fermion Matsubara index 
+inline int FMatsubaraIndex(complex_type in, real_type beta){
+  return MatsubaraIndex<1>(in,beta);
+}
+///Boson Matsubara index 
+inline int BMatsubaraIndex(complex_type in, real_type beta){
+  return MatsubaraIndex<0>(in,beta);
+}
 
 /** A Grid of fermionic Matsubara frequencies. */
 template <bool Fermion>
-class matsubara_grid : public grid_base<complex_type, matsubara_grid<Fermion>>
+class matsubara_grid : public grid_base<complex_type, matsubara_grid<Fermion> >
 {
 public:
-    typedef grid_base<complex_type, matsubara_grid<Fermion>> base;
+    ///Type of the general grid_base from which this Matsubara grid is derived.
+    typedef grid_base<complex_type, matsubara_grid<Fermion> > base;
+    ///Type of a point on the grid.
     typedef typename base::point point;
+    ///using the super class vals_ entry, this is equivalent to this->vals_
     using base::vals_;
-    //typedef typename grid_base<complex_type, matsubara_grid<Fermion>>::point point;
-    //using typename grid_base<complex_type, matsubara_grid<Fermion>>::point;
-    /** Inverse temperature. */
-    const real_type beta_;
-    /** Spacing between values. */
-    const real_type spacing_;
-    /** Min and max numbers of freq. - useful for searching. */
-    const int w_min_, w_max_;
+
     matsubara_grid(int min, int max, real_type beta);
     matsubara_grid(const matsubara_grid &rhs);
     matsubara_grid(matsubara_grid&& rhs);
@@ -46,6 +59,13 @@ public:
     template <class Obj> auto eval(Obj &in, complex_type x) const ->decltype(in[0]);
     //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
     //using base::eval;
+protected:
+    /** Inverse temperature. */
+    const real_type beta_;
+    /** Spacing between values. */
+    const real_type spacing_;
+    /** Min and max numbers of freq. - useful for searching. */
+    const int w_min_, w_max_;
 };
 
 typedef matsubara_grid<1> fmatsubara_grid;
