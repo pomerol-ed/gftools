@@ -73,7 +73,7 @@ inline G load_grid (alps::hdf5::archive & ar, std::string const & path)
 #define GRID_HDF5_LOADER(T,R)                                                                           \
     template <> struct hdf5_loader<T> {                                                                 \
         static void save(alps::hdf5::archive & ar, std::string const & path, const T& x) {              \
-            std::vector<R> y(x.size()); for (int i=0; i<y.size(); ++i) y[i] = x[i].val_;                \
+            std::vector<R> y(x.size()); for (int i=0; i<y.size(); ++i) y[i] = x[i].value();             \
             ar << alps::make_pvp(path+"/values",y); }                                                   \
         static T load(alps::hdf5::archive & ar, std::string const & path) {                             \
             std::vector<R> g; ar[path+"/values"] >> g; return T(g); }                                   \

@@ -169,14 +169,14 @@ public:
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type
     operator()(typename std::tuple_element<0,grid_tuple>::type::point in) const { 
-        if (in.index() < grid().size() && tools::is_float_equal(in.value(), grid().points()[in.index()])) { return data_[in.index_]; } 
+        if (in.index() < grid().size() && tools::is_float_equal(in.value(), grid().points()[in.index()])) { return data_[in.index()]; } 
         return this->operator()(in.value()); 
         };
 
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type&>::type
     operator()(typename std::tuple_element<0,grid_tuple>::type::point in)
-        { return data_[in.index_]; };
+        { return data_[in.index()]; };
 
 
     template <typename ...ArgTypes>
