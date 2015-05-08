@@ -59,6 +59,7 @@ public:
     ///given a complex number, find the closest point (pair of index and complex value)
     point find_nearest(complex_type in) const;
 
+    ///TODO: remove C++-11
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto eval(Obj &in, complex_type x) const ->decltype(in[0]);
@@ -78,31 +79,12 @@ typedef matsubara_grid<0> bmatsubara_grid;
 
 template <bool F>
 matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
-    //grid_base<complex_type, matsubara_grid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
     grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     beta_(beta), 
     w_min_(min),
     w_max_(max)
 {
 }
-
-/*template <bool F>
-matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) : 
-    grid_base<complex_type, matsubara_grid<F>>(rhs.vals_),
-    beta_(rhs.beta_), 
-    w_min_(rhs.w_min_), 
-    w_max_(rhs.w_max_)
-{
-}
-
-template <bool F>
-matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
-    grid_base<complex_type, matsubara_grid>(rhs.vals_), 
-    beta_(rhs.beta_), 
-    w_min_(rhs.w_min_), 
-    w_max_(rhs.w_max_)
-{
-}*/
 
 template <bool F>
 matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
@@ -129,9 +111,6 @@ auto matsubara_grid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
     // fix prod for more numerical stability
     decltype(in(vals_[0])) R = in(vals_[0]);
     R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {return y*in(x);}); 
-    //decltype(in(vals_[0])) R = in(vals_[vals_.size()/2]);
-    //R=std::accumulate(vals_.begin()+1+vals_.size()/2, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {DEBUG(x << "|" << in(x) << "|" << y << "->" << y*in(x)); return y*in(x);}); 
-    //R=std::accumulate(vals_.begin(), vals_.begin()+vals_.size()/2, R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) &x) {DEBUG(x << "|" << in(x) << "|" << y << "->" << y*in(x)); return y*in(x);}); 
     return R;
 }
 
@@ -139,17 +118,13 @@ template <bool F>
 inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (complex_type in) const
 {
     int n=MatsubaraIndex<F>(in, beta_);
-    #ifndef NDEBUG
-    //DEBUG("Invoking matsubara find");
-    #endif
-    if (n>=w_min_ && n<w_max_) { return vals_[n-w_min_]; }
+    if (n>=w_min_ && n<w_max_) { 
+      return vals_[n-w_min_]; 
+    }
     else { 
-        #ifndef NDEBUG
-        //ERROR("Couldn't find the point");
-        #endif
-        if (n<w_min_) return vals_[0];
-        else return vals_[vals_.size()-1];
-        };
+      if (n<w_min_) return vals_[0];
+      else return vals_[vals_.size()-1];
+    }
 }
 
 template <bool F>
