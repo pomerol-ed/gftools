@@ -45,6 +45,10 @@ private:
     static constexpr double tol_ = 1e-10;
 };
 
+/// A shortcut to make num_io wrapper objects without specifying the template parameter
+template <typename T>
+num_io<T> make_num_io (T &v){return num_io<T>(v);}
+
 template <typename T> inline std::ostream& operator<<(std::ostream& lhs, const num_io<T> &in) {
   lhs << std::setprecision(in.precision()) << in(); return lhs;
 };
