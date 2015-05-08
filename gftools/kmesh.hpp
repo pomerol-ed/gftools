@@ -1,11 +1,10 @@
-#ifndef ___GFTOOLS_KMESH_HPP___
-#define ___GFTOOLS_KMESH_HPP___
+#pragma once
 
 #include <map>
 #include <numeric>
 
 #include "grid_base.hpp"
-#include "tools.hpp"
+#include "almost_equal.hpp"
 
 namespace gftools { 
 
@@ -74,7 +73,7 @@ inline kmesh::kmesh(std::vector<real_type> const& in):
     double diff = vals_[1] - vals_[0];
     bool ok = true;
     for (int i=1; i<vals_.size() && ok; i++) { 
-         ok = tools::is_float_equal(vals_[i] - vals_[i-1], diff, diff * 1e-6); 
+         ok = almost_equal(vals_[i] - vals_[i-1], diff, diff * 1e-6); 
         }
     if (!ok) throw std::logic_error("kmesh should be uniform");
     domain_len_ = vals_.size() * diff;
@@ -115,7 +114,7 @@ inline real_type kmesh::shift(real_type in, real_type shift_arg) const
     assert (in>=0 && in < domain_len_);
     real_type out;
     out = in + real_type(shift_arg); 
-    out-= domain_len_*(tools::is_float_equal(out, domain_len_, num_io<double>::tolerance())?1.0:std::floor(out/domain_len_));
+    out-= domain_len_*(almost_equal(out, domain_len_, num_io<double>::tolerance())?1.0:std::floor(out/domain_len_));
     return out;
 }
 /*
@@ -176,7 +175,7 @@ template <class Obj>
 inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find_nearest(x);
-    if (!tools::is_float_equal(find_result.value(), x)) throw std::logic_error("Can't eval point out of bounds.");
+    if (!almost_equal(find_result.value(), x)) throw std::logic_error("Can't eval point out of bounds.");
     return _parent.eval(in, find_result);
 }
 
@@ -194,4 +193,3 @@ inline size_t kmesh_patch::get_index(kmesh::point x) const
 }
 
 } // end of namespace gftools
-#endif // endif :: ifndef ___GFTOOLS_KMESH_HPP___

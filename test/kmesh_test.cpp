@@ -10,13 +10,13 @@ int main()
     std::function<real_type(real_type)> F1=[](real_type x) {return cos(x);};
     real_type outF1 = k1.integrate(F1);
     std::cout << "sum_k cos(k) = " << outF1 << std::endl;
-    if (!tools::is_float_equal(outF1,0.,1e-8)) return EXIT_FAILURE;
+    if (!almost_equal(outF1,0.,1e-8)) return EXIT_FAILURE;
 
 
     typedef typename kmesh::point point;
     point p1 = k1.find_nearest(M_PI);
     std::cout << "PI == " << p1 << std::endl;
-    if (!tools::is_float_equal(M_PI,double(p1),1e-8)) return EXIT_FAILURE;
+    if (!almost_equal(M_PI,double(p1),1e-8)) return EXIT_FAILURE;
 
     kmesh_patch patch1(k1, {0, 2, 4, 8, 14, 16, 30});
     std::cout << "kmesh patch : " << patch1 << std::endl;
