@@ -10,9 +10,7 @@ namespace gftools {
 
 class kmesh : public grid_base<real_type, kmesh>
 {
-    mutable real_type domain_len_ = 2.0*M_PI;
 public:
-    int npoints_;
     typedef grid_base<real_type, kmesh> base;
     using grid_base<real_type, kmesh>::vals_;
     kmesh(size_t n_points, real_type len = 2.0*M_PI);
@@ -30,6 +28,11 @@ public:
     real_type shift(real_type in,real_type shift_arg) const;
     point shift(point in, real_type shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
     point shift(point in, point shift_arg) const { return static_cast<const base*>(this)->shift(in,shift_arg); }
+protected:
+    ///number of equidistantly spaced points in k-space
+    int npoints_;
+    ///extent of domain in k-space, usually 2*PI
+    real_type domain_len_ = 2.0*M_PI;
 };
 
 //
