@@ -3,7 +3,6 @@
 #include "gtest/gtest.h"
 
 #include "defaults.hpp"
-#include "tools.hpp"
 #include "matsubara_grid.hpp"
 #include "container.hpp"
 #include "grid_object.hpp"

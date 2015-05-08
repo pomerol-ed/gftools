@@ -48,23 +48,23 @@ public:
     matsubara_grid(int min, int max, real_type beta);
     ///constructor getting a vector of Matsubara points. This should only be used in load operations
     matsubara_grid(std::vector<complex_type> const& in);
-    //int getNumber(complex_type in) const;
+    
+    ///return inverse temperature
     double beta() const { return beta_; }
+    ///return lowest Matsubara frequency stored
     int min_n() const { return w_min_; }
+    ///return highest Matsubara frequency stored
     int max_n() const { return w_max_; }
 
+    ///given a complex number, find the closest point (pair of index and complex value)
     point find_nearest(complex_type in) const;
+
     template <class Obj> auto integrate(const Obj &in) const -> decltype(in(vals_[0]));
     template <class Obj> auto prod(const Obj &in) const -> decltype(in(vals_[0]));
-    //template <class Obj> auto gridIntegrate(const std::vector<Obj> &in) const -> Obj;
     template <class Obj> auto eval(Obj &in, complex_type x) const ->decltype(in[0]);
-    //template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]);
-    //using base::eval;
 protected:
     /** Inverse temperature. */
     const real_type beta_;
-    /** Spacing between values. */
-    const real_type spacing_;
     /** Min and max numbers of freq. - useful for searching. */
     const int w_min_, w_max_;
 };
@@ -81,7 +81,6 @@ matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
     //grid_base<complex_type, matsubara_grid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
     grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     beta_(beta), 
-    spacing_(M_PI/beta), 
     w_min_(min),
     w_max_(max)
 {
@@ -91,7 +90,6 @@ matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
 matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) : 
     grid_base<complex_type, matsubara_grid<F>>(rhs.vals_),
     beta_(rhs.beta_), 
-    spacing_(rhs.spacing_), 
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
 {
@@ -101,7 +99,6 @@ template <bool F>
 matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
     grid_base<complex_type, matsubara_grid>(rhs.vals_), 
     beta_(rhs.beta_), 
-    spacing_(rhs.spacing_), 
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
 {
@@ -111,7 +108,6 @@ template <bool F>
 matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
     base(in),
     beta_( M_PI / std::abs((in[1] - in[0])/2.) ),
-    spacing_(std::abs((in[1] - in[0])/2.)),
     w_min_(MatsubaraIndex<F>(in[0], beta_)),
     w_max_(MatsubaraIndex<F>(in[in.size() - 1], beta_))
 {
@@ -155,13 +151,6 @@ inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (comple
         else return vals_[vals_.size()-1];
         };
 }
-
-/*template <bool F>
-inline int matsubara_grid<F>::getNumber(complex_type in) const
-{
-    assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
-    return std::lround(imag(in)/spacing_-F)/2;
-}*/
 
 template <bool F>
 template <class Obj>
