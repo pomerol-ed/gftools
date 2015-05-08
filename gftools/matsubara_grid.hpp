@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "grid_base.hpp"
-#include "tools.hpp"
+#include "almost_equal.hpp"
 #include <numeric>
 
 namespace gftools { 
@@ -147,7 +147,7 @@ template <class Obj>
 inline auto matsubara_grid<F>::eval(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find_nearest(x);
-    if (!tools::is_float_equal<complex_type>(x,find_result.value()))  throw std::logic_error("problem finding complex index: ");
+    if (!almost_equal(x,find_result.value()))  throw std::logic_error("problem finding complex index: ");
     return in[find_result.index()];
 }
 

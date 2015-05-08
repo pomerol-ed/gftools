@@ -20,12 +20,12 @@ int main()
     DEBUG(n2);
 
     complex_type freq = FMatsubara(10,20);
-    bool success = tools::is_float_equal(freq, n2.find_nearest(freq).value());
+    bool success = almost_equal(freq, n2.find_nearest(freq).value());
     std::cout << freq << " == " << n2.find_nearest(freq) << " = " << std::boolalpha << success << std::endl;
     if (!success) return EXIT_FAILURE;
 
     freq = FMatsubara(20,20);
-    success = tools::is_float_equal(freq, n2.find_nearest(freq).value());
+    success = almost_equal(freq, n2.find_nearest(freq).value());
     std::cout << freq << " == " << n2.find_nearest(freq) << " = " << std::boolalpha << success << std::endl;
     if (!success) return EXIT_FAILURE;
 
