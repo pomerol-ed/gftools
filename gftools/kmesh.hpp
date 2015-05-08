@@ -8,18 +8,21 @@
 
 namespace gftools { 
 
+///this class implements a regular equidistant grid, typically used as a regular k-space grid between 0 and 2PI.
 class kmesh : public grid_base<real_type, kmesh>
 {
 public:
+    ///typedef for the underlying grid
     typedef grid_base<real_type, kmesh> base;
+    ///this corresponds to this->vals_
     using grid_base<real_type, kmesh>::vals_;
+    ///constructor: expects number of discretization points and extent len of interval
     kmesh(size_t n_points, real_type len = 2.0*M_PI);
-    kmesh(const kmesh& rhs):grid_base<real_type, kmesh>(rhs),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
-    kmesh(kmesh &&rhs):base(std::forward<base>(rhs)),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
+    ///default constructor makes empty grid with zero points
     kmesh():npoints_(0){};
+    ///constructor from a vector of regularly spaced ints
     kmesh(std::vector<real_type> const& in);
-    kmesh& operator=(kmesh &&rhs) {npoints_ = rhs.npoints_; domain_len_ = rhs.domain_len_; vals_.swap(rhs.vals_); return (*this);};
-    kmesh& operator=(const kmesh &rhs) {npoints_ = rhs.npoints_; domain_len_ = rhs.domain_len_;vals_ = rhs.vals_; return (*this);};
+    
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
     template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
     //template <class Obj> auto gridIntegrate(std::vector<Obj> &in) const -> Obj;
