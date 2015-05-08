@@ -33,6 +33,8 @@ public:
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
     }; 
 
+    type& value() { return value_; } // TODO : test using it
+    type const& value() const { return value_; } // TODO : test using it
     static constexpr int precision() { return prec_; }
     static constexpr double tolerance() { return tol_; }
 
