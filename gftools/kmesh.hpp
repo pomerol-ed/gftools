@@ -51,8 +51,8 @@ protected:
 
 inline kmesh::kmesh(size_t n_points, real_type len):
 grid_base<real_type,kmesh>(0,n_points,[n_points,len](size_t in){return len/n_points*in;}),
-domain_len_(len),
-npoints_(n_points)
+npoints_(n_points),
+domain_len_(len)
 {
 }
 
