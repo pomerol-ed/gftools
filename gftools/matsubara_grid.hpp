@@ -12,7 +12,8 @@ template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){
 }
 ///given a complex matsubara frequency in, return the Matsubara index. This works for Fermions (1) and Bosons (0)
 template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){
-  return std::round((beta*imag(in)/M_PI-Fermion)/2.0);
+  assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
+  return std::lround((beta*imag(in)/M_PI-Fermion)/2.0);
 }
 ///Fermion Matsubara frequency
 inline complex_type FMatsubara(int n, real_type beta){
@@ -43,11 +44,11 @@ public:
     ///using the super class vals_ entry, this is equivalent to this->vals_
     using base::vals_;
 
+    ///constructor getting minimum frequency, maximum frequency, and inverse temperature
     matsubara_grid(int min, int max, real_type beta);
-    matsubara_grid(const matsubara_grid &rhs);
-    matsubara_grid(matsubara_grid&& rhs);
+    ///constructor getting a vector of Matsubara points. This should only be used in load operations
     matsubara_grid(std::vector<complex_type> const& in);
-    int getNumber(complex_type in) const;
+    //int getNumber(complex_type in) const;
     double beta() const { return beta_; }
     int min_n() const { return w_min_; }
     int max_n() const { return w_max_; }
@@ -86,7 +87,7 @@ matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
 {
 }
 
-template <bool F>
+/*template <bool F>
 matsubara_grid<F>::matsubara_grid(const matsubara_grid<F> &rhs) : 
     grid_base<complex_type, matsubara_grid<F>>(rhs.vals_),
     beta_(rhs.beta_), 
@@ -104,7 +105,7 @@ matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
     w_min_(rhs.w_min_), 
     w_max_(rhs.w_max_)
 {
-}
+}*/
 
 template <bool F>
 matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
@@ -141,7 +142,7 @@ auto matsubara_grid<F>::prod(const Obj &in) const -> decltype(in(vals_[0]))
 template <bool F>
 inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (complex_type in) const
 {
-    int n=getNumber(in);
+    int n=MatsubaraIndex<F>(in, beta_);
     #ifndef NDEBUG
     //DEBUG("Invoking matsubara find");
     #endif
@@ -155,12 +156,12 @@ inline typename matsubara_grid<F>::point matsubara_grid<F>::find_nearest (comple
         };
 }
 
-template <bool F>
+/*template <bool F>
 inline int matsubara_grid<F>::getNumber(complex_type in) const
 {
     assert (std::abs(real(in))<std::numeric_limits<real_type>::epsilon());
     return std::lround(imag(in)/spacing_-F)/2;
-};
+}*/
 
 template <bool F>
 template <class Obj>
