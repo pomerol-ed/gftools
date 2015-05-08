@@ -11,12 +11,12 @@ namespace gftools {
 
 class kmesh : public grid_base<real_type, kmesh>
 {
-    mutable real_type domain_len_ = 2.0*PI;
+    mutable real_type domain_len_ = 2.0*M_PI;
 public:
     int npoints_;
     typedef grid_base<real_type, kmesh> base;
     using grid_base<real_type, kmesh>::vals_;
-    kmesh(size_t n_points, real_type len = 2.0*PI);
+    kmesh(size_t n_points, real_type len = 2.0*M_PI);
     kmesh(const kmesh& rhs):grid_base<real_type, kmesh>(rhs),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
     kmesh(kmesh &&rhs):base(std::forward<base>(rhs)),domain_len_(rhs.domain_len_),npoints_(rhs.npoints_){}
     kmesh():npoints_(0){};

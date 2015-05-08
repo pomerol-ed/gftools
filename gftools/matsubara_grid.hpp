@@ -6,8 +6,8 @@
 
 namespace gftools { 
 
-template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){return PI*I/beta*complex_type(2*n+Fermion);};
-template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){return std::round((beta*imag(in)/PI-Fermion)/2.0);};
+template <bool Fermion> inline complex_type Matsubara(int n, real_type beta){return M_PI*I/beta*complex_type(2*n+Fermion);};
+template <bool Fermion> inline int MatsubaraIndex(complex_type in, real_type beta){return std::round((beta*imag(in)/M_PI-Fermion)/2.0);};
 
 inline complex_type FMatsubara(int n, real_type beta){return Matsubara<1>(n,beta);};
 inline complex_type BMatsubara(int n, real_type beta){return Matsubara<0>(n,beta);};
@@ -60,7 +60,7 @@ matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
     //grid_base<complex_type, matsubara_grid<F>>(min,max,std::bind(Matsubara<F>, std::placeholders::_1, beta)),
     grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
     beta_(beta), 
-    spacing_(PI/beta), 
+    spacing_(M_PI/beta), 
     w_min_(min),
     w_max_(max)
 {
@@ -89,7 +89,7 @@ matsubara_grid<F>::matsubara_grid(matsubara_grid<F>&& rhs):
 template <bool F>
 matsubara_grid<F>::matsubara_grid(std::vector<complex_type> const& in):
     base(in),
-    beta_( PI / std::abs((in[1] - in[0])/2.) ),
+    beta_( M_PI / std::abs((in[1] - in[0])/2.) ),
     spacing_(std::abs((in[1] - in[0])/2.)),
     w_min_(MatsubaraIndex<F>(in[0], beta_)),
     w_max_(MatsubaraIndex<F>(in[in.size() - 1], beta_))

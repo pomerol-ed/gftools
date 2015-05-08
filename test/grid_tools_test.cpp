@@ -102,10 +102,10 @@ TEST_F(grid_tuple_test, Globals) {
 
 TEST_F(grid_tuple_test, PointShift) {
     const auto& g2 = grids2(); 
-    trs2::point_tuple p1 = trs2::find_nearest(std::make_tuple(2,PI),g2);
+    trs2::point_tuple p1 = trs2::find_nearest(std::make_tuple(2,M_PI),g2);
     std::cout << "p1" << print_tuple(p1) << std::endl;
 
-    trs2::arg_tuple shift1 = std::make_tuple(1,PI);
+    trs2::arg_tuple shift1 = std::make_tuple(1,M_PI);
     trs2::point_tuple shift2 = trs2::find_nearest(shift1,g2);
 
     trs2::point_tuple r1 = trs2::find_nearest(std::make_tuple(3,0.),g2);
@@ -121,13 +121,13 @@ TEST_F(grid_tuple_test, PointShift) {
 
 TEST_F(grid_tuple_test, ArgShift) {
     const auto& g = grids(); 
-    trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),PI, 3. ),g);
+    trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),M_PI, 3. ),g);
 
-    trs::arg_tuple shift1 = std::make_tuple(1,BMatsubara(0,beta),5*PI/4.,4.);
+    trs::arg_tuple shift1 = std::make_tuple(1,BMatsubara(0,beta),5*M_PI/4.,4.);
     ASSERT_ANY_THROW(trs::shift(p1,shift1,g)); // last index out of bounds
 
-    shift1 = std::make_tuple(1,BMatsubara(3,beta),5*PI/4.,0.48);
-    trs::arg_tuple a1 = std::make_tuple(3,FMatsubara(5,beta),PI/4.,3.48);
+    shift1 = std::make_tuple(1,BMatsubara(3,beta),5*M_PI/4.,0.48);
+    trs::arg_tuple a1 = std::make_tuple(3,FMatsubara(5,beta),M_PI/4.,3.48);
     trs::point_tuple r1 = trs::find_nearest(a1,g);
 
     trs::point_tuple p1s1 = trs::shift(p1,shift1,g);
@@ -144,21 +144,21 @@ TEST_F(grid_tuple_test, ArgShift) {
 
 TEST_F(grid_tuple_test, ArgShiftFail) {
     const auto& g = grids(); 
-    trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),PI, 3. ),g);
+    trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),M_PI, 3. ),g);
 
     double rstep = (std::get<3>(g)[1] - std::get<3>(g)[0]);
 
     // last index out of bounds
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,BMatsubara(0,beta),5*PI/4.,rstep*100),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,BMatsubara(0,beta),5*M_PI/4.,rstep*100),g)); 
     // can't shift fermionic Matsubara over another fermionic Matsubara and get a Fermionic Matsubara
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,FMatsubara(0,beta),5*PI/4.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,FMatsubara(0,beta),5*M_PI/4.,rstep),g)); 
     // first index out of bounds
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(4,BMatsubara(0,beta),5*PI/4.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(4,BMatsubara(0,beta),5*M_PI/4.,rstep),g)); 
 
     // grid point mismatch - one can only shift to the exact point on the grid. Otherwise use find_nearest(arg_tuple)
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*PI/8.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/8.,rstep),g)); 
     // grid point mismatch - one can only shift to the exact point on the grid. Otherwise use find_nearest(arg_tuple)
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*PI/4.,rstep/2),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/4.,rstep/2),g)); 
 
     trs::arg_tuple a1 = trs::shift(trs::get_args(p1,g), std::make_tuple(0,0.,0.,rstep / 3.),g);
     EXPECT_EQ(trs::find_nearest(a1,g),p1);

@@ -14,9 +14,9 @@ int main()
 
 
     typedef typename kmesh::point point;
-    point p1 = k1.find_nearest(PI);
+    point p1 = k1.find_nearest(M_PI);
     std::cout << "PI == " << p1 << std::endl;
-    if (!tools::is_float_equal(PI,double(p1),1e-8)) return EXIT_FAILURE;
+    if (!tools::is_float_equal(M_PI,double(p1),1e-8)) return EXIT_FAILURE;
 
     kmesh_patch patch1(k1, {0, 2, 4, 8, 14, 16, 30});
     std::cout << "kmesh patch : " << patch1 << std::endl;
@@ -27,6 +27,6 @@ int main()
 
     DEBUG(k1.eval(data_y, k1[2]));
 
-    std::cout << k1.shift(p1,2.0*PI*31./32.) << std::endl;
+    std::cout << k1.shift(p1,2.0*M_PI*31./32.) << std::endl;
     return EXIT_SUCCESS;
 }

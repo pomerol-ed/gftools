@@ -166,7 +166,7 @@ TEST_F(gridobject_test1, shift)
     EXPECT_DOUBLE_EQ(gf2.diff(gf),0);
 
     gf.fill([](int i, complex_type p, double k){return cos(k/2.);});
-    gf2 = gf.shift(0,0,PI);
+    gf2 = gf.shift(0,0,M_PI);
     
     EXPECT_DOUBLE_EQ((gf2*gf2+gf*gf).sum(),gf2.size());
 }

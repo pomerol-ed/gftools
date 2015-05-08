@@ -52,30 +52,10 @@ namespace gftools {
 typedef double real_type;
 typedef std::complex<real_type> complex_type;
 
-/** A short name for imaginary unit. */
+/** A short name for imaginary unit. TODO: remove this in dependent codes.*/
 static const complex_type I = complex_type(0.0,1.0);    // 'static' to prevent linking problems
-/** A short name for pi. */
+/** A short name for pi. TODO: remove this in dependent codes.*/
 const real_type PI = M_PI;
-
-/*
-template <typename T>
-using vector_type = Eigen::Matrix<T,Eigen::Dynamic, 1>;
-
-template <typename T>
-using matrix_type = Eigen::Matrix<T,Eigen::Dynamic, Eigen::Dynamic, Eigen::AutoAlign|Eigen::RowMajor>;
-*/
-/** Dense complex matrix. */
-//typedef Eigen::Matrix<complex_type,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> ComplexMatrixType;
-/** Dense real matrix. */
-//typedef Eigen::Matrix<real_type,Eigen::Dynamic,Eigen::Dynamic,Eigen::AutoAlign|Eigen::RowMajor> RealMatrixType;
-
-/** Dense complex vector. */
-//typedef Eigen::Matrix<complex_type,Eigen::Dynamic,1,Eigen::AutoAlign> ComplexVectorType;
-/** Dense real vector. */
-//typedef Eigen::Matrix<real_type,Eigen::Dynamic,1,Eigen::AutoAlign> RealVectorType;
-/** Dense vector of integers. */
-//typedef Eigen::Matrix<int,Eigen::Dynamic,1,Eigen::AutoAlign> IntVectorType;
-
 
 } // end namespace gftools
 
