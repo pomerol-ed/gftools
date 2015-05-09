@@ -140,11 +140,26 @@ typename container_base<ValueType, N, BoostCType>::const_iterator container_base
 };
 
 template <typename ValueType, size_t N, typename BoostCType> 
+typename container_base<ValueType, N, BoostCType>::iterator container_base<ValueType, N, BoostCType>::begin()  
+{
+    auto f1 = [this](boost_under_type in){return under_type(in);}; 
+    return boost::make_transform_iterator(storage_.begin(),f1);
+};
+
+template <typename ValueType, size_t N, typename BoostCType> 
 typename container_base<ValueType, N, BoostCType>::const_iterator container_base<ValueType, N, BoostCType>::end() const 
 {
     auto f1 = [this](boost_under_type in){return under_type(in);}; 
     return boost::make_transform_iterator(storage_.end(),f1);
 }
+
+template <typename ValueType, size_t N, typename BoostCType> 
+typename container_base<ValueType, N, BoostCType>::iterator container_base<ValueType, N, BoostCType>::end()  
+{
+    auto f1 = [this](boost_under_type in){return under_type(in);}; 
+    return boost::make_transform_iterator(storage_.end(),f1);
+}
+
 
 
 template <typename ValueType, size_t N, typename BoostCType> 
