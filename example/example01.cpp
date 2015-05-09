@@ -82,7 +82,7 @@ int main()
     //grid_objects allow for the extrapolation of the values, if they are out 
     // of grid bounds. For this we need to assign the extrapolation
     // function. 
-    G1.tail_ = sinF;
+    G1.set_tail(sinF);
     std::cout << G1(2*PI) << std::endl;
     G1.savetxt("G1.dat");
 
