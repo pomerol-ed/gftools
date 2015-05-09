@@ -1,5 +1,9 @@
 #pragma once
 
+/// \file : hdf5.hpp
+/// This file introduces a set of routines to save/load grids, containers and grid_objects from hdf5 files
+/// using ALPSCore routines (http://www.alpscore.org)
+
 #include <string>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
