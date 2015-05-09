@@ -50,7 +50,7 @@ public:
     class exPointMismatch : public std::exception { virtual const char* what() const throw() { return "Index mismatch."; }; };
     class exIOProblem : public std::exception { virtual const char* what() const throw(){return "IO problem.";} }; 
     class ex_wrong_index : public std::exception { virtual const char* what() const throw(){return "Index out of bounds";}}; 
-public:
+protected:
     /// Grids on which the data is defined. 
     const std::tuple<GridTypes...> grids_;
     /// Cache data dimensions. 
@@ -60,8 +60,8 @@ public:
     /// This function returns the value of the object when the point is not in container. 
     function_type tail_;
 
-
-// Constructors
+public:
+    // Constructors
     /// Constructs a grid object out of a tuple containing various grids. 
     grid_object_base( const std::tuple<GridTypes...> &grids);
     //grid_object_base( const std::tuple<GridTypes...> &grids, ContainerType&& in);
