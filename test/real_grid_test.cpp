@@ -24,7 +24,7 @@ int main()
     sinF = [](real_type x){return sin(x);};
     auto int_val = (grid1.integrate(sinF));
     std::cout << "int_grid1 sin(x) dx = " << int_val << std::endl;
-    if (!tools::is_float_equal(int_val, 0., 1e-8)) return EXIT_FAILURE;
+    if (!almost_equal(int_val, 0., 1e-8)) return EXIT_FAILURE;
 
     auto p1 = grid3.find_nearest(2.);
     std::cout << "2 = " << p1 << std::endl;

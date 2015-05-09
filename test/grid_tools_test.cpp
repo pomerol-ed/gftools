@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 
 #include "matsubara_grid.hpp"
+#include "tools.hpp"
 #include "kmesh.hpp"
 #include "enum_grid.hpp"
 #include "real_grid.hpp"
@@ -136,7 +137,7 @@ TEST_F(grid_tuple_test, ArgShift) {
 
     trs::arg_tuple a2 = trs::shift(p1,shift1,g);
     DEBUG(print_tuple(a1) << " == " << print_tuple(a2));
-    EXPECT_EQ(is_float_equal(a1,a2),1);
+    EXPECT_EQ(tools::is_float_equal(a1,a2),1);
 
     trs::point_tuple p1s2 = trs::find_nearest(a2,g);
     EXPECT_EQ(p1s2, r1);

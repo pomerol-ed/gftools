@@ -3,17 +3,15 @@
 #include <numeric>
 
 #include "grid_base.hpp"
-#include "tools.hpp"
-//#include <unsupported/Eigen/Splines>
+#include "almost_equal.hpp"
+#include "tuple_tools.hpp"
 
 namespace gftools { 
 
-/** A grid of real values. */
+/** A grid of real values. Does not need to be uniform. Typical example: Grid for Green's function or self-energy on the real axis.*/
 class real_grid : public grid_base<real_type, real_grid>
 {
-    real_type min_;
-    real_type max_;
-    bool is_uniform_ = false;
+    using grid_base<real_type, real_grid>::vals_;
 public:
     /** Generates a uniform grid.
      * \param[in] min Minimal point
@@ -41,9 +39,13 @@ public:
             typename std::remove_reference<decltype (std::declval<Obj>()[0])>::type;
         
     bool check_uniform_();
-
-
-    using grid_base<real_type, real_grid>::vals_;
+private:
+    ///minimum value of the grid
+    real_type min_;
+    ///maximum upper value of the grid
+    real_type max_;
+    ///whether the grid is an uniform grid or not
+    bool is_uniform_ = false;
 };
 
 
@@ -109,7 +111,7 @@ inline bool real_grid::check_uniform_()
 { 
     bool is_uniform = true; 
     for (int i=0; i<int(vals_.size())-2 && is_uniform; i++) { 
-        is_uniform = is_uniform && tools::is_float_equal(vals_[i+2].value()-vals_[i+1].value(), vals_[i+1].value() - vals_[i].value());
+        is_uniform = is_uniform && almost_equal(vals_[i+2].value()-vals_[i+1].value(), vals_[i+1].value() - vals_[i].value());
         }
     is_uniform_ = is_uniform;
     return is_uniform;
