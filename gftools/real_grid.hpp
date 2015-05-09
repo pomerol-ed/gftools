@@ -32,16 +32,20 @@ public:
     ///query the smallest point of the grid
     real_type min() const { return min_; }
 
-    std::tuple <bool, size_t, real_type> find (real_type in) const ;
-    template <class Obj> auto eval(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
+    ///given a double 'in', we return:
+    ///first return value : false if outside of range, true otherwise
+    ///second return value: index of nearest value
+    ///third return value : weight, 1 if we hit a value, smaller otherwise.
+    std::tuple <bool, size_t, real_type> find(real_type in) const;
 
+    template <class Obj> auto eval(Obj &in, real_type x) const -> decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0);
     template <class Obj, typename ...OtherArgTypes> 
         auto integrate(Obj &&in, OtherArgTypes... Args) const -> 
             typename std::remove_reference<typename std::result_of<Obj(value_type,OtherArgTypes...)>::type>::type;
-
     template <class Obj>// decltype (std::declval<Obj>()[0])>
         auto integrate(Obj &&in) const -> 
             typename std::remove_reference<decltype (std::declval<Obj>()[0])>::type;
+
     ///query if a grid is uniform or not.
     bool is_uniform() const{return is_uniform_;}
         
@@ -145,7 +149,7 @@ template <class Obj>// decltype (std::declval<Obj>()[0])>
 }
 
 
-inline std::tuple <bool, size_t, real_type> real_grid::find (real_type in) const
+inline std::tuple <bool, size_t, real_type> real_grid::find(real_type in) const
 {
     #ifndef NDEBUG
     DEBUG("Invoking find");
