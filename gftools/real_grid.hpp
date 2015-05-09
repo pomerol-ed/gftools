@@ -20,11 +20,16 @@ public:
      * \param[in] include_last True, if the max point needs to be included
      */
     real_grid(real_type min, real_type max, size_t npoints, bool include_last = true);
+    ///constructs a real grid given a function f TODO: how do we know how many grid points are generated?
     real_grid(int min, int max, const std::function<real_type(int)> &f, bool include_last = true);
-    real_grid(std::vector<real_type>&& in);
+    //not sure why we need this one. If needed add a test.
+    //real_grid(std::vector<real_type>&& in);
+    ///constructs a real grid given a vector of values
     real_grid(const std::vector<real_type>& in);
 
+    ///query the largest point of the grid
     real_type max() const { return max_; }
+    ///query the smallest point of the grid
     real_type min() const { return min_; }
 
     std::tuple <bool, size_t, real_type> find (real_type in) const ;
@@ -37,9 +42,13 @@ public:
     template <class Obj>// decltype (std::declval<Obj>()[0])>
         auto integrate(Obj &&in) const -> 
             typename std::remove_reference<decltype (std::declval<Obj>()[0])>::type;
+    ///query if a grid is uniform or not.
+    bool is_uniform() const{return is_uniform_;}
         
-    bool check_uniform_();
 private:
+    ///check if the grid is a uniform grid
+    bool check_uniform();
+    
     ///minimum value of the grid
     real_type min_;
     ///maximum upper value of the grid
@@ -66,10 +75,10 @@ inline real_grid::real_grid(int min, int max, const std::function<real_type (int
     min_(f(min)),
     max_(f(max-include_last))
 {
-    check_uniform_();
+    check_uniform();
 }
 
-inline real_grid::real_grid(std::vector<real_type>&& in):
+/*inline real_grid::real_grid(std::vector<real_type>&& in):
 grid_base<real_type, real_grid>(in)
 {
     auto in2(in);
@@ -77,8 +86,8 @@ grid_base<real_type, real_grid>(in)
     size_t npts = in2.size();
     for (size_t i=0; i<npts; ++i) vals_[i]=point(in2[i],i);
     min_ = in2[0]; max_ = in2[npts-1];
-    check_uniform_();
-}
+    check_uniform();
+}*/
 
 
 inline real_grid::real_grid(const std::vector<real_type>& in)
@@ -89,7 +98,7 @@ inline real_grid::real_grid(const std::vector<real_type>& in)
     size_t npts = in2.size();
     for (size_t i=0; i<npts; ++i) vals_.emplace_back(in2[i],i);
     min_ = in2[0]; max_ = in2[npts-1];
-    check_uniform_();
+    check_uniform();
 }
 
 
@@ -107,14 +116,13 @@ auto real_grid::integrate(Obj &&f, OtherArgTypes... Args) const ->
     return this->integrate(gftools::extra::function_proxy<decltype(tmp),real_grid>(tmp,*this));
 }
 
-inline bool real_grid::check_uniform_()
+inline bool real_grid::check_uniform()
 { 
-    bool is_uniform = true; 
-    for (int i=0; i<int(vals_.size())-2 && is_uniform; i++) { 
-        is_uniform = is_uniform && almost_equal(vals_[i+2].value()-vals_[i+1].value(), vals_[i+1].value() - vals_[i].value());
+    is_uniform_= true; 
+    for (int i=0; i<int(vals_.size())-2 && is_uniform_; i++) { 
+        is_uniform_= is_uniform_ && almost_equal(vals_[i+2].value()-vals_[i+1].value(), vals_[i+1].value() - vals_[i].value());
         }
-    is_uniform_ = is_uniform;
-    return is_uniform;
+    return is_uniform();
 }
 
 template <class Obj>// decltype (std::declval<Obj>()[0])>
