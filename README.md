@@ -7,8 +7,8 @@ There exists a set of implementation of grids for common purposes:
     - `real_grid `. A grid of floats, e.g. frequencies. 
     - `kmesh`. An equidistant periodic set of points (for sampling Brillouine zones).
     - `enum_grid`. A grid of integers.
-- `container<N, ValueType>`. A recursive multidimensional container of depth <N> to store ValueType objects.
-- `grid_object<Grids..., ValueType>`. Green's function. In a broader scope - a multidimensional object that is defined on a set of grids (Grids...) that contains ValueType values.
+- `container<ValueType, N>`. A recursive multidimensional container of depth <N> to store ValueType objects.
+- `grid_object<ValueType, Grids...>`. Green's function. In a broader scope - a multidimensional object that is defined on a set of grids (Grids...) that contains ValueType values.
 Examples :
     - `grid_object<complex_type,matsubara_grid<1>>` - Green's function in imaginary frequencies
     - `grid_object<complex_type,matsubara_grid<1>,kmesh>` - Green's function in imaginary frequencies and reciprocal 1d space.
