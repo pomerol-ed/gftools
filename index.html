@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Gftools by aeantipov</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Gftools</h1>
+        <p>DSL for Green&#39;s function calculations</p>
+        <p class="view"><a href="https://github.com/aeantipov/gftools">View the Project on GitHub <small>aeantipov/gftools</small></a></p>
+        <ul>
+          <li><a href="https://github.com/aeantipov/gftools/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/aeantipov/gftools/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/aeantipov/gftools">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h5>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h5>
+
+<p>gftools is a set of tools to work with numerical condmat problems. It provides three basic classes of objects:</p>
+
+<ul>
+<li>grids. 
+There exists a set of implementation of grids for common purposes:
+
+<ul>
+<li>
+<code>matsubara_grid&lt;b&gt;</code>. A grid of Matsubara frequencies. "b" corresponds to a choice of fermionic(1) or bosonic(0) grids.</li>
+<li>
+<code>real_grid</code>. A grid of floats, e.g. frequencies. </li>
+<li>
+<code>kmesh</code>. An equidistant periodic set of points (for sampling Brillouine zones).</li>
+<li>
+<code>enum_grid</code>. A grid of integers.</li>
+</ul>
+</li>
+<li>
+<code>container&lt;ValueType, N&gt;</code>. A recursive multidimensional container of depth  to store ValueType objects.</li>
+<li>
+<code>grid_object&lt;ValueType, Grids...&gt;</code>. Green's function. In a broader scope - a multidimensional object that is defined on a set of grids (Grids...) that contains ValueType values.
+Examples :
+
+<ul>
+<li>
+<code>grid_object&lt;complex_type,matsubara_grid&lt;1&gt;&gt;</code> - Green's function in imaginary frequencies</li>
+<li>
+<code>grid_object&lt;complex_type,matsubara_grid&lt;1&gt;,kmesh&gt;</code> - Green's function in imaginary frequencies and reciprocal 1d space.</li>
+<li>
+<code>grid_object&lt;complex_type,real_grid&gt;</code> - Retarded or Advanced Green's function, etc...</li>
+</ul>
+</li>
+</ul>
+
+<p>Look for examples in "example/" directory for detailed information.</p>
+
+<h5>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h5>
+
+<p>The code is is provided as a header-only library with a set of examples and tests.
+The <code>gftools.hpp</code> in the repo root can be included in any derivative projects.
+To compile examples and tests create a build directory and run </p>
+
+<ol>
+<li><code>cmake -DExamples=ON -DTesting=ON {path_to_gftools}</code></li>
+<li><code>make</code></li>
+<li>
+<code>make test</code> (for running tests)</li>
+<li>example will be build in example subdirectory</li>
+<li>
+<code>make doc</code> to generate documentation</li>
+</ol>
+
+<h5>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h5>
+
+<ul>
+<li>c++11-compatible compiler (tested with clang &gt;= 3.1, gcc &gt;= 4.8.2, icpc &gt;= 14.0.2)<br>
+</li>
+<li>
+<em>Boost</em> headers </li>
+<li>
+<em>Eigen</em> &gt;=3.1 </li>
+<li>
+<em>git</em> to fetch the code </li>
+<li>
+<em>cmake</em> to build tests and examples (optional)</li>
+<li>
+<em>doxygen</em> for documentation (optional)</li>
+</ul>
+
+<h5>
+<a id="extra-features" class="anchor" href="#extra-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extra features</h5>
+
+<ul>
+<li>FFT support via FFTW</li>
+<li>HDF5 support via alpscore (<a href="http://www.alpscore.org">http://www.alpscore.org</a>)</li>
+</ul>
+
+<h5>
+<a id="author" class="anchor" href="#author" aria-hidden="true"><span class="octicon octicon-link"></span></a>Author</h5>
+
+<ul>
+<li>Andrey Antipov, <em>Andrey.E.Antipov[at]gmail.com</em>, 2013-2014</li>
+</ul>
+
+<h5>
+<a id="distribution" class="anchor" href="#distribution" aria-hidden="true"><span class="octicon octicon-link"></span></a>Distribution</h5>
+
+<p>Open-source under MIT license.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/aeantipov">aeantipov</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
