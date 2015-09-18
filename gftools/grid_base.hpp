@@ -100,6 +100,12 @@ public:
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
+    class ex_wrong_index : public std::exception { public: 
+        ex_wrong_index(int i, int l):index_(i),l_(l){}; 
+        virtual const char* what() const throw(){return std::string("grid_base : index " + std::to_string(index_) + "is out of bounds >" + std::to_string(l_)).c_str();} 
+        int index_; int l_; 
+        };
+
 protected:
     std::vector<point> vals_;
 };
@@ -151,7 +157,9 @@ grid_base<ValueType,Derived>::grid_base(int min, int max, std::function<ValueTyp
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::operator[](size_t index) const
 {
-    if (index>vals_.size()) throw std::logic_error("wrong index" + std::to_string(index) + ".");
+    #ifndef NDEBUG
+    if (index>vals_.size()) throw ex_wrong_index(index,this->size()); 
+    #endif
     return vals_[index];
 }
 
@@ -187,7 +195,7 @@ template <class Obj>
 inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0]) 
 {
     if (check_point(x)) return in[x.index()];
-    else throw std::logic_error("wrong index: "+std::to_string(x.index()));
+    else throw ex_wrong_index(x.index(), this->size());
 }
 
 template <typename ValueType, class Derived>
@@ -212,7 +220,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 #ifndef NDEBUG
       ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
 #endif
-      throw std::logic_error("Couldn't shift point");
+      throw std::logic_error("grid_base::shift : Couldn't shift point");
     }
     else return p1;
 }
@@ -229,7 +237,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
     ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
-    if (!almost_equal(val, vals_[index].value())) throw std::logic_error("almost equal failed."); 
+    if (!almost_equal(val, vals_[index].value())) throw std::logic_error("grid_base::shift : almost equal failed."); 
     #endif
     return vals_[index];
 
