@@ -160,6 +160,7 @@ inline std::tuple <bool, size_t, real_type> real_grid::find(real_type in) const
     size_t i = size_t(out-vals_.begin());
     i--;
     if (i==vals_.size()-1) return std::make_tuple(1,i,1.0);
+    if (i==-1) return std::make_tuple(1,0,1.0);
     real_type val_i = vals_[i];
     real_type weight=(in-val_i)/(vals_[i+1] - val_i);
     return std::make_tuple (1,i,weight);
