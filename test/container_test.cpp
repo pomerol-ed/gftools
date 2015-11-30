@@ -120,6 +120,18 @@ TEST_F(cont_test, Flatten) {
     EXPECT_EQ(f.shape()[0], (*d2).size());
 }
 
+TEST_F(cont_test, as_matrix) {
+    (*d2) = 0.0;
+    (*d2)[0][1] = 3.0;
+    (*d2)[0][2] = 4.0;
+    std::cout << *d2 << std::endl;
+    Eigen::MatrixXd m = d2->as_matrix();
+    std::cout << m << std::endl;
+    std::cout << (*d2)[0][2] << " == " << m(0,2) << std::endl;
+    ASSERT_EQ((*d2)[0][2], m(0,2));
+}
+
+
 
 int main(int argc, char **argv) {
     std::cout << "Hi!" << std::endl;

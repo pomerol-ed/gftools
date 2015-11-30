@@ -62,7 +62,7 @@ struct container_base
     /// typedef for an Eigen::Map object that provides arithmetic operations on flattened arrays
     typedef Eigen::Map<EigenArray> EigenMap;
     /// typedef for a matrix with value_type values
-    typedef Eigen::Matrix<ValueType,Eigen::Dynamic, Eigen::Dynamic> MatrixType;
+    typedef Eigen::Matrix<ValueType,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixType;
     /// typedef for a flattened Eigen::Vector, that provides vector*matrix operations
     typedef Eigen::Matrix<ValueType,Eigen::Dynamic, 1> VectorType;
 
