@@ -129,6 +129,13 @@ TEST_F(cont_test, as_matrix) {
     std::cout << m << std::endl;
     std::cout << (*d2)[0][2] << " == " << m(0,2) << std::endl;
     ASSERT_EQ((*d2)[0][2], m(0,2));
+
+    container<double,2> c2(3,3);
+    c2 = m;
+    ASSERT_EQ(c2.diff(*d2),0);
+
+    container<double,2> c3(m);
+    ASSERT_EQ(c3.diff(*d2),0);
 }
 
 

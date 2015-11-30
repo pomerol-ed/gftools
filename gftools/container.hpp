@@ -281,6 +281,7 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     using Base::operator-=;
     using Base::operator*=;
     using Base::operator/=;
+    using Base::operator=;
     /// assign from a number
     template <typename T> typename std::enable_if<std::is_convertible<T,ValueType>::value,container&>::type operator=(T rhs) { 
         typename std::add_lvalue_reference<Base>::type(*this) = rhs; return (*this);}
