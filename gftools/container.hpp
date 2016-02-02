@@ -262,6 +262,10 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     // using value here is safe with a move constructor
     template <typename CT>
         container(container_base<ValueType,N,CT> in) : container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(in.storage_) {};
+    container(container const&) = default;
+    container(container &&) = default;
+    container& operator=(container &&) = default;
+    container& operator=(container const&) = default;
 
     /// construct container from given variable amount of numbers, aka container<double, 4> a(1,2,4,2)
     template<typename ...ShapeArgs,
@@ -283,8 +287,9 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     using Base::operator/=;
     using Base::operator=;
     /// assign from a number
-    template <typename T> typename std::enable_if<std::is_convertible<T,ValueType>::value,container&>::type operator=(T rhs) { 
+    /*template <typename T> typename std::enable_if<std::is_convertible<T,ValueType>::value,container&>::type operator=(T rhs) { 
         typename std::add_lvalue_reference<Base>::type(*this) = rhs; return (*this);}
+    */
 };
 
 /// type traits for container/container_base of rank>1
