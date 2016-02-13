@@ -127,7 +127,7 @@ struct hdf5_grid_tuple<std::tuple<Grid>,N>
 
 // gridobject
 template <typename T> 
-inline void save_grid_object(alps::hdf5::archive & ar, std::string const & path, const T& c, bool plaintext = false) 
+inline void save_grid_object(alps::hdf5::archive & ar, std::string const & path, const T& c, bool plaintext = false, std::string extra_name_to_plaintext = "") 
 {
     std::cout << "hdf5 : saving " << typeid(T).name() << " to " << path << std::endl;
     hdf5_grid_tuple<typename T::grid_tuple>::save(ar,path+"/grids",c.grids());
@@ -135,7 +135,11 @@ inline void save_grid_object(alps::hdf5::archive & ar, std::string const & path,
     std::string p2(path);
     std::vector<std::string> split_vec; 
     boost::algorithm::split(split_vec, path, boost::is_any_of("/"), boost::token_compress_on );
-    if (plaintext) c.savetxt(split_vec[split_vec.size()-1]+".dat");
+    if (plaintext) { 
+        std::string fname = split_vec[split_vec.size()-1]+".dat";
+        if (extra_name_to_plaintext.size()) fname = extra_name_to_plaintext + "_" + fname;
+        c.savetxt(fname);
+        }
 }
 
 template <typename T> 
