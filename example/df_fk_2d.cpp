@@ -2,8 +2,9 @@
  * This is a simple unoptimized code to evaluate some low-order dual diagrams in FK model
  * input : 
  *  --order : order of the diagram
- *  --vertex_file : full impurity vertex. default : "gamma4.dat"
- *  --gd0_file : bare dual Green's function. default : "gd0_k.dat"
+ *  --beta : order of the diagram
+ *  --kpts : order of the diagram
+ *  --U : order of the diagram
  * output:
  *  - dual self-energy "sigma_wk.dat"
  *  - cut of dual self-energy at first Matsubara freq
@@ -19,47 +20,54 @@ using namespace gftools;
 
 int main(int argc, char *argv[])
 {
-    // parse command line options
-    po::options_description desc("FK diagrams evaluator"); 
+    // parse command line options - define beta, kpts and U
+    po::options_description desc("FK DF 2d"); 
     desc.add_options()
         ("order,n", po::value<int>()->default_value(2), "order of diagrams")
         ("beta", po::value<double>()->default_value(1), "inverse temperature")
-        ("U", po::value<double>()->default_value(1), "inverse temperature")
+        ("kpts", po::value<int>()->default_value(16), "number of points in one dimension of k-space")
+        ("U", po::value<double>()->default_value(8), "interaction strength")
         ("help", "produce help message");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
+    //po::notify(vm);
     if (vm.count("help")) { std::cout << desc << std::endl; exit(0); }
     int diagram_order = vm["order"].as<int>(); 
+    int kpts = vm["kpts"].as<int>();
     // we will use diagram_order as amount of iterations in vertices. 1 iteration = 2nd order, etc. 
     diagram_order-=(diagram_order>0);
     double beta = vm["beta"].as<double>(); 
     double U = vm["U"].as<double>(); 
-
-    std::cout << "!" << std::endl;
-
     static constexpr int NDim = 2; // work in 2 dimensions
-    int kpts = 16;
 
-    typedef grid_object<std::complex<double>, fmatsubara_grid, fmatsubara_grid> vertex_type;
-    typedef grid_object<std::complex<double>, fmatsubara_grid> gw_type;
-    typedef grid_object<std::complex<double>, fmatsubara_grid, kmesh, kmesh> gk_type;
-    typedef grid_object<std::complex<double>, kmesh, kmesh> disp_type;
-    typedef Eigen::MatrixXcd matrix_type; 
-
+    // Calc starts here
+    std::cout << "Atomic limit of FK model in 2 dimensions using DF approximation" << std::endl;
     double T = 1.0/beta;
     std::cout << "beta = " << beta << std::endl;
     std::cout << "T = " << T << std::endl;
+    int totalkpts = std::pow(kpts, NDim);
+    std::cout << "kmesh : " << kpts << " points " << std::endl; 
+    std::cout << "total pts in BZ = " << totalkpts << std::endl; 
+
+    // typedef for F(w, w') type objects 
+    typedef grid_object<std::complex<double>, fmatsubara_grid, fmatsubara_grid> vertex_type;
+    // G(w)
+    typedef grid_object<std::complex<double>, fmatsubara_grid> gw_type;
+    // G(w, kx, ky)
+    typedef grid_object<std::complex<double>, fmatsubara_grid, kmesh, kmesh> gk_type;
+    // e(kx, ky)
+    typedef grid_object<std::complex<double>, kmesh, kmesh> disp_type;
+    // typedef for matrices
+    typedef Eigen::MatrixXcd matrix_type; 
 
     // Prepare evaluation grids
     fmatsubara_grid fgrid(-20,20,beta);
-
     // Hybridization function (atomic limit)
     gw_type delta(fgrid);
     delta.fill([&](std::complex<double> w){return double(2*NDim) / w; });
     // Local gf (atomic limit)
     gw_type gw(fgrid);
     gw.fill([&](std::complex<double> w){return 0.5/(w - U/2.0) + 0.5/(w + U/2.0);});
-
     // Local vertex (atomic limit)
     vertex_type gamma4(std::make_tuple(fgrid, fgrid));
     typename gw_type::function_type Lambda = [U](std::complex<double> w){return 1. - U*U/4./w/w;};
@@ -70,21 +78,22 @@ int main(int argc, char *argv[])
     // k-dependent input
     // define a mesh in Brilloin zone (BZ)
     kmesh kgrid(kpts);
-    int totalkpts = std::pow(kpts, NDim);
-    std::cout << "kmesh : " << kpts << " points " << std::endl; 
-    std::cout << "total pts in BZ = " << totalkpts << std::endl; 
-
     // lattice dispersion
     disp_type eps(std::forward_as_tuple(kgrid, kgrid));
     eps.fill([&](double kx, double ky){return -2*(cos(kx) + cos(ky));});
-
     // lattice gf in dmft
     gk_type glat_dmft(std::forward_as_tuple(fgrid, kgrid, kgrid));
     glat_dmft.fill([&](fmatsubara_grid::point w, kmesh::point kx, kmesh::point ky){return 1.0 / (1.0 / gw(w) + delta(w) - eps(kx, ky));});
-
     // bare dual df
     gk_type gd0(glat_dmft.grids());
     gd0.fill([&](fmatsubara_grid::point w, kmesh::point kx, kmesh::point ky){return glat_dmft(w, kx, ky) - gw(w);});
+
+    double prec = 1e-5;
+    // check - local part of gd0 should be zero (check is approximate, as atomic limit is used)
+    for (auto w : fgrid.points()) { 
+        double diff0 = std::abs(gd0[w].sum()) / double(totalkpts);
+        if (diff0 > prec) std::cerr << "Problem encountered - w = " << w << ": dual gd0 has a non-zero local part : " <<  diff0 << " > " << prec << std::endl;
+        }
     
     // define full vertex (will be evaluated below)
     vertex_type full_vertex(gamma4);
@@ -129,13 +138,22 @@ int main(int argc, char *argv[])
         }
     }
     // output
+    // save bare bubbles
+    bare_bubbles.savetxt("db0.dat");
     // save sigma
     sigma_dual.savetxt("sigma_wk.dat");
     // save sigma at first matsubara
     auto w0 = fgrid.find_nearest(I*PI/beta);
     disp_type sigma_w0(std::forward_as_tuple(kgrid,kgrid),sigma_dual[w0]);
     sigma_w0.savetxt("sigma_w0.dat");
-    // save bare bubbles
-    bare_bubbles.savetxt("db0.dat");
+
+    // save lattice self-energy
+    gk_type sigma_lat(sigma_dual.grids());
+    for (fmatsubara_grid::point w : fgrid.points()) { 
+        sigma_lat[w] = sigma_dual[w] / (sigma_dual[w] * gw[w] + 1.0);
+        }
+    sigma_lat.savetxt("sigma_lattice.dat");
+    sigma_w0.data() = sigma_lat[w0];
+    sigma_w0.savetxt("sigma_lattice_w0.dat");
 }
 
