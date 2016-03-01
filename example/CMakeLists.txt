@@ -4,7 +4,7 @@ find_package (Boost COMPONENTS program_options)
 
 # Here all the examples are set. The source is file is assumed to be ${example}.cpp
 set (examples 
-example01
+basic_ops
 df_fk_2d
 )
 
