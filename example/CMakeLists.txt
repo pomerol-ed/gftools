@@ -1,8 +1,9 @@
-include_directories (. ../include)
+include_directories (. ..)
 
 # Here all the examples are set. The source is file is assumed to be ${example}.cpp
 set (examples 
 example01
+#df1
 #example02
 #example03
 )
