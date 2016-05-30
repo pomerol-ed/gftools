@@ -80,7 +80,9 @@ TEST_F(grid_tuple_test, IndexOp) {
     EXPECT_DOUBLE_EQ(std::abs(std::complex<double>(std::get<1>(p2))),std::abs(std::get<1>(a2)));
     EXPECT_DOUBLE_EQ(std::get<2>(p2),std::get<2>(a2));
 
+    #ifndef NDEBUG
     EXPECT_ANY_THROW( { trs::points({{5,11,7,1}},g); } );
+    #endif
 
     typename trs::point_tuple p23 = trs::find_nearest(a2,g);
     std::cout << "p23: " << print_tuple(p23) << std::endl;
