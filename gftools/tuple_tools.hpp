@@ -120,9 +120,6 @@ std::string print_array(const std::array<Arg,D>& t1){
 template<typename TT>
 TT read_tuple(std::istream &in){return extra::tuple_io<TT>::read(in);};
 
-//
-// unfold tuple into a function
-//
 
 // helpers for unfolding
 namespace extra {
@@ -130,6 +127,24 @@ namespace extra {
     template<int N, int ...S> struct index_gen : index_gen<N-1, N-1, S...> {};
     template<int ...S> struct index_gen<0, S...>{ typedef arg_seq<S...> type; };
 }; 
+
+//
+/// create a tuple or array from by repeating an argument
+//
+
+template <typename Arg, size_t D, typename... Extras> struct repeater : repeater<Arg,D-1,Arg,Extras...>  {  
+    template <int ...S, typename ...ArgTypes> static std::array<Arg,D> get_arr_(extra::arg_seq<S...>, std::tuple<ArgTypes...> in) { return  {{ std::get<S>(in)... }}; }
+    static std::array<Arg,D> get_array(const Arg& in){ return get_arr_(typename extra::index_gen<D>::type(), get_tuple(in)); };
+    static typename repeater::tuple_type get_tuple(const Arg& in){ return std::tuple_cat(std::forward_as_tuple(in),repeater<Arg,D-1>::get_tuple(in)); }; 
+};
+
+template <typename Arg, typename ... Extras> struct repeater<Arg,1,Extras...> { 
+    typedef std::tuple<Arg,Extras...> tuple_type;
+    static std::array<Arg,1> get_array(const Arg& in){ return {{ in }}; };
+    static tuple_type get_tuple(const Arg& in){ return std::forward_as_tuple(in); }
+};
+
+
 
 /** Caller for a function from the given tuple. */
 //template <typename ReturnType, typename ...Args> struct __caller { 
@@ -154,27 +169,33 @@ namespace extra {
     };
 }
 
+
+//
+// unfold tuple into a function
+//
 template <typename Functor, typename ... Args>
 typename std::result_of<Functor(Args...)>::type unfold_tuple(Functor F, std::tuple<Args...> t) {
     typedef typename std::result_of<Functor(Args...)>::type result_type; 
     return extra::tuple_caller<result_type,std::tuple<Args...>>(F, t).call();
 };
 
-//
-/// create a tuple or array from by repeating an argument
-//
+namespace extra { 
+template <typename Functor, typename V, int...S> 
+    typename Functor::result_type unpack_vector_(Functor F, std::vector<V> v, extra::arg_seq<S...>) { return F(v[S]...); } 
+}
 
-template <typename Arg, size_t D, typename... Extras> struct repeater : repeater<Arg,D-1,Arg,Extras...>  {  
-    template <int ...S, typename ...ArgTypes> static std::array<Arg,D> get_arr_(extra::arg_seq<S...>, std::tuple<ArgTypes...> in) { return  {{ std::get<S>(in)... }}; }
-    static std::array<Arg,D> get_array(const Arg& in){ return get_arr_(typename extra::index_gen<D>::type(), get_tuple(in)); };
-    static typename repeater::tuple_type get_tuple(const Arg& in){ return std::tuple_cat(std::forward_as_tuple(in),repeater<Arg,D-1>::get_tuple(in)); }; 
+///
+/// Unfold vector into a function
+///
+template <typename Functor, typename Arg, int N>
+decltype(unfold_tuple(std::declval<Functor>(), std::declval< typename repeater<Arg, N>::tuple_type >())) 
+    unfold_vector(Functor F, std::vector<Arg> t) {
+    return extra::unpack_vector_(F, t, typename extra::index_gen<N>::type()); 
 };
 
-template <typename Arg, typename ... Extras> struct repeater<Arg,1,Extras...> { 
-    typedef std::tuple<Arg,Extras...> tuple_type;
-    static std::array<Arg,1> get_array(const Arg& in){ return {{ in }}; };
-    static tuple_type get_tuple(const Arg& in){ return std::forward_as_tuple(in); }
-};
+
+
+
 } // end of namespace tuple_tools
 
 } // end namespace gftools
