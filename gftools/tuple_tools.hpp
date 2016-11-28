@@ -182,6 +182,8 @@ typename std::result_of<Functor(Args...)>::type unfold_tuple(Functor F, std::tup
 namespace extra { 
 template <typename Functor, typename V, int...S> 
     typename Functor::result_type unpack_vector_(Functor F, std::vector<V> v, extra::arg_seq<S...>) { return F(v[S]...); } 
+template <typename V, int ...S> 
+    typename repeater<typename V::value_type, sizeof...(S)>::tuple_type array_to_tuple_(V v, extra::arg_seq<S...>) { return std::make_tuple(v[S]...); }
 }
 
 ///
@@ -193,7 +195,11 @@ decltype(unfold_tuple(std::declval<Functor>(), std::declval< typename repeater<A
     return extra::unpack_vector_(F, t, typename extra::index_gen<N>::type()); 
 };
 
-
+/// Convert std::array<V,N> to tuple<V...>. Normally compilers should do it automatically, but GCC and intel fails, so here's a cast.
+template <typename V> 
+typename repeater<typename V::value_type, std::tuple_size<V>::value>::tuple_type array_to_tuple(V x) {
+    return extra::array_to_tuple_(x, typename extra::index_gen<std::tuple_size<V>::value>::type()); 
+}
 
 
 } // end of namespace tuple_tools
