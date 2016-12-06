@@ -270,10 +270,10 @@ struct container : container_base<ValueType,N,typename boost::multi_array<ValueT
     /// construct container from given variable amount of numbers, aka container<double, 4> a(1,2,4,2)
     template<typename ...ShapeArgs,
         typename = typename std::enable_if<sizeof...(ShapeArgs) == N 
-               && (std::is_same<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<int,N>::tuple_type>::value // Arguments have to be strictly ints
-               || std::is_same<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<size_t,N>::tuple_type>::value) // or size_t
+               && (std::is_convertible<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<int,N>::tuple_type>::value // Arguments have to be strictly ints
+               || std::is_convertible<std::tuple<ShapeArgs...>, typename tuple_tools::repeater<size_t,N>::tuple_type>::value) // or size_t
         ,int>::type>
-        container(ShapeArgs...in):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(std::array<int,N>({{in...}}))) {
+        container(ShapeArgs...in):container_base<ValueType,N,typename boost::multi_array<ValueType, N>>(boost::multi_array<ValueType, N>(std::array<int,N>({{static_cast<int>(in)...}}))) {
             static_assert(sizeof...(in) == N,"arg mismatch");
         };
     /// construct 2d container from matrix
