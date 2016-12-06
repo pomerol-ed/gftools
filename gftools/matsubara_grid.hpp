@@ -45,7 +45,7 @@ public:
     using base::vals_;
 
     ///constructor getting minimum frequency, maximum frequency, and inverse temperature
-    matsubara_grid(int min, int max, real_type beta);
+    matsubara_grid(int min, int max, real_type beta, bool include_last = false);
     ///constructor getting a vector of Matsubara points. This should only be used in load operations
     matsubara_grid(std::vector<complex_type> const& in);
     
@@ -78,11 +78,11 @@ typedef matsubara_grid<0> bmatsubara_grid;
 //
 
 template <bool F>
-matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta):
-    grid_base<complex_type, matsubara_grid<F>>(min,max,[beta](int n){return Matsubara<F>(n,beta);}),
+matsubara_grid<F>::matsubara_grid(int min, int max, real_type beta, bool include_last):
+    grid_base<complex_type, matsubara_grid<F>>(min,max + int(include_last),[beta](int n){return Matsubara<F>(n,beta);}),
     beta_(beta), 
     w_min_(min),
-    w_max_(max)
+    w_max_(max + int(include_last))
 {
 }
 
