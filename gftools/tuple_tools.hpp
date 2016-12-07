@@ -3,6 +3,7 @@
 #include <tuple>
 #include <array>
 #include <vector>
+#include <functional>
 
 #include "defaults.hpp"
 #include "num_io.hpp"
