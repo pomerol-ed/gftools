@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <array>
+#include <vector>
 
 #include "defaults.hpp"
 #include "num_io.hpp"

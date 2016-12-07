@@ -3,6 +3,7 @@
 #include "grid_base.hpp"
 #include "almost_equal.hpp"
 #include <numeric>
+#include <cassert>
 
 namespace gftools { 
 
@@ -43,6 +44,9 @@ public:
     typedef typename base::point point;
     ///using the super class vals_ entry, this is equivalent to this->vals_
     using base::vals_;
+    ///Use exception from the parent
+    using typename base::ex_not_found;
+    using typename base::ex_wrong_index;
 
     ///constructor getting minimum frequency, maximum frequency, and inverse temperature
     matsubara_grid(int min, int max, real_type beta, bool include_last = false);
@@ -132,7 +136,7 @@ template <class Obj>
 inline auto matsubara_grid<F>::eval(Obj &in, complex_type x) const ->decltype(in[0]) 
 {
     const auto find_result=this->find_nearest(x);
-    if (!almost_equal(x,find_result.value()))  throw std::logic_error("problem finding complex index: ");
+    if (!almost_equal(x,find_result.value())) throw (ex_not_found(x, *this)); 
     return in[find_result.index()];
 }
 

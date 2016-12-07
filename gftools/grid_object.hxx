@@ -31,7 +31,7 @@ grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple
     data_(data),
     tail_(tools::fun_traits<function_type>::constant(0.0)) 
 {
-    if (dims_ != data.shape()) throw std::logic_error("Dimensions mismatch when creating grid_object from existing data");
+    if (dims_ != data.shape()) throw gftools::ex_generic("Dimensions mismatch when creating grid_object from existing data");
 };
 
 template <typename ContainerType, typename ...GridTypes> 
@@ -41,7 +41,7 @@ grid_object_base<ContainerType,GridTypes...>::grid_object_base( const std::tuple
     data_(std::forward<ContainerType>(data)),
     tail_(tools::fun_traits<function_type>::constant(0.0)) 
 {
-    if (dims_ != data.shape()) throw std::logic_error("Dimensions mismatch when creating grid_object from existing data");
+    if (dims_ != data.shape()) throw gftools::ex_generic("Dimensions mismatch when creating grid_object from existing data");
 };
 
 template <typename ContainerType, typename ...GridTypes> 
@@ -80,7 +80,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<ContainerType,GridTypes...>& rhs)
 {
-    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    if (rhs.size() != this->size()) throw gftools::ex_generic("Assigning objects of different sizes");
     assert(dims_ == rhs.dims_);
     data_=rhs.data_;
     tail_ = rhs.tail_;
@@ -93,7 +93,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     const grid_object_base<CType,GridTypes...>& rhs)
 {
-    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    if (rhs.size() != this->size()) throw gftools::ex_generic("Assigning objects of different sizes");
     data_=rhs.data_;
     tail_ = rhs.tail_;
     return *this;
@@ -112,7 +112,7 @@ template <typename ContainerType, typename ...GridTypes>
 grid_object_base<ContainerType,GridTypes...>& grid_object_base<ContainerType,GridTypes...>::operator= (
     grid_object_base<ContainerType,GridTypes...>&& rhs)
 {
-    if (rhs.size() != this->size()) throw std::logic_error("Assigning objects of different sizes");
+    if (rhs.size() != this->size()) throw gftools::ex_generic("Assigning objects of different sizes");
     data_.swap(rhs.data_);
     tail_.swap(rhs.tail_);
     return *this;

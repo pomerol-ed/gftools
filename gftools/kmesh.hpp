@@ -2,6 +2,7 @@
 
 #include <map>
 #include <numeric>
+#include <cassert>
 
 #include "grid_base.hpp"
 #include "almost_equal.hpp"
@@ -59,13 +60,13 @@ domain_len_(len)
 inline kmesh::kmesh(std::vector<real_type> const& in):
     base(in)
 {
-    if (vals_.size() <= 1) throw std::logic_error("Can't construct a kmesh with <= 1 element");
+    if (vals_.size() <= 1) throw gftools::ex_generic("Can't construct a kmesh with <= 1 element");
     double diff = vals_[1] - vals_[0];
     bool ok = true;
     for (int i=1; i<vals_.size() && ok; i++) { 
          ok = almost_equal(vals_[i] - vals_[i-1], diff, diff * 1e-6); 
         }
-    if (!ok) throw std::logic_error("kmesh should be uniform");
+    if (!ok) throw gftools::ex_generic("kmesh should be uniform");
     domain_len_ = vals_.size() * diff;
     npoints_ = vals_.size();
 }

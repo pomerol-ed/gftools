@@ -81,7 +81,7 @@ inline auto enum_grid::eval(Obj &in, int x) const ->
     decltype(std::declval<typename std::remove_reference<decltype(in[0])>::type>()*1.0) 
 {
     const auto find_result=this->find(x);
-    if (!std::get<0>(find_result)) { throw (std::logic_error("Wrong index")); } 
+    if (!std::get<0>(find_result)) { throw (ex_not_found(x,*this)); } 
     return in[std::get<1>(find_result)];
 }
 

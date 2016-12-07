@@ -1,7 +1,6 @@
 #pragma once
 
 #include <limits>
-//C++11 - use boost::type_traits for C++03
 #include <type_traits> 
 // consider removing it - it is only used for complex_number
 #include "defaults.hpp"

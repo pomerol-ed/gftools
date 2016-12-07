@@ -4,8 +4,12 @@
 
 #include <iterator>
 #include <string>
+#include <vector>
+#include <algorithm>
+#include <functional>
 
 #include "defaults.hpp"
+#include "exceptions.hpp"
 #include "num_io.hpp"
 #include "almost_equal.hpp"
 
@@ -100,11 +104,20 @@ public:
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
-    class ex_wrong_index : public std::exception { public: 
+    class ex_wrong_index : public gftools_exception { public: 
         ex_wrong_index(int i, int l):index_(i),l_(l){}; 
-        virtual const char* what() const throw(){return std::string("grid_base : index " + std::to_string(index_) + "is out of bounds >" + std::to_string(l_)).c_str();} 
+        virtual const char* what() const throw(){return std::string("grid_base : index " + std::to_string(index_) + "is out of bounds >" + std::to_string(l_) + ".").c_str();} 
         int index_; int l_; 
         };
+
+    class ex_not_found : public gftools_exception { public: 
+        ex_not_found(value_type x, grid_base const &y):x_(x), y_(y){}; 
+        virtual const char* what() const throw(){value_type b1(y_[0]), b2(y_[y_.size()-1]); return std::string("grid_base : " + make_num_io(x_).to_string() + " is not found in \
+the grid [" + make_num_io(b1).to_string() + "; " + make_num_io(b2).to_string() + "]." ).c_str();} 
+        value_type x_; 
+        grid_base const& y_;
+        };
+
 
 protected:
     std::vector<point> vals_;
@@ -220,7 +233,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
 #ifndef NDEBUG
       ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
 #endif
-      throw std::logic_error("grid_base::shift : Couldn't shift point");
+      throw gftools::ex_generic("grid_base::shift : Couldn't shift point");
     }
     else return p1;
 }
@@ -237,7 +250,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
     ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
-    if (!almost_equal(val, vals_[index].value())) throw std::logic_error("grid_base::shift : almost equal failed."); 
+    if (!almost_equal(val, vals_[index].value())) throw gftools::ex_generic("grid_base::shift : almost equal failed."); 
     #endif
     return vals_[index];
 

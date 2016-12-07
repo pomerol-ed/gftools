@@ -1,8 +1,11 @@
 #pragma once
 
-#include "defaults.hpp"
+#include <typeinfo>
 #include <fstream>
 #include <iomanip>
+#include <limits>
+
+#include "defaults.hpp"
 
 namespace gftools {
 
@@ -32,6 +35,8 @@ public:
         std::cout << "Loading " << typeid(*this).name() << " from " << filename << std::endl;
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
     }; 
+    /// Convert the num_io to string
+    std::string to_string() const { std::stringstream s; s << *this; return s.str(); }
 
     type& value() { return value_; } // TODO : test using it
     type const& value() const { return value_; } // TODO : test using it

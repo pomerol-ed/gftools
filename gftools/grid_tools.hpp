@@ -86,7 +86,7 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple
 {
     #ifndef NDEBUG
     if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in))... }})) 
-        throw std::logic_error("indices are out of grid bounds");
+        throw gftools::ex_generic("indices are out of grid bounds");
     #endif
     return std::make_tuple((std::get<S>(grids)[std::get<S>(in)].value())...);
 }
@@ -98,7 +98,7 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::arg_tuple
 {
     #ifndef NDEBUG
     if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in).index())... }})) 
-        throw std::logic_error("indices are out of grid bounds");
+        throw gftools::ex_generic("indices are out of grid bounds");
     #endif
     return std::make_tuple((std::get<S>(in).value())...);
 }
@@ -111,7 +111,7 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::point_tuple
 {
     #ifndef NDEBUG
     if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in))... }})) 
-        throw std::logic_error("indices are out of grid bounds");
+        throw gftools::ex_generic("indices are out of grid bounds");
     #endif
     return std::make_tuple((std::get<S>(grids)[std::get<S>(in)])...);
 }
@@ -123,9 +123,9 @@ inline typename grid_tuple_traits<std::tuple<GridTypes...>>::indices
 {
     #ifndef NDEBUG
     if ( indices({{ (std::get<S>(grids).size())... }}) <= indices({{ (std::get<S>(in).index())... }})) 
-        throw std::logic_error("indices are out of grid bounds");
+        throw gftools::ex_generic("indices are out of grid bounds");
     if ( indices({{ (std::get<S>(grids)[std::get<S>(in).index()].index()) ... }}) != indices({{ (std::get<S>(in).index())... }})) 
-        throw std::logic_error("index mismatch");
+        throw gftools::ex_generic("index mismatch");
     #endif
     return {{ (std::get<S>(in).index())... }};
 };

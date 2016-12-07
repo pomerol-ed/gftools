@@ -14,6 +14,7 @@ public:
     const kmesh& _parent;
     size_t _npoints;
     using kmesh::vals_;
+    using typename kmesh::ex_not_found;
     kmesh_patch(const kmesh& parent, std::vector<size_t> indices);
     kmesh_patch(const kmesh& parent);
     template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
@@ -51,7 +52,7 @@ template <class Obj>
 inline auto kmesh_patch::eval(Obj &in, real_type x) const ->decltype(in[0])
 {
     const auto find_result=_parent.find_nearest(x);
-    if (!almost_equal(find_result.value(), x)) throw std::logic_error("Can't eval point out of bounds.");
+    if (!almost_equal(find_result.value(), x)) throw ex_not_found(x, *this); 
     return _parent.eval(in, find_result);
 }
 
@@ -65,7 +66,7 @@ inline size_t kmesh_patch::get_index(kmesh::point x) const
 {
     auto f1 = mapvals_.find(size_t(x));
     if (f1!=mapvals_.end()) { return f1->second; }
-    else throw std::logic_error("problem finding index: "+std::to_string(x));
+    else throw ex_not_found(x,*this); 
 }
 
 } // end of namespace gftools

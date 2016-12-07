@@ -4,6 +4,9 @@
 #include <type_traits>
 #include <array>
 
+#include<Eigen/Core>
+#include<Eigen/StdVector>
+
 #ifdef NDEBUG
 #define BOOST_DISABLE_ASSERTS
 #endif
