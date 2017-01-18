@@ -40,7 +40,7 @@ To compile examples and tests create a build directory and run
 - HDF5 support via alpscore (http://www.alpscore.org)
 
 ##### Author
-- Andrey Antipov, *Andrey.E.Antipov[at]gmail.com*, 2013-now
+- Andrey Antipov, *Andrey.E.Antipov[at]gmail.com*, 2013-now.
 
 ##### Distribution
 Open-source under GPLv2 license.
