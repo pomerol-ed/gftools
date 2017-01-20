@@ -3,6 +3,7 @@
 #include <map>
 #include <numeric>
 #include <cassert>
+#include <type_traits>
 
 #include "grid_base.hpp"
 #include "almost_equal.hpp"
@@ -30,8 +31,8 @@ public:
     ///The second return value is the index.
     ///The third return value 'weight' measures how close the point is to a grid point
     std::tuple <bool, size_t, real_type> find(real_type in) const ;
-    
-    template <class Obj> auto integrate(const Obj &in) const ->decltype(in(vals_[0]));
+
+    template <class Obj> auto integrate(const Obj &in) const -> typename std::result_of<Obj(decltype(vals_[0]))>::type;
     template <class Obj> auto eval(Obj &in, real_type x) const ->decltype(in[0]);
     template <class Obj> auto eval(Obj &in, point x) const ->decltype(in[0]) { return base::eval(in,x); }
    
@@ -91,9 +92,8 @@ inline auto kmesh::eval(Obj &in, real_type x) const ->decltype(in[0])
     return eval(in,p);
 }
 
-
 template <class Obj> 
-auto kmesh::integrate(const Obj &in) const -> decltype(in(vals_[0]))
+auto kmesh::integrate(const Obj &in) const -> typename std::result_of<Obj(decltype(vals_[0]))>::type
 {
     decltype(in(vals_[0])) R = in(real_type(vals_[0]));
     R=std::accumulate(vals_.begin()+1, vals_.end(), R,[&](decltype(in(vals_[0]))& y,decltype(vals_[0]) & x) {return y+in(x);}); 
