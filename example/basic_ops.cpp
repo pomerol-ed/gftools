@@ -5,11 +5,11 @@
  */
 
 // This includes the grid of real values.
-#include "real_grid.hpp"
+#include "gftools/real_grid.hpp"
 // This includes the definition of a container class - a tool to store data.
-#include "container.hpp"
+#include "gftools/container.hpp"
 // This include the grid_object class - an object to store data, defined on a grid.
-#include "grid_object.hpp"
+#include "gftools/grid_object.hpp"
 
 using namespace gftools;
 
