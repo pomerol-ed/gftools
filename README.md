@@ -44,3 +44,6 @@ To compile examples and tests create a build directory and run
 
 ##### Distribution
 Open-source under GPLv2 license.
+
+##### Academic usage
+Please attribute this work by a citation to arXiv:1705.00024 (2017).
