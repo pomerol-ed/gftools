@@ -27,12 +27,12 @@ public:
     const type &operator()() const{return value_;}
     /// Save the object to a file with a filename passed in as a name
     void savetxt(const std::string& filename) { 
-        std::cout << "Saving " << typeid(*this).name() << " to " << filename << std::endl;
+        std::cout << "Saving " << demangled_name(typeid(*this)) << " to " << filename << std::endl;
         std::ofstream out; out.open(filename.c_str()); out << *this << std::endl; out.close(); 
     }; 
     /// Read the object from a file with a filename passed in as a name
     void loadtxt(const std::string& filename) { 
-        std::cout << "Loading " << typeid(*this).name() << " from " << filename << std::endl;
+        std::cout << "Loading " << demangled_name(typeid(*this)) << " from " << filename << std::endl;
         std::ifstream out; out.open(filename.c_str()); if (out.fail()) throw (std::bad_exception()); out >> *this; out.close(); 
     }; 
     /// Convert the num_io to string

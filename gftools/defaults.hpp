@@ -5,6 +5,8 @@
 #include<complex>
 #include<iostream>
 #include<utility>
+#include<typeinfo>
+#include<boost/core/demangle.hpp>
 
 
 namespace gftools {
@@ -39,13 +41,17 @@ namespace gftools {
 #define INFO2(MSG)            std::cout << "\t"     << MSG << std::endl;
 #define INFO3(MSG)            std::cout << "\t\t"   << MSG << std::endl;
 #define INFO4(MSG)            std::cout << "\t\t\t" << MSG << std::endl;
-#endif 
+#endif
 
 #ifndef ERROR
 #define MSG_PREFIX            __FILE__ << ":" << __LINE__ << ": "
 #define ERROR(MSG)            std::cerr << MSG_PREFIX << MSG << std::endl;
 #endif
 
+/** Extract demangled name from a type_info object */
+std::string demangled_name(std::type_info const& info) {
+    return boost::core::demangle(info.name());
+}
 
 typedef double real_type;
 typedef std::complex<real_type> complex_type;
