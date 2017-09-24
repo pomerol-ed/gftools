@@ -6,8 +6,15 @@
 #include<iostream>
 #include<utility>
 #include<typeinfo>
-#include<boost/core/demangle.hpp>
 
+#include<boost/version.hpp>
+#if BOOST_VERSION >= 105600
+#define BOOST_HAS_DEMANGLE
+#endif
+
+#ifdef BOOST_HAS_DEMANGLE
+#include<boost/core/demangle.hpp>
+#endif
 
 namespace gftools {
 
@@ -50,7 +57,11 @@ namespace gftools {
 
 /** Extract demangled name from a type_info object */
 std::string demangled_name(std::type_info const& info) {
+#ifdef BOOST_HAS_DEMANGLE
     return boost::core::demangle(info.name());
+#else
+    return info.name();
+#endif
 }
 
 typedef double real_type;
