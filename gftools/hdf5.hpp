@@ -129,7 +129,7 @@ struct hdf5_grid_tuple<std::tuple<Grid>,N>
 template <typename T> 
 inline void save_grid_object(alps::hdf5::archive & ar, std::string const & path, const T& c, bool plaintext = false, std::string extra_name_to_plaintext = "") 
 {
-    std::cout << "hdf5 : saving " << typeid(T).name() << " to " << path << std::endl;
+    std::cout << "hdf5 : saving " << demangled_name(typeid(T)) << " to " << path << std::endl;
     hdf5_grid_tuple<typename T::grid_tuple>::save(ar,path+"/grids",c.grids());
     save(ar,path+"/data", c.data());
     std::string p2(path);
@@ -144,7 +144,7 @@ inline void save_grid_object(alps::hdf5::archive & ar, std::string const & path,
 
 template <typename T> 
 inline T load_grid_object(alps::hdf5::archive & ar, std::string const & path) {  
-    std::cout << "hdf5 : loading " << typeid(T).name() << " from " << path << std::endl;
+    std::cout << "hdf5 : loading " << demangled_name(typeid(T)) << " from " << path << std::endl;
     auto grids = hdf5_grid_tuple<typename T::grid_tuple>::load(ar,path+"/grids");
     auto data = hdf5_loader<typename T::container_type>::load(ar,path+"/data");
     return T(grids,data);

@@ -185,7 +185,7 @@ std::ostream& operator<<(std::ostream& lhs, const grid_object_base<ContainerType
 template <typename ContainerType, typename ...GridTypes> 
 void grid_object_base<ContainerType,GridTypes...>::savetxt(const std::string& fname) const
 {
-    INFO("Saving " << typeid(*this).name() << " to " << fname);
+    INFO("Saving " << demangled_name(typeid(*this)) << " to " << fname);
     std::ofstream out;
     out.open(fname.c_str());
     size_t total_size = this->size();
@@ -204,7 +204,7 @@ void grid_object_base<ContainerType,GridTypes...>::savetxt(const std::string& fn
 template <typename ContainerType, typename ...GridTypes> 
 void grid_object_base<ContainerType,GridTypes...>::loadtxt(const std::string& fname, real_type tol)
 {
-    INFO("Loading " << typeid(*this).name() << " from " << fname);
+    INFO("Loading " << demangled_name(typeid(*this)) << " from " << fname);
     std::ifstream in;
     in.open(fname.c_str());
     if (in.fail()) { ERROR("Couldn't open file " << fname); throw exIOProblem(); };
@@ -425,7 +425,7 @@ GridObjectType loadtxt(std::string const& fname, double tol)
     typedef typename GridObjectType::value_type value_type;
     typedef typename GridObjectType::grid_tuple grid_tuple;
 
-    INFO("Loading " << typeid(GridObjectType).name() << " from " << fname);
+    INFO("Loading " << demangled_name(typeid(GridObjectType)) << " from " << fname);
     std::ifstream in;
     in.open(fname.c_str());
     if (in.fail()) { ERROR("Couldn't open file " << fname); throw typename GridObjectType::exIOProblem(); };
