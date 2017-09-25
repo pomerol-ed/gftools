@@ -56,7 +56,7 @@ namespace gftools {
 #endif
 
 /** Extract demangled name from a type_info object */
-std::string demangled_name(std::type_info const& info) {
+inline std::string demangled_name(std::type_info const& info) {
 #ifdef BOOST_HAS_DEMANGLE
     return boost::core::demangle(info.name());
 #else
