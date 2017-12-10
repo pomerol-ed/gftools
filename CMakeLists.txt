@@ -1,9 +1,13 @@
 ### gftools cmake configuration
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.1)
 
-# gftools use only CXX compiler 
+# gftools use only CXX compiler
 project (GFTools CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Disable build in source
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -17,22 +21,16 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Print build type
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-# set c++-11 flags
-option(AutoSetCXX11 "Auto set c++11 flags" ON)
-if (AutoSetCXX11)
-    include(SetCXX11) 
-endif (AutoSetCXX11)
-
 # doxygen
 set(DOXYFILE_SOURCE_DIR "./gftools")
 include(UseDoxygen)
 
 ### Dependencies
-# Eigen3 
+# Eigen3
 find_package (Eigen3 3.1)
 message(STATUS "Eigen3 includes: " ${EIGEN3_INCLUDE_DIR} )
 # Boost
-find_package (Boost) 
+find_package (Boost)
 
 include_directories(
     ${EIGEN3_INCLUDE_DIR}
@@ -41,8 +39,16 @@ include_directories(
     ./gftools
 )
 
-# Build and enable tests
-add_subdirectory(gftools)
+add_library(gftools INTERFACE)
+target_include_directories(gftools INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+)
+
+install(TARGETS gftools EXPORT gftools-config)
+install(DIRECTORY gftools DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(EXPORT gftools-config DESTINATION share/gftools/cmake)
+
 option(Testing "Enable testing" OFF)
 if (Testing)
     message(STATUS "Building tests")
@@ -63,4 +69,3 @@ configure_file("${CMAKE_SOURCE_DIR}/gftools.pc.in" "${CMAKE_BINARY_DIR}/gftools.
 configure_file("${CMAKE_SOURCE_DIR}/gftools.hpp" "${CMAKE_BINARY_DIR}/gftools.hpp")
 install(FILES "${CMAKE_BINARY_DIR}/gftools.pc" DESTINATION "lib/pkgconfig")
 install(FILES "${CMAKE_BINARY_DIR}/gftools.hpp" DESTINATION include)
-
