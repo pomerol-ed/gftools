@@ -150,7 +150,7 @@ public:
     value_type& operator()(const point_tuple& in) { return data_(get_indices(in)); }
     value_type operator()(const point_tuple& in) const { 
             try { return data_(get_indices(in)); } 
-            catch (gftools::ex_generic) { return this->tail_eval(in); };
+            catch (gftools::ex_generic&) { return this->tail_eval(in); };
         }
 
     template <int M=N>
@@ -164,7 +164,7 @@ public:
         }
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type  operator()(arg_tuple in) const
-    	{ try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (gftools::gftools_exception) { return this->tail_eval(in); } }
+        { try { return std::get<0>(grids_).eval(data_, std::get<0>(in)); } catch (gftools::gftools_exception&) { return this->tail_eval(in); } }
 
     template <int M=N>
     typename std::enable_if<(M==1 ), value_type>::type
@@ -200,7 +200,7 @@ public:
     template <typename ArgType>
     	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
     	 operator()(ArgType in) const { try { return std::get<0>(grids_).eval(data_, in); } 
-            catch (gftools::gftools_exception) { return tail_(in); }; }
+            catch (gftools::gftools_exception&) { return tail_(in); }; }
 
     /*template <typename ArgType>
         	typename std::enable_if<std::is_same<std::tuple<ArgType>, arg_tuple>::value, value_type>::type
