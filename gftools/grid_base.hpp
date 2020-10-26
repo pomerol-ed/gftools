@@ -105,18 +105,26 @@ public:
     bool operator==(const grid_base &rhs) const;
 
     class ex_wrong_index : public gftools_exception { public: 
-        ex_wrong_index(int i, int l):index_(i),l_(l){}; 
-        virtual const char* what() const throw(){return std::string("grid_base : index " + std::to_string(index_) + "is out of bounds >" + std::to_string(l_) + ".").c_str();} 
-        int index_; int l_; 
-        };
+        ex_wrong_index(int i, int l):index_(i),l_(l),
+        msg("grid_base : index " + std::to_string(index_) + " is out of bounds >" + std::to_string(l_) + ".")
+        {}
+        virtual const char* what() const throw(){return msg.c_str();}
+        int index_; int l_;
+        std::string msg;
+    };
 
     class ex_not_found : public gftools_exception { public: 
-        ex_not_found(value_type x, grid_base const &y):x_(x), y_(y){}; 
-        virtual const char* what() const throw(){value_type b1(y_[0]), b2(y_[y_.size()-1]); return std::string("grid_base : " + make_num_io(x_).to_string() + " is not found in \
-the grid [" + make_num_io(b1).to_string() + "; " + make_num_io(b2).to_string() + "]." ).c_str();} 
+        ex_not_found(value_type x, grid_base const &y):x_(x), y_(y)
+        {
+            value_type b1(y_[0]), b2(y_[y_.size()-1]);
+            msg = "grid_base : " + make_num_io(x_).to_string() + " is not found in the grid [" +
+                  make_num_io(b1).to_string() + "; " + make_num_io(b2).to_string() + "].";
+        }
+        virtual const char* what() const throw(){return msg.c_str();}
         value_type x_; 
         grid_base const& y_;
-        };
+        std::string msg;
+    };
 
 
 protected:
