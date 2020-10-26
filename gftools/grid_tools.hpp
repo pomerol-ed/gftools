@@ -174,7 +174,7 @@ inline bool grid_tuple_traits<std::tuple<GridTypes...>>::is_equal_(
 {
     std::array<bool, N> arr = {{ std::get<S>(g1) == std::get<S>(g2) ... }};
     bool ok = true;
-    for (int i=0; i<N && ok; i++) { ok = ok && arr[i]; }
+    for (size_t i=0; i<N && ok; i++) { ok = ok && arr[i]; }
     return ok;
 }
 //impl

@@ -14,7 +14,7 @@ TEST(expression1d, vector) {
     std::iota(y.begin(), y.end(), 0.3);
     eval_expression<std::vector<double>, double, 1> e(y);
     std::cout <<  y[2] << "==" << e[2] << std::endl;
-    for (int i=0; i<y.size(); ++i) { 
+    for (size_t i=0; i<y.size(); ++i) {
         ASSERT_EQ(y[i], e[i]);
         };
 }
@@ -24,7 +24,7 @@ TEST(expression1d, container) {
     std::iota(&y[0], &y[9], 0.3);
     eval_expression<container<double, 1>, double, 1> e(y);
     std::cout <<  y[2] << "==" << e[2] << std::endl;
-    for (int i=0; i<y.size(); ++i) { 
+    for (int i=0; i<y.size(); ++i) {
         ASSERT_EQ(y[i], e[i]);
         };
 }
@@ -39,8 +39,8 @@ TEST(expression2d, vector) {
     std::cout << "expression : " << e[2][3] << std::endl;
     DEBUG(y[2][3] + y[1][2]);
     DEBUG(e[2][3] + e[1][2]);
-    for (int i1 = 0; i1 < dims[0]; i1++) 
-        for (int i2 = 0; i2 < dims[1]; i2++) 
+    for (size_t i1 = 0; i1 < dims[0]; i1++)
+        for (size_t i2 = 0; i2 < dims[1]; i2++)
             ASSERT_EQ(y[i1][i2], e[i1][i2]);
 }
 
@@ -52,8 +52,8 @@ TEST(expression2d, container) {
     eval_expression<data2d, double, 2> e(y);
     std::cout << "original   : " << y[2][3] << std::endl;
     std::cout << "expression : " << e[2][3] << std::endl;
-    for (int i1 = 0; i1 < dims[0]; i1++) 
-        for (int i2 = 0; i2 < dims[1]; i2++) 
+    for (size_t i1 = 0; i1 < dims[0]; i1++)
+        for (size_t i2 = 0; i2 < dims[1]; i2++)
             ASSERT_EQ(y[i1][i2], e[i1][i2]);
     };
 
@@ -61,14 +61,14 @@ TEST(expression2d, grid_object) {
     typedef grid_object<double, real_grid, real_grid> data2d;
     std::array<size_t, 2> dims = {{10, 4}};
     data2d y(real_grid(0,1.,dims[0]), real_grid(0,1.,dims[1]));
-    typename data2d::function_type f1; 
+    typename data2d::function_type f1;
     f1 = [](double x, double y){return sin(x+y);}; // intel bug
     y.fill(f1);
     eval_expression<data2d, double, 2> e(y);
     std::cout << "original   : " << y[2][3] << std::endl;
     std::cout << "expression : " << e[2][3] << std::endl;
-    for (int i1 = 0; i1 < dims[0]; i1++) 
-        for (int i2 = 0; i2 < dims[1]; i2++) 
+    for (size_t i1 = 0; i1 < dims[0]; i1++)
+        for (size_t i2 = 0; i2 < dims[1]; i2++)
             ASSERT_EQ(y[i1][i2], e[i1][i2]);
     };
 
@@ -81,9 +81,9 @@ TEST(expression3d, vector) {
     eval_expression<data3d, double, 3> e(y);
     std::cout << "original   : " <<  y[2][3][5] << std::endl;
     std::cout << "expression : " <<  e[2][3][5] << std::endl;
-    for (int i1 = 0; i1 < dims[0]; i1++) 
-        for (int i2 = 0; i2 < dims[1]; i2++) 
-            for (int i3 = 0; i3 < dims[2]; i3++) 
+    for (size_t i1 = 0; i1 < dims[0]; i1++)
+        for (size_t i2 = 0; i2 < dims[1]; i2++)
+            for (size_t i3 = 0; i3 < dims[2]; i3++)
                 ASSERT_EQ(y[i1][i2][i3], e[i1][i2][i3]);
 }
 
@@ -95,9 +95,9 @@ TEST(expression3d, container) {
     eval_expression<data3d, double, 3> e(y);
     std::cout << "original   : " <<  y[2][3][5] << std::endl;
     std::cout << "expression : " <<  e[2][3][5] << std::endl;
-    for (int i1 = 0; i1 < dims[0]; i1++) 
-        for (int i2 = 0; i2 < dims[1]; i2++) 
-            for (int i3 = 0; i3 < dims[2]; i3++) 
+    for (size_t i1 = 0; i1 < dims[0]; i1++)
+        for (size_t i2 = 0; i2 < dims[1]; i2++)
+            for (size_t i3 = 0; i3 < dims[2]; i3++)
                 ASSERT_EQ(y[i1][i2][i3], e[i1][i2][i3]);
 }
 

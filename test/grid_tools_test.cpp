@@ -50,9 +50,9 @@ public:
 
 // check construction
 TEST_F(grid_tuple_test, Construction) {
-    EXPECT_EQ(std::get<0>(*grids_ptr).size(), 4);
-    EXPECT_EQ(std::get<1>(*grids_ptr).size(), 12);
-    EXPECT_EQ(std::get<2>(*grids_ptr).size(), 8);
+    EXPECT_EQ(std::get<0>(*grids_ptr).size(), (size_t)4);
+    EXPECT_EQ(std::get<1>(*grids_ptr).size(), (size_t)12);
+    EXPECT_EQ(std::get<2>(*grids_ptr).size(), (size_t)8);
 }
 
 TEST_F(grid_tuple_test, IndexOp) {
@@ -61,10 +61,10 @@ TEST_F(grid_tuple_test, IndexOp) {
     std::cout << "p : " << print_tuple(p) << std::endl;
     typename trs::indices i1 = trs::get_indices(p, g);
     std::cout << "indices : " << print_array(i1) << std::endl;
-    EXPECT_EQ(i1[0], 1);
-    EXPECT_EQ(i1[1], 2);
-    EXPECT_EQ(i1[2], 4);
-    
+    EXPECT_EQ(i1[0], (size_t)1);
+    EXPECT_EQ(i1[1], (size_t)2);
+    EXPECT_EQ(i1[2], (size_t)4);
+
     typename trs::indices i2 = {{2,5,3,1}};
     typename trs::point_tuple p2 = trs::points(i2,g);
     typename trs::indices i22 = trs::get_indices(p2, g);
@@ -93,18 +93,18 @@ TEST_F(grid_tuple_test, Globals) {
     const auto& g = grids();
     auto dims = trs::get_dimensions(g);
     std::cout << print_array(dims) << std::endl;
-    EXPECT_EQ(dims[0], 4); 
-    EXPECT_EQ(dims[1], 12); 
-    EXPECT_EQ(dims[2], 8); 
-    EXPECT_EQ(dims[3], 100); 
+    EXPECT_EQ(dims[0], (size_t)4);
+    EXPECT_EQ(dims[1], (size_t)12);
+    EXPECT_EQ(dims[2], (size_t)8);
+    EXPECT_EQ(dims[3], (size_t)100);
 
     size_t s = trs::get_total_size(g);
     std::cout << "size : " << s << std::endl;
-    EXPECT_EQ(s,4*12*8*100);
+    EXPECT_EQ(s, size_t(4*12*8*100));
 }
 
 TEST_F(grid_tuple_test, PointShift) {
-    const auto& g2 = grids2(); 
+    const auto& g2 = grids2();
     trs2::point_tuple p1 = trs2::find_nearest(std::make_tuple(2,M_PI),g2);
     std::cout << "p1" << print_tuple(p1) << std::endl;
 
@@ -112,7 +112,7 @@ TEST_F(grid_tuple_test, PointShift) {
     trs2::point_tuple shift2 = trs2::find_nearest(shift1,g2);
 
     trs2::point_tuple r1 = trs2::find_nearest(std::make_tuple(3,0.),g2);
-    
+
     trs2::point_tuple p1s1 = trs2::shift(p1,shift1,g2);
     std::cout << print_tuple(p1) << "+" << print_tuple(shift1) << " = " << print_tuple(p1s1) << std::endl;
     EXPECT_EQ(p1s1, r1);
@@ -123,7 +123,7 @@ TEST_F(grid_tuple_test, PointShift) {
 }
 
 TEST_F(grid_tuple_test, ArgShift) {
-    const auto& g = grids(); 
+    const auto& g = grids();
     trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),M_PI, 3. ),g);
 
     trs::arg_tuple shift1 = std::make_tuple(1,BMatsubara(0,beta),5*M_PI/4.,4.);
@@ -146,22 +146,22 @@ TEST_F(grid_tuple_test, ArgShift) {
 }
 
 TEST_F(grid_tuple_test, ArgShiftFail) {
-    const auto& g = grids(); 
+    const auto& g = grids();
     trs::point_tuple p1 = trs::find_nearest(std::make_tuple(2,FMatsubara(2,beta),M_PI, 3. ),g);
 
     double rstep = (std::get<3>(g)[1] - std::get<3>(g)[0]);
 
     // last index out of bounds
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,BMatsubara(0,beta),5*M_PI/4.,rstep*100),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,BMatsubara(0,beta),5*M_PI/4.,rstep*100),g));
     // can't shift fermionic Matsubara over another fermionic Matsubara and get a Fermionic Matsubara
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,FMatsubara(0,beta),5*M_PI/4.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(1,FMatsubara(0,beta),5*M_PI/4.,rstep),g));
     // first index out of bounds
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(4,BMatsubara(0,beta),5*M_PI/4.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(4,BMatsubara(0,beta),5*M_PI/4.,rstep),g));
 
     // grid point mismatch - one can only shift to the exact point on the grid. Otherwise use find_nearest(arg_tuple)
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/8.,rstep),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/8.,rstep),g));
     // grid point mismatch - one can only shift to the exact point on the grid. Otherwise use find_nearest(arg_tuple)
-    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/4.,rstep/2),g)); 
+    ASSERT_ANY_THROW(trs::shift(p1,std::make_tuple(0,BMatsubara(0,beta),5*M_PI/4.,rstep/2),g));
 
     trs::arg_tuple a1 = trs::shift(trs::get_args(p1,g), std::make_tuple(0,0.,0.,rstep / 3.),g);
     EXPECT_EQ(trs::find_nearest(a1,g),p1);
@@ -169,28 +169,28 @@ TEST_F(grid_tuple_test, ArgShiftFail) {
 
 /* // TODO
 TEST(grids, EvaluateExprTemp1) {
-    
+
     int size = 10;
     std::vector<double> d(size);
     for (int i=0; i<size; i++) d[i]=double(i)/(size);
     kmesh k1(size);
 
-    grid_eval_expr<decltype(d), std::tuple<kmesh>> expr1 (d,std::forward_as_tuple(k1)); 
+    grid_eval_expr<decltype(d), std::tuple<kmesh>> expr1 (d,std::forward_as_tuple(k1));
     //EXPECT_EQ(d[3], expr1[3]);
     DEBUG((std::is_same<std::vector<double>, std::vector<double>>::value));
 
     std::vector<std::vector<double>> d2(size);
     for (int i=0; i<size; i++) { d2[i].resize(size); for (int j=0; j<size; j++) d2[i][j] = double(i+j)/size/size; }
-    
-    //grid_eval_expr<decltype(d2), std::tuple<kmesh,kmesh>> expr2 (d2,std::forward_as_tuple(k1,k1)); 
+
+    //grid_eval_expr<decltype(d2), std::tuple<kmesh,kmesh>> expr2 (d2,std::forward_as_tuple(k1,k1));
     //DEBUG(d2[2][3]);
     //DEBUG(expr2[2][3]);
-    
+
     }
 */
 
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

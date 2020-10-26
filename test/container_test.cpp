@@ -117,7 +117,7 @@ TEST_F(cont_test, Iterators) {
 TEST_F(cont_test, Flatten) {
     auto f = (*d2).flatten();
     EXPECT_EQ(f.size(), (*d2).size());
-    EXPECT_EQ(f.shape()[0], (*d2).size());
+    EXPECT_EQ(f.shape()[0], size_t((*d2).size()));
 }
 
 TEST_F(cont_test, as_matrix) {

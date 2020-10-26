@@ -29,7 +29,8 @@ int main()
     
     my_grid g2 ( { my_data(1), my_data(2), my_data(5) });
     std::cout << g2 << std::endl;
-    for (auto p : g2.points()) std::cout << p << " "; std::cout << std::endl;
+    for (auto p : g2.points()) std::cout << p << " ";
+    std::cout << std::endl;
 
     typedef my_grid::point point;
     point p1 = g2[2];

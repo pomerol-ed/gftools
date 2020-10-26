@@ -111,7 +111,7 @@ TEST_F(gridobject_test1, Reductions)
     DEBUG(print_tuple(t2));
     auto t3 = gf.get_args(t1);
     EXPECT_EQ(is_float_equal(t3,t2),1);
-    EXPECT_EQ(gf.size(), 4*10*8);
+    EXPECT_EQ(gf.size(), size_t(4*10*8));
 
     gf_t gf2(gf);
     gf2[0][0][0] = 0.5;

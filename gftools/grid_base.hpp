@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <boost/operators.hpp>
 
@@ -14,18 +14,18 @@
 #include "almost_equal.hpp"
 
 
-namespace gftools { 
+namespace gftools {
 
-/** This class describes a point on a grid. It has an index (integer) and a value (pretty much anything) , and it 
+/** This class describes a point on a grid. It has an index (integer) and a value (pretty much anything) , and it
 maps between the two. The index is used for fast access, and the value is used for other things like interpolation/physics/math.*/
-template <typename ValueType> class point_base : 
+template <typename ValueType> class point_base :
     ///dependence on this provides additional comparison operators
     boost::less_than_comparable<point_base<ValueType> >,
     ///dependence on this provides additional comparison operators
     boost::equality_comparable<point_base<ValueType> >
  {
 public:
-    //there is a small wrapper for integers down below. Here we exclude grids of ints to avoid confusion in the cast operators. 
+    //there is a small wrapper for integers down below. Here we exclude grids of ints to avoid confusion in the cast operators.
     static_assert(!std::is_same<ValueType,int>::value, "Can't create a grid of ints");
 
     typedef ValueType value_type;
@@ -39,7 +39,7 @@ public:
 
     ///constructor with a pair of values and indices
     point_base(ValueType val, size_t index):val_(val),index_(index){}
-    
+
     bool operator==(const point_base &rhs) const {return index_ == rhs.index_;}
     bool operator<(const point_base &rhs) const {return this->index_ < rhs.index_;}
 
@@ -51,8 +51,8 @@ protected:
     ValueType val_;
     ///grid point index
     size_t index_;
-}; 
-    
+};
+
 template<typename T> std::ostream& operator<<(std::ostream& lhs, const point_base<T> &p){
   lhs<<"{"<<p.value()<<"<-["<<p.index()<<"]}"; return lhs;
 }
@@ -72,7 +72,7 @@ public:
     grid_base(const std::vector<ValueType> & vals);
     /** Initialize the values from an external function that maps the integer values to the ValueType values. */
     grid_base(int min, int max, std::function<ValueType (int)> f);
-    
+
     /** Returns a value at given index. */
     point operator[](size_t in) const;
     /** Returns all values. */
@@ -104,7 +104,7 @@ public:
     /// Compare 2 grids
     bool operator==(const grid_base &rhs) const;
 
-    class ex_wrong_index : public gftools_exception { public: 
+    class ex_wrong_index : public gftools_exception { public:
         ex_wrong_index(int i, int l):index_(i),l_(l),
         msg("grid_base : index " + std::to_string(index_) + " is out of bounds >" + std::to_string(l_) + ".")
         {}
@@ -113,7 +113,7 @@ public:
         std::string msg;
     };
 
-    class ex_not_found : public gftools_exception { public: 
+    class ex_not_found : public gftools_exception { public:
         ex_not_found(value_type x, grid_base const &y):x_(x), y_(y)
         {
             value_type b1(y_[0]), b2(y_[y_.size()-1]);
@@ -121,7 +121,7 @@ public:
                   make_num_io(b1).to_string() + "; " + make_num_io(b2).to_string() + "].";
         }
         virtual const char* what() const throw(){return msg.c_str();}
-        value_type x_; 
+        value_type x_;
         grid_base const& y_;
         std::string msg;
     };
@@ -131,10 +131,10 @@ protected:
     std::vector<point> vals_;
 };
 
-namespace extra { 
+namespace extra {
 /// A small helper struct to decorate a function object with [] method.
 template <typename F, typename Grid>
-struct function_proxy { 
+struct function_proxy {
     F f_;
     const Grid& grid_;
     function_proxy(F f, Grid const& grid):f_(f),grid_(grid){}
@@ -172,14 +172,14 @@ grid_base<ValueType,Derived>::grid_base(int min, int max, std::function<ValueTyp
     if (max<min) std::swap(min,max);
     size_t n_points = max-min;
     vals_.reserve(n_points);
-    for (int i=0; i<n_points; ++i) vals_.emplace_back(f(min+i), i) ; 
+    for (size_t i=0; i<n_points; ++i) vals_.emplace_back(f(min+i), i) ;
 }
 
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::operator[](size_t index) const
 {
     #ifndef NDEBUG
-    if (index>vals_.size()) throw ex_wrong_index(index,this->size()); 
+    if (index>vals_.size()) throw ex_wrong_index(index,this->size());
     #endif
     return vals_[index];
 }
@@ -213,7 +213,7 @@ inline bool grid_base<ValueType,Derived>::check_point(point in, real_type tolera
 
 template <typename ValueType, class Derived>
 template <class Obj>
-inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0]) 
+inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->decltype(in[0])
 {
     if (check_point(x)) return in[x.index()];
     else throw ex_wrong_index(x.index(), this->size());
@@ -222,13 +222,13 @@ inline auto grid_base<ValueType,Derived>::eval(Obj &&in, point x) const ->declty
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::find_nearest(ValueType in) const
 {
-    static_assert(std::is_same<bool,decltype(std::declval<ValueType>() < std::declval<ValueType>())>::value, 
+    static_assert(std::is_same<bool,decltype(std::declval<ValueType>() < std::declval<ValueType>())>::value,
         "Default find_nearest is written only for less-comparable types");
     auto nearest_iter = std::lower_bound(vals_.begin(), vals_.end(), in, [](ValueType x, ValueType y){return x<y;});
     size_t dist = std::distance(vals_.begin(), nearest_iter);
     if (dist > 0 && std::abs(complex_type(vals_[dist].value()) - complex_type(in)) > std::abs(complex_type(vals_[dist-1].value()) - complex_type(in)) ) dist--;
     return vals_[dist];
-} 
+}
 
 template <typename ValueType, class Derived>
 inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>::shift(point in, ValueType shift_arg) const
@@ -237,7 +237,7 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     ValueType out(in.value());
     out = static_cast<const Derived*>(this)->shift(ValueType(in),shift_arg);
     point p1 = static_cast<const Derived*>(this)->find_nearest(out);
-    if (!almost_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) { 
+    if (!almost_equal(p1.value(), out, std::abs(p1.value() - ((p1.index()!=0)?vals_[p1.index() - 1]:vals_[p1.index()+1]).value())/10.)) {
 #ifndef NDEBUG
       ERROR("Couldn't shift point" <<  in << " by " << shift_arg << " got " << out);
 #endif
@@ -258,18 +258,18 @@ inline typename grid_base<ValueType,Derived>::point grid_base<ValueType,Derived>
     size_t index = (in.index() + shift_arg.index())%vals_.size();
     #ifndef NDEBUG
     ValueType val = static_cast<const Derived*>(this)->shift(in.value(), shift_arg.value());
-    if (!almost_equal(val, vals_[index].value())) throw gftools::ex_generic("grid_base::shift : almost equal failed."); 
+    if (!almost_equal(val, vals_[index].value())) throw gftools::ex_generic("grid_base::shift : almost equal failed.");
     #endif
     return vals_[index];
 
 }
 
 template <typename ValueType, class Derived>
-inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const 
-{ 
-    bool out = (this->size() == rhs.size()); 
-    for (int i=0; i<vals_.size() && out; i++) { 
-        out = out && almost_equal(vals_[i].value(), rhs.vals_[i].value(), num_io<double>::tolerance()); 
+inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const
+{
+    bool out = (this->size() == rhs.size());
+    for (size_t i=0; i<vals_.size() && out; i++) {
+        out = out && almost_equal(vals_[i].value(), rhs.vals_[i].value(), num_io<double>::tolerance());
     }
     return out;
 }
@@ -277,7 +277,7 @@ inline bool grid_base<ValueType,Derived>::operator==(const grid_base &rhs) const
 
 template <typename ValueType, class Derived>
 std::ostream& operator<<(std::ostream& lhs, const grid_base<ValueType,Derived> &gr)
-{ 
+{
     lhs << "{";
     //lhs << gr.vals_;
     std::ostream_iterator<ValueType> out_it (lhs,", ");

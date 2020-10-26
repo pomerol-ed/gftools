@@ -33,7 +33,7 @@ public:
      * \param[in] include_last True, if the max point needs to be included
      */
     enum_grid(int min, int max, bool include_last = false);
-    enum_grid(const std::vector<int>& in):base( ([&in](){std::vector<typename point::value_type> out(in.size()); for (int i=0; i<out.size(); ++i) out[i]=in[i]; return out; })()) {}
+    enum_grid(const std::vector<int>& in):base( ([&in](){std::vector<typename point::value_type> out(in.size()); for (size_t i=0; i<out.size(); ++i) out[i]=in[i]; return out; })()) {}
     enum_grid(const std::vector<int_wrap_enumerate_grid>& in):base(in){}
     enum_grid(enum_grid&& rhs);
     enum_grid(const enum_grid& rhs):base(rhs){}
