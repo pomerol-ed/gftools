@@ -116,7 +116,7 @@ std::string print_tuple(TT t1){
 
 template <typename Arg, size_t D>
 std::string print_array(const std::array<Arg,D>& t1){
-    std::stringstream out; for (auto x:t1) out << x << " " << std::flush; return std::move<std::string>(out.str()); }
+    std::stringstream out; for (auto x:t1) out << x << " " << std::flush; return out.str(); }
 
 /// Read a tuple from a stream;
 template<typename TT>

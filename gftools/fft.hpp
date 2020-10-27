@@ -20,7 +20,7 @@ container<complex_type,D> run_fft (const container_base<complex_type,D,BC> &in, 
     if (direction == FFTW_BACKWARD) out/=norm;
     fftw_destroy_plan(p);
     fftw_cleanup();
-    return std::move(out);
+    return out;
 }
 
 
@@ -39,7 +39,7 @@ container<complex_type,D> run_fft (const container_base<complex_type,D,BC> &in, 
     if (direction == FFTW_BACKWARD) out/=norm;
     fftw_destroy_plan(p);
     fftw_cleanup();
-    return std::move(out);
+    return out;
 }
 
 template <size_t D, typename BC, typename std::enable_if<D==3, bool>::type=0> 
@@ -57,7 +57,7 @@ container<complex_type,D> run_fft (const container_base<complex_type,D,BC> &in, 
     if (direction == FFTW_BACKWARD) out/=norm;
     fftw_destroy_plan(p);
     fftw_cleanup();
-    return std::move(out);
+    return out;
 }
 
 template <size_t D, typename BC, typename std::enable_if<D==4, bool>::type=0> 
@@ -77,7 +77,7 @@ container<complex_type,D> run_fft (const container_base<complex_type,D,BC> &in, 
     if (direction == FFTW_BACKWARD) out/=norm;
     fftw_destroy_plan(p);
     fftw_cleanup();
-    return std::move(out);
+    return out;
 }
 
 

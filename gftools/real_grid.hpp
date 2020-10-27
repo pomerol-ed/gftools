@@ -158,9 +158,9 @@ inline std::tuple <bool, size_t, real_type> real_grid::find(real_type in) const
     if (in>max_) { ERROR("Point to find is out of bounds, " << in << ">" << max_ ); return std::make_tuple(0,vals_.size(),0); };
     auto out = std::lower_bound (vals_.begin(), vals_.end(), in);
     size_t i = size_t(out-vals_.begin());
+    if (i==0) return std::make_tuple(1,0,1.0);
     i--;
     if (i==vals_.size()-1) return std::make_tuple(1,i,1.0);
-    if (i==-1) return std::make_tuple(1,0,1.0);
     real_type val_i = vals_[i];
     real_type weight=(in-val_i)/(vals_[i+1] - val_i);
     return std::make_tuple (1,i,weight);

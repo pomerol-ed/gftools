@@ -43,7 +43,7 @@ double container_base<ValueType,N, BoostCType>::diff(const container_base<V2,N,D
 template <typename ValueType, size_t N, typename BoostCType> 
 std::array<size_t,N> container_base<ValueType,N, BoostCType>::shape() const 
 {
-    std::array<size_t, N> out; for (int i=0; i<N; i++) out[i] = storage_.shape()[i]; return out; 
+    std::array<size_t, N> out; for (size_t i=0; i<N; i++) out[i] = storage_.shape()[i]; return out;
 }
 
 template <typename ValueType, size_t N, typename BoostCType> 
@@ -76,7 +76,7 @@ template<size_t N2, typename U>
 container_base<ValueType,N, BoostCType>&
     container_base<ValueType,N, BoostCType>::operator=(MatrixType rhs)
 {
-    assert(rhs.rows() == storage_.shape()[0] && rhs.cols() == storage_.shape()[1]);
+    assert((size_t)rhs.rows() == storage_.shape()[0] && (size_t)rhs.cols() == storage_.shape()[1]);
     std::copy(rhs.data(), rhs.data()+rhs.rows()*rhs.cols(), storage_.origin());
     return *this;
 }
