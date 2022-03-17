@@ -26,6 +26,6 @@ grid_object_test
 foreach (test ${tests})
     set(test_src ${test}.cpp)
     add_executable(${test} ${test_src})
-    target_link_libraries(${test} gtest_main gftools)
+    target_link_libraries(${test} gtest gtest_main gftools)
     add_test(${test} ${test})
 endforeach(test)
